@@ -1435,7 +1435,7 @@ function App(){
 
   // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
   const reloadSavedIds=useCallback(()=>{
-    apiFetch('data/selected_matches.json').then(ms=>{if(ms)setSavedIds(new Set(ms.map(m=>m.id)));});
+    apiFetch('/data/selected_matches.json').then(ms=>{if(ms)setSavedIds(new Set(ms.map(m=>m.id)));});
   },[]);
 
   const handleCountryClick=useCallback((a2)=>{
@@ -1445,7 +1445,7 @@ function App(){
   useEffect(()=>{reloadSavedIds();},[]);
 
   useEffect(()=>{
-    apiFetch('data/dashboard_data.json').then(d=>{
+    apiFetch('/data/dashboard_data.json').then(d=>{
       if(d&&d.total_matches!=null){setData(d);setLoading(false);}
       else{setLoading(false);}
     }).catch(()=>setLoading(false));
@@ -1459,7 +1459,7 @@ function App(){
   }
 
   function handleMatchesAdded(){
-    apiFetch('data/dashboard_data.json').then(d=>{if(d&&d.total_matches!=null)setData(d);});
+    apiFetch('/data/dashboard_data.json').then(d=>{if(d&&d.total_matches!=null)setData(d);});
   }
 
   async function triggerSync(){
