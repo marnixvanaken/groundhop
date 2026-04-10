@@ -1384,7 +1384,6 @@ function TabWedstrijden({data}){
       </div>
       <${Card}>
         ${ms.map((m,i)=>{
-          const {l,c}=wdl(m);
           const htId=m.home_team?.id, atId=m.away_team?.id;
           return html`<div key=${m.id} style=${{
             display:'flex',alignItems:'center',gap:10,
@@ -1407,9 +1406,6 @@ function TabWedstrijden({data}){
                 </div>
               </div>
               <${TeamBadge} id=${atId} name=${m.away_team?.name} size=${22} />
-            </div>
-            <div style=${{width:26,height:26,borderRadius:6,background:c+'22',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <span style=${{fontSize:12,fontWeight:700,color:c}}>${l}</span>
             </div>
           </div>`;
         })}
