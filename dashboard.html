@@ -1,0 +1,1570 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7">
+<title>GroundHop</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{font-family:'Outfit',system-ui,sans-serif;color:#1d1d1f;-webkit-tap-highlight-color:transparent;-webkit-font-smoothing:antialiased;font-size:16px;}
+body{min-height:100dvh;overflow-x:hidden;background:radial-gradient(ellipse 70% 50% at 10% 5%,rgba(0,122,255,0.09) 0%,transparent 65%),radial-gradient(ellipse 55% 40% at 90% 90%,rgba(52,199,89,0.07) 0%,transparent 65%),radial-gradient(ellipse 40% 30% at 50% 50%,rgba(175,82,222,0.04) 0%,transparent 70%),#f2f2f7;}
+button,input,select{font-family:inherit;transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
+input::placeholder{color:#aeaeb2;}
+::-webkit-scrollbar{width:3px;height:3px;}
+::-webkit-scrollbar-track{background:transparent;}
+::-webkit-scrollbar-thumb{background:rgba(0,0,0,0.15);border-radius:2px;}
+.scroll-x{overflow-x:auto;scrollbar-width:none;}
+.scroll-x::-webkit-scrollbar{display:none;}
+img{display:block;}
+a,button,div[onclick]{transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
+@keyframes pulse-blue{0%,100%{opacity:1;}50%{opacity:0.6;}}
+@keyframes fadeout{0%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/react@18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/react-dom@18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/htm@3.1.1/dist/htm.js"></script>
+<script>
+const {useState,useMemo,useRef,useEffect,useCallback}=React;
+const html=htm.bind(React.createElement);
+const IS_LOCAL=location.hostname==='localhost'||location.hostname==='127.0.0.1';
+
+// ─── Design tokens ─────────────────────────────────────────────────────────
+const T={
+  bg0:'#f2f2f7',
+  bg1:'rgba(255,255,255,0.9)',
+  bg2:'rgba(255,255,255,0.72)',
+  bg3:'rgba(120,120,128,0.08)',
+  bg4:'rgba(120,120,128,0.16)',
+  text:'#1d1d1f',
+  muted:'#6e6e73',
+  dim:'#aeaeb2',
+  green:'#34c759',
+  greenDark:'#248a3d',
+  greenGlow:'rgba(52,199,89,0.12)',
+  yellow:'#ff9f0a',
+  red:'#ff3b30',
+  blue:'#007aff',
+  purple:'#af52de',
+  orange:'#ff6b00',
+  teal:'#5ac8fa',
+  pink:'#ff2d55',
+  border:'rgba(0,0,0,0.07)',
+  glassBorder:'rgba(255,255,255,0.62)',
+  blur:'blur(20px) saturate(180%)',
+  blurHeavy:'blur(40px) saturate(200%) brightness(1.06)',
+  shadowGlass:'inset 0 1px 0 rgba(255,255,255,0.85),inset 0 0 0 0.5px rgba(255,255,255,0.3),0 4px 24px rgba(0,0,0,0.08),0 1px 3px rgba(0,0,0,0.04)',
+  shadowGlassHover:'inset 0 1px 0 rgba(255,255,255,0.9),inset 0 0 0 0.5px rgba(255,255,255,0.4),0 10px 36px rgba(0,0,0,0.12),0 2px 8px rgba(0,0,0,0.06)',
+  shadow:'0 4px 20px rgba(0,0,0,0.07),0 1px 3px rgba(0,0,0,0.04)',
+  shadowMd:'0 8px 32px rgba(0,0,0,0.10),0 2px 8px rgba(0,0,0,0.05)',
+};
+const PIE=[T.blue,T.green,T.purple,T.orange,T.teal,T.yellow,T.red,T.pink];
+
+// ─── Helpers ───────────────────────────────────────────────────────────────
+const MND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','dec'];
+const fDate=d=>{if(!d)return'';const[y,m,day]=d.split('-');return`${parseInt(day)} ${MND[parseInt(m)-1]} ${y}`;};
+const fAge=(y,d)=>`${y}j ${d}d`;
+const fNum=n=>n!=null?n.toLocaleString('nl-NL'):'—';
+const fXg=n=>n!=null?parseFloat(n).toFixed(2):'—';
+const fRating=n=>n?parseFloat(n).toFixed(1):'—';
+const fMarket=v=>{if(!v)return'—';if(v>=1000000)return`€${(v/1000000).toFixed(1).replace('.0','')}M`;if(v>=1000)return`€${Math.round(v/1000)}K`;return`€${v}`;};
+const pImg=id=>`/img/player/${id}`;
+const tImg=id=>`/img/team/${id}`;
+const FLAG_FIX={'en':'gb-eng','sx':'gb-sct','nx':'gb-nir','wl':'gb-wls','wa':'gb-wls'};
+const fFlag=a2=>{if(!a2)return null;const c=FLAG_FIX[a2.toLowerCase()]||a2.toLowerCase();return`https://flagcdn.com/w40/${c}.png`;};
+const rBg=r=>{if(!r)return T.bg4;const v=parseFloat(r);return v>=8.5?'#248a3d':v>=7.5?'#34c759':v>=6.5?'#ff9f0a':'#ff3b30';};
+const goalLabel=t=>t==='penalty'?' (pen)':t==='ownGoal'?' (eg)':'';
+const posLabel={G:'Keeper',D:'Verdediger',M:'Middenvelder',F:'Aanvaller'};
+
+async function apiFetch(path){
+  try{const r=await fetch(path);if(!r.ok)return null;return r.json();}
+  catch{return null;}
+}
+
+// ─── Icon system (SF Symbols-inspired) ────────────────────────────────────
+function Icon({name,size=24,color='currentColor',sw=1.5}){
+  const a={width:size,height:size,viewBox:"0 0 24 24",fill:"none",stroke:color,strokeWidth:sw,strokeLinecap:"round",strokeLinejoin:"round"};
+  if(name==='person')       return html`<svg ...${a}><circle cx="12" cy="7" r="4"/><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7"/></svg>`;
+  if(name==='building2')    return html`<svg ...${a}><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg>`;
+  if(name==='house')        return html`<svg ...${a}><path d="M3 12l9-9 9 9"/><path d="M5 10.5V21h5v-5.5h4V21h5V10.5"/></svg>`;
+  if(name==='location')     return html`<svg ...${a}><path d="M12 22s-7-5.5-7-12a7 7 0 0114 0c0 6.5-7 12-7 12z"/><circle cx="12" cy="10" r="2.5"/></svg>`;
+  if(name==='searchplus')   return html`<svg ...${a}><circle cx="10" cy="10" r="7"/><path d="M20 20l-3-3"/><path d="M7 10h6M10 7v6"/></svg>`;
+  if(name==='search')       return html`<svg ...${a}><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>`;
+  if(name==='refresh')      return html`<svg ...${a}><path d="M21 12a9 9 0 01-9 9 9 9 0 01-6.4-2.6"/><path d="M3 12a9 9 0 019-9 9 9 0 016.4 2.6"/><path d="M21 3v5h-5"/><path d="M3 21v-5h5"/></svg>`;
+  if(name==='warning')      return html`<svg ...${a}><path d="M10.3 3.9L1.8 18a2 2 0 001.7 3h16.9a2 2 0 001.7-3L13.7 3.9a2 2 0 00-3.4 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>`;
+  if(name==='check')        return html`<svg ...${a}><polyline points="20 6 9 17 4 12"/></svg>`;
+  if(name==='checkfilled')  return html`<svg ...${a}><path d="M22 11.1V12a10 10 0 11-5.9-9.1"/><polyline points="22 4 12 14 9 11"/></svg>`;
+  if(name==='close')        return html`<svg ...${a}><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  if(name==='arrowleft')    return html`<svg ...${a}><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>`;
+  if(name==='chevronright') return html`<svg ...${a}><polyline points="9 18 15 12 9 6"/></svg>`;
+  if(name==='trophy')       return html`<svg ...${a}><path d="M6 9H3V4h3"/><path d="M18 9h3V4h-3"/><path d="M6 9c0 4 2 7 6 7s6-3 6-7"/><path d="M9 21h6"/><path d="M12 16v5"/></svg>`;
+  if(name==='clock')        return html`<svg ...${a}><circle cx="12" cy="12" r="9"/><polyline points="12 7 12 12 15 15"/></svg>`;
+  if(name==='globe')        return html`<svg ...${a}><circle cx="12" cy="12" r="9"/><path d="M2 12h20"/><path d="M12 2a15.5 15.5 0 010 20M12 2a15.5 15.5 0 000 20"/></svg>`;
+  if(name==='calendar')     return html`<svg ...${a}><rect x="3" y="4" width="18" height="17" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>`;
+  if(name==='repeat')       return html`<svg ...${a}><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 014-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 01-4 4H3"/></svg>`;
+  if(name==='stadium')      return html`<svg ...${a}><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/><path d="M3 12h18"/></svg>`;
+  if(name==='ball')         return html`<svg ...${a}><circle cx="12" cy="12" r="9"/><path d="M12 7.5l-2 3 2 1.5 3-1 .5-3.5"/><path d="M12 16.5l2-3-2-1.5-3 1-.5 3.5"/><path d="M7.5 9.5l1 1.5-.5 2.5"/><path d="M16.5 9.5l-1 1.5.5 2.5"/></svg>`;
+  if(name==='ruler')        return html`<svg ...${a}><path d="M21.3 10.3l-8.6 8.6a1 1 0 01-1.4 0L2.7 10.3a1 1 0 010-1.4l8.6-8.6a1 1 0 011.4 0l8.6 8.6a1 1 0 010 1.4z"/><path d="M7.5 13.5l2-2m1 3l2-2m1 3l2-2"/></svg>`;
+  if(name==='cake')         return html`<svg ...${a}><path d="M20 21v-8a2 2 0 00-2-2H6a2 2 0 00-2 2v8"/><path d="M4 16s1-1 2-1 2 2 4 2 2-2 4-2 2 2 4 2 2-1 2-1"/><path d="M2 21h20M12 11V7"/><circle cx="12" cy="5.5" r="1.5"/></svg>`;
+  if(name==='list')         return html`<svg ...${a}><line x1="9" y1="6" x2="21" y2="6"/><line x1="9" y1="12" x2="21" y2="12"/><line x1="9" y1="18" x2="21" y2="18"/><circle cx="4" cy="6" r="1" fill=${color} stroke="none"/><circle cx="4" cy="12" r="1" fill=${color} stroke="none"/><circle cx="4" cy="18" r="1" fill=${color} stroke="none"/></svg>`;
+  if(name==='folder')       return html`<svg ...${a}><path d="M22 19a2 2 0 01-2 2H4a2 2 0 01-2-2V5a2 2 0 012-2h5l2 3h9a2 2 0 012 2z"/></svg>`;
+  if(name==='home')         return html`<svg ...${a}><path d="M3 12l9-9 9 9"/><path d="M9 21V12h6v9"/></svg>`;
+  if(name==='plane')        return html`<svg ...${a}><path d="M21 16v-2l-8-5V3.5c0-.83-.67-1.5-1.5-1.5S10 2.67 10 3.5V9l-8 5v2l8-2.5V19l-2 1.5V22l3.5-1 3.5 1v-1.5L13 19v-5.5l8 2.5z"/></svg>`;
+  if(name==='users')        return html`<svg ...${a}><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>`;
+  if(name==='target')       return html`<svg ...${a}><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>`;
+  if(name==='flag')         return html`<svg ...${a}><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>`;
+  return null;
+}
+
+// ─── CSS-only charts ───────────────────────────────────────────────────────
+function BarChart({data,valueKey='value',labelKey='name',color,height=120,horizontal}){
+  const max=Math.max(...data.map(d=>d[valueKey]||0),1);
+  if(horizontal) return html`<div style=${{display:'flex',flexDirection:'column',gap:6}}>
+    ${data.map((d,i)=>html`<div key=${i} style=${{display:'flex',alignItems:'center',gap:8}}>
+      <div style=${{width:80,fontSize:11,color:T.muted,textAlign:'right',flexShrink:0,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${d[labelKey]}</div>
+      <div style=${{flex:1,height:20,background:T.bg3,borderRadius:4,overflow:'hidden'}}>
+        <div style=${{width:`${(d[valueKey]||0)/max*100}%`,height:'100%',background:color||T.blue,borderRadius:4,transition:'width 0.5s ease'}}></div>
+      </div>
+      <div style=${{width:32,fontSize:12,fontWeight:700,color:color||T.blue}}>${d[valueKey]}</div>
+    </div>`)}
+  </div>`;
+  return html`<div style=${{display:'flex',alignItems:'flex-end',gap:3,height,padding:'0 4px'}}>
+    ${data.map((d,i)=>html`<div key=${i} style=${{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,height:'100%',justifyContent:'flex-end'}}>
+      <div style=${{fontSize:9,color:T.dim,fontWeight:600}}>${d[valueKey]||0}</div>
+      <div style=${{width:'100%',background:`linear-gradient(180deg,${color||T.blue},${color||T.blue}88)`,borderRadius:'4px 4px 0 0',height:`${Math.max((d[valueKey]||0)/max*100,4)}%`,minHeight:4}}></div>
+      <div style=${{fontSize:9,color:T.dim,textAlign:'center',lineHeight:1.2}}>${d[labelKey]}</div>
+    </div>`)}
+  </div>`;
+}
+
+function DonutChart({data,size=120}){
+  const total=data.reduce((s,d)=>s+(d.value||0),0)||1;
+  let deg=0;
+  const segs=data.map((d,i)=>{const pct=(d.value||0)/total*360;const s=deg;deg+=pct;return{...d,start:s,end:deg,color:PIE[i%8]};});
+  const gradient=segs.map(s=>`${s.color} ${s.start}deg ${s.end}deg`).join(',');
+  return html`<div style=${{display:'flex',alignItems:'center',gap:16,flexWrap:'wrap'}}>
+    <div style=${{width:size,height:size,borderRadius:'50%',background:`conic-gradient(${gradient})`,flexShrink:0,position:'relative'}}>
+      <div style=${{position:'absolute',inset:size*0.22+'px',borderRadius:'50%',background:T.bg2}}></div>
+    </div>
+    <div style=${{display:'flex',flexDirection:'column',gap:5}}>
+      ${segs.map((s,i)=>html`<div key=${i} style=${{display:'flex',alignItems:'center',gap:8,fontSize:12}}>
+        <div style=${{width:10,height:10,borderRadius:2,background:s.color,flexShrink:0}}></div>
+        <span style=${{color:T.muted}}>${s.name}</span>
+        <strong style=${{color:T.text,marginLeft:'auto',paddingLeft:8}}>${s.value}</strong>
+      </div>`)}
+    </div>
+  </div>`;
+}
+
+// ─── Base UI ───────────────────────────────────────────────────────────────
+function Card({children,onClick,style,glow}){
+  const [hovered,setHovered]=useState(false);
+  return html`<div
+    onClick=${onClick}
+    onMouseEnter=${()=>setHovered(true)}
+    onMouseLeave=${()=>setHovered(false)}
+    style=${{
+      background:T.bg2,
+      backdropFilter:T.blur,
+      WebkitBackdropFilter:T.blur,
+      borderRadius:20,
+      padding:16,
+      border:`1px solid ${T.glassBorder}`,
+      boxShadow:glow
+        ?`inset 0 0 0 1px rgba(52,199,89,0.15),${hovered&&onClick?T.shadowGlassHover:T.shadowGlass}`
+        :hovered&&onClick?T.shadowGlassHover:T.shadowGlass,
+      cursor:onClick?'pointer':'default',
+      transition:'box-shadow 0.25s cubic-bezier(0.4,0,0.2,1),transform 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+      transform:hovered&&onClick?'translateY(-1px)':'none',
+      ...style
+    }}
+  >${children}</div>`;
+}
+
+function Pill({children,active,color,onClick,size}){
+  const fs=size==='sm'?10:12;
+  return html`<button onClick=${onClick} style=${{
+    background:active?(color||T.blue):'rgba(120,120,128,0.1)',
+    backdropFilter:active?'none':T.blur,
+    WebkitBackdropFilter:active?'none':T.blur,
+    color:active?'#fff':T.text,
+    border:active?'none':'1px solid rgba(255,255,255,0.5)',
+    borderRadius:999,padding:size==='sm'?'4px 10px':'6px 16px',
+    fontSize:fs,fontWeight:600,cursor:'pointer',whiteSpace:'nowrap',
+    boxShadow:active?'none':'inset 0 1px 0 rgba(255,255,255,0.6)',
+    transition:'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+  }}>${children}</button>`;
+}
+
+function Avatar({player,size=44}){
+  const [err,setErr]=useState(false);
+  const init=(player.short_name||player.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
+  const style={width:size,height:size,borderRadius:'50%',objectFit:'cover',background:T.bg4,flexShrink:0};
+  if(err) return html`<div style=${{...style,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.33,fontWeight:700,color:T.muted}}>${init}</div>`;
+  return html`<img src=${pImg(player.id)} alt="" onError=${()=>setErr(true)} style=${style} />`;
+}
+
+function TeamBadge({id,name,size=32}){
+  const [err,setErr]=useState(false);
+  if(err) return html`<div style=${{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.35,fontWeight:700,color:T.muted}}>${(name||'?').slice(0,3)}</div>`;
+  return html`<img src=${tImg(id)} alt="" onError=${()=>setErr(true)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
+}
+
+function Flag({a2,size=18}){
+  const url=fFlag(a2);
+  if(!url)return null;
+  return html`<img src=${url} alt="" style=${{width:size,height:Math.round(size*0.67),borderRadius:2,objectFit:'cover',flexShrink:0}} />`;
+}
+
+function SearchInput({value,onChange,placeholder,onClear}){
+  return html`<div style=${{position:'relative',display:'flex',alignItems:'center'}}>
+    <div style=${{position:'absolute',left:14,pointerEvents:'none',display:'flex',alignItems:'center'}}>
+      <${Icon} name="search" size=${17} color=${T.dim} />
+    </div>
+    <input value=${value} onInput=${e=>onChange(e.target.value)} placeholder=${placeholder||'Zoeken...'} style=${{
+      width:'100%',
+      background:T.bg2,
+      backdropFilter:T.blur,
+      WebkitBackdropFilter:T.blur,
+      border:`1px solid ${T.glassBorder}`,
+      borderRadius:14,
+      padding:'12px 42px 12px 46px',
+      color:T.text,fontSize:15,outline:'none',
+      boxShadow:T.shadowGlass,
+      transition:'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+    }} />
+    ${value&&html`<button onClick=${()=>onChange('')} style=${{
+      position:'absolute',right:10,
+      background:'rgba(120,120,128,0.18)',
+      border:'none',color:T.muted,cursor:'pointer',
+      width:24,height:24,borderRadius:'50%',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      fontSize:14,lineHeight:1,
+    }}>×</button>`}
+  </div>`;
+}
+
+function StatBox({label,value,color,sub}){
+  return html`<div style=${{textAlign:'center',padding:'12px 8px'}}>
+    <div style=${{fontSize:26,fontWeight:800,color:color||T.text,lineHeight:1}}>${value}</div>
+    <div style=${{fontSize:10,color:T.muted,marginTop:3,textTransform:'uppercase',letterSpacing:'0.06em'}}>${label}</div>
+    ${sub&&html`<div style=${{fontSize:11,color:T.muted,marginTop:2}}>${sub}</div>`}
+  </div>`;
+}
+
+function RatingBadge({rating}){
+  if(!rating)return null;
+  return html`<div style=${{background:rBg(rating),color:'#fff',borderRadius:10,padding:'3px 9px',fontSize:13,fontWeight:800,flexShrink:0}}>${fRating(rating)}</div>`;
+}
+
+function SectionTitle({children,right,icon}){
+  return html`<div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+    <div style=${{display:'flex',alignItems:'center',gap:7,fontSize:16,fontWeight:700,color:T.text}}>
+      ${icon&&html`<${Icon} name=${icon} size=${16} color=${T.muted} sw=${2}/>`}
+      ${children}
+    </div>
+    ${right&&html`<div style=${{fontSize:12,color:T.muted}}>${right}</div>`}
+  </div>`;
+}
+
+// ─── Sync Banner ───────────────────────────────────────────────────────────
+function SyncBanner(){
+  const [status,setStatus]=useState(null);
+  const [progress,setProgress]=useState(null);
+  const [visible,setVisible]=useState(true);
+  const prevRunning=useRef(false);
+  const hideTimer=useRef(null);
+
+  useEffect(()=>{
+    const check=async()=>{
+      const s=await fetch('/api/sync-status').then(r=>r.json()).catch(()=>null);
+      if(!s) return;
+      if(prevRunning.current&&!s.running&&s.last){
+        setVisible(true);
+        clearTimeout(hideTimer.current);
+        hideTimer.current=setTimeout(()=>setVisible(false),8000);
+      }
+      prevRunning.current=!!s.running;
+      setStatus(s);
+      if(s.running){
+        const p=await fetch('/api/progress').then(r=>r.json()).catch(()=>null);
+        setProgress(p);
+      } else {
+        setProgress(null);
+      }
+    };
+    check();
+    const iv=setInterval(check,2000);
+    return()=>{clearInterval(iv);clearTimeout(hideTimer.current);};
+  },[]);
+
+  if(!status||(!status.running&&!status.last&&!status.error))return null;
+  if(!status.running&&!status.error&&!visible)return null;
+
+  let bg,color,msg,anim,detail=null;
+  if(status.running){
+    bg='rgba(0,122,255,0.08)';color=T.blue;
+    anim={animation:'pulse-blue 1.5s ease-in-out infinite'};
+    if(progress){
+      if(progress.phase==='matches'){
+        const rem=progress.total-progress.current;
+        const estMin=Math.round(rem*4/60);
+        const timeStr=estMin>0?` · ~${estMin} min`:'';
+        msg=`Wedstrijden — ${progress.current}/${progress.total}${timeStr}`;
+        detail=progress.label;
+      } else if(progress.phase==='players'){
+        msg=`Spelers — ${progress.current}/${progress.total} (${progress.pct}%)`;
+        detail=progress.label; // bevat al "~X min resterend"
+      } else {
+        msg='Exporteren...';
+      }
+    } else {
+      msg='Download wordt gestart...';
+    }
+  } else if(status.error){
+    bg='rgba(255,59,48,0.08)';color=T.red;
+    msg=`Fout: ${status.error}`;anim={};
+  } else {
+    bg='rgba(52,199,89,0.08)';color=T.green;
+    if(status.last){const p=status.last.split(' ');const t=(p.length>1?p[1]:p[0]).slice(0,5);msg=`Download klaar${p.length>1?' op '+p[0]:''} om ${t}`;}else{msg='Download klaar';}anim={};
+  }
+
+  return html`<div style=${{
+    background:bg,
+    borderBottom:`1px solid ${color}22`,
+    padding:'8px 16px',
+    display:'flex',alignItems:'center',gap:8,
+    position:'sticky',top:57,zIndex:9,
+    backdropFilter:'blur(20px) saturate(160%)',
+    WebkitBackdropFilter:'blur(20px) saturate(160%)',
+    ...anim,
+  }}>
+    <div style=${{flexShrink:0,display:'flex',alignItems:'center',animation:status.running?'spin 1s linear infinite':'none'}}>
+      ${status.running&&html`<${Icon} name="refresh" size=${16} color=${color} />`}
+      ${status.error&&html`<${Icon} name="warning" size=${16} color=${color} />`}
+      ${!status.running&&!status.error&&html`<${Icon} name="checkfilled" size=${16} color=${color} />`}
+    </div>
+    <div style=${{flex:1,minWidth:0}}>
+      <div style=${{fontSize:13,fontWeight:600,color}}>${msg}</div>
+      ${detail&&html`<div style=${{fontSize:11,color,opacity:0.7,marginTop:1,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${detail}</div>`}
+      ${status.running&&progress?.total>0&&html`<div style=${{marginTop:4,height:3,background:`${color}22`,borderRadius:2,overflow:'hidden'}}>
+        <div style=${{height:'100%',width:`${progress.pct}%`,background:color,borderRadius:2,transition:'width 0.5s ease'}}></div>
+      </div>`}
+    </div>
+  </div>`;
+}
+
+// ─── WORLD MAP ─────────────────────────────────────────────────────────────
+const NUM2A2={4:'af',8:'al',12:'dz',20:'ad',24:'ao',28:'ag',32:'ar',36:'au',40:'at',31:'az',44:'bs',48:'bh',50:'bd',52:'bb',56:'be',64:'bt',68:'bo',70:'ba',72:'bw',76:'br',84:'bz',96:'bn',100:'bg',104:'mm',108:'bi',112:'by',116:'kh',120:'cm',124:'ca',132:'cv',140:'cf',144:'lk',148:'td',152:'cl',156:'cn',158:'tw',170:'co',174:'km',178:'cg',180:'cd',188:'cr',191:'hr',192:'cu',196:'cy',203:'cz',204:'bj',208:'dk',214:'do',218:'ec',222:'sv',226:'gq',231:'et',233:'ee',242:'fj',246:'fi',250:'fr',262:'dj',266:'ga',268:'ge',270:'gm',275:'ps',276:'de',288:'gh',300:'gr',308:'gd',320:'gt',324:'gn',328:'gy',332:'ht',340:'hn',348:'hu',352:'is',356:'in',360:'id',364:'ir',368:'iq',372:'ie',376:'il',380:'it',384:'ci',388:'jm',392:'jp',398:'kz',400:'jo',404:'ke',408:'kp',410:'kr',414:'kw',417:'kg',418:'la',422:'lb',426:'ls',428:'lv',430:'lr',434:'ly',440:'lt',442:'lu',450:'mg',454:'mw',458:'my',466:'ml',470:'mt',478:'mr',480:'mu',484:'mx',492:'mc',496:'mn',498:'md',499:'me',500:'ms',504:'ma',508:'mz',512:'om',516:'na',524:'np',528:'nl',531:'cw',540:'nc',548:'vu',554:'nz',558:'ni',562:'ne',566:'ng',578:'no',586:'pk',591:'pa',598:'pg',600:'py',604:'pe',608:'ph',616:'pl',620:'pt',624:'gw',626:'tl',634:'qa',642:'ro',643:'ru',646:'rw',662:'lc',682:'sa',686:'sn',688:'rs',694:'sl',702:'sg',703:'sk',704:'vn',705:'si',706:'so',710:'za',716:'zw',724:'es',728:'ss',729:'sd',732:'eh',740:'sr',748:'sz',752:'se',756:'ch',760:'sy',762:'tj',764:'th',768:'tg',780:'tt',784:'ae',788:'tn',792:'tr',795:'tm',800:'ug',804:'ua',807:'mk',818:'eg',826:'gb',834:'tz',840:'us',854:'bf',858:'uy',860:'uz',862:'ve',887:'ye',894:'zm',383:'xk',51:'am',90:'sb',232:'er',238:'fk',304:'gl',630:'pr',10:'aq',260:'tf'};
+const SS2ISO={en:'gb',sx:'gb',wa:'gb',nx:'gb',wl:'gb',an:'cw'};
+const A2_NAMES={af:'Afghanistan',al:'Albanië',dz:'Algerije',ad:'Andorra',ao:'Angola',ag:'Antigua & Barbuda',ar:'Argentinië',au:'Australië',at:'Oostenrijk',az:'Azerbeidzjan',bs:"Bahama's",bh:'Bahrein',bd:'Bangladesh',bb:'Barbados',by:'Belarus',be:'België',bz:'Belize',bt:'Bhutan',bo:'Bolivia',ba:'Bosnië-Herzegovina',bw:'Botswana',br:'Brazilië',bn:'Brunei',bg:'Bulgarije',bf:'Burkina Faso',bi:'Burundi',kh:'Cambodja',cm:'Kameroen',ca:'Canada',cv:'Kaapverdië',cf:'Centraal-Afrikaanse Republiek',cl:'Chili',cn:'China',co:'Colombia',km:'Comoren',cg:'Congo-Brazzaville',cd:'Congo-Kinshasa',cr:'Costa Rica',hr:'Kroatië',cu:'Cuba',cy:'Cyprus',cz:'Tsjechië',dk:'Denemarken',dj:'Djibouti',do:'Dominicaanse Republiek',tl:'Oost-Timor',ec:'Ecuador',eg:'Egypte',sv:'El Salvador',gq:'Equatoriaal-Guinea',er:'Eritrea',et:'Ethiopië',ee:'Estland',fj:'Fiji',fi:'Finland',fr:'Frankrijk',ga:'Gabon',gm:'Gambia',ge:'Georgië',de:'Duitsland',gh:'Ghana',gd:'Grenada',gr:'Griekenland',gt:'Guatemala',gn:'Guinee',gw:'Guinee-Bissau',gy:'Guyana',ht:'Haïti',hn:'Honduras',hu:'Hongarije',is:'IJsland',in:'India',id:'Indonesië',ir:'Iran',iq:'Irak',ie:'Ierland',il:'Israël',it:'Italië',ci:"Ivoorkust",jm:'Jamaica',jp:'Japan',jo:'Jordanië',kz:'Kazachstan',ke:'Kenia',kp:'Noord-Korea',kr:'Zuid-Korea',kw:'Koeweit',kg:'Kirgizstan',la:'Laos',lb:'Libanon',ls:'Lesotho',lr:'Liberia',ly:'Libië',lt:'Litouwen',lu:'Luxemburg',mg:'Madagaskar',mw:'Malawi',my:'Maleisië',ml:'Mali',mt:'Malta',mr:'Mauritanië',mu:'Mauritius',mx:'Mexico',md:'Moldavië',mc:'Monaco',mn:'Mongolië',me:'Montenegro',ms:'Montserrat',ma:'Marokko',mz:'Mozambique',mm:'Myanmar',na:'Namibië',np:'Nepal',nl:'Nederland',nz:'Nieuw-Zeeland',ni:'Nicaragua',ne:'Niger',ng:'Nigeria',mk:'Noord-Macedonië',no:'Noorwegen',om:'Oman',pk:'Pakistan',ps:'Palestina',pa:'Panama',pg:'Papoea-Nieuw-Guinea',py:'Paraguay',pe:'Peru',ph:'Filipijnen',pl:'Polen',pt:'Portugal',qa:'Qatar',ro:'Roemenië',ru:'Rusland',rw:'Rwanda',lc:'Saint Lucia',sa:'Saoedi-Arabië',sn:'Senegal',rs:'Servië',sl:'Sierra Leone',sg:'Singapore',sk:'Slowakije',si:'Slovenië',so:'Somalië',za:'Zuid-Afrika',ss:'Zuid-Soedan',es:'Spanje',lk:'Sri Lanka',sd:'Soedan',sr:'Suriname',sz:'Eswatini',se:'Zweden',ch:'Zwitserland',sy:'Syrië',tw:'Taiwan',tj:'Tadzjikistan',tz:'Tanzania',th:'Thailand',tg:'Togo',tt:'Trinidad & Tobago',tn:'Tunesië',tr:'Turkije',tm:'Turkmenistan',ug:'Oeganda',ua:'Oekraïne',ae:'VAE',gb:'Verenigd Koninkrijk',us:'Verenigde Staten',uy:'Uruguay',uz:'Oezbekistan',vu:'Vanuatu',ve:'Venezuela',vn:'Vietnam',eh:'Westelijke Sahara',ye:'Jemen',zm:'Zambia',zw:'Zimbabwe',cw:'Curaçao',nc:'Nieuw-Caledonië',xk:'Kosovo',am:'Armenië',sb:'Salomonseilanden',er:'Eritrea',dm:'Dominica',li:'Liechtenstein',mv:'Malediven',nr:'Nauru',aw:'Aruba',fm:'Micronesië',mh:'Marshalleilanden',pw:'Palau',kn:'Saint Kitts & Nevis',vc:'Saint Vincent & Grenadines',sm:'San Marino',st:'Sao Tomé & Príncipe',sc:'Seychellen',to:'Tonga',tv:'Tuvalu',ws:'Samoa',bm:'Bermuda',gp:'Guadeloupe',gl:'Groenland',fk:'Falklandeilanden',pr:'Puerto Rico',aq:'Antarctica',tf:'Frans Zuidpoolgebied',bj:'Benin',bf:'Burkina Faso',cv:'Kaapverdië',dj:'Djibouti',gq:'Equatoriaal-Guinea',gw:'Guinee-Bissau',km:'Comoren',mg:'Madagaskar',mz:'Mozambique',rw:'Rwanda',so:'Somalië',st:'Sao Tomé',tz:'Tanzania',bi:'Burundi',cf:'Centraal-Afrikaanse Republiek',td:'Tsjaad',er:'Eritrea',ls:'Lesotho',mw:'Malawi',ne:'Niger',sz:'Eswatini',ug:'Oeganda',zm:'Zambia',zw:'Zimbabwe'};
+function normA2(c){if(!c)return null;const l=c.toLowerCase();return SS2ISO[l]||l;}
+function _mp(lon,lat){
+  const W=720,H=380;
+  lat=Math.max(-79,Math.min(79,lat));
+  const x=(lon+180)/360*W;
+  const y79=Math.log(Math.tan(Math.PI/4+79*Math.PI/360));
+  const yn=Math.log(Math.tan(Math.PI/4+lat*Math.PI/360));
+  return[x,H/2-(yn/y79)*(H/2-8)];
+}
+function _ringD(ring){
+  let d='',px=null;
+  for(let i=0;i<ring.length;i++){
+    const[x,y]=_mp(ring[i][0],ring[i][1]);
+    if(i>0&&px!==null&&Math.abs(x-px)>300)d+='M'+x.toFixed(1)+','+y.toFixed(1);
+    else d+=(i===0?'M':'L')+x.toFixed(1)+','+y.toFixed(1);
+    px=x;
+  }
+  return d+'Z';
+}
+function _geoPath(g){
+  if(!g)return'';
+  const rs=g.type==='Polygon'?g.coordinates:g.type==='MultiPolygon'?g.coordinates.flat():[];
+  return rs.map(_ringD).join(' ');
+}
+
+function WorldMap({players,onCountryClick}){
+  const svgRef=useRef(null);
+  const tipRef=useRef(null);
+  const dragRef=useRef(null);
+  const touchRef=useRef(null);
+  const didDragRef=useRef(false);
+  const [paths,setPaths]=useState([]);
+  const [vb,setVb]=useState([0,0,720,380]);
+
+  const seenMap=useMemo(()=>{
+    const m={};
+    players.forEach(p=>{
+      if((p.starter_appearances||0)+(p.sub_appearances||0)===0)return;
+      const a2=normA2(p.nationality_alpha2);
+      if(!a2)return;
+      if(!m[a2])m[a2]={count:0,name:p.nationality||a2.toUpperCase()};
+      m[a2].count++;
+    });
+    return m;
+  },[players]);
+
+  useEffect(()=>{
+    function build(topo){
+      const features=window.topojson.feature(topo,topo.objects.countries).features;
+      setPaths(features.map(f=>({d:_geoPath(f.geometry),a2:NUM2A2[+f.id]})));
+    }
+    function doFetch(){
+      fetch('https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json')
+        .then(r=>r.json()).then(build).catch(console.error);
+    }
+    if(window.topojson){doFetch();}
+    else{const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/topojson-client@3/dist/topojson-client.min.js';s.onload=doFetch;document.head.appendChild(s);}
+  },[]);
+
+  const zoom=useCallback((factor,cx,cy)=>{
+    setVb(([vx,vy,vw,vh])=>{
+      const nw=Math.max(80,Math.min(720,vw*factor));
+      const nh=nw*(380/720);
+      return[cx-(cx-vx)*(nw/vw),cy-(cy-vy)*(nh/vh),nw,nh];
+    });
+  },[]);
+
+  const handleWheel=useCallback(e=>{
+    e.preventDefault();
+    const rect=svgRef.current?.getBoundingClientRect();
+    if(!rect)return;
+    setVb(([vx,vy,vw,vh])=>{
+      const f=e.deltaY>0?1.25:0.8;
+      const cx=(e.clientX-rect.left)/rect.width*vw+vx;
+      const cy=(e.clientY-rect.top)/rect.height*vh+vy;
+      const nw=Math.max(80,Math.min(720,vw*f));
+      const nh=nw*(380/720);
+      return[cx-(cx-vx)*(nw/vw),cy-(cy-vy)*(nh/vh),nw,nh];
+    });
+  },[]);
+
+  const onDown=useCallback(e=>{dragRef.current={sx:e.clientX,sy:e.clientY,vb};didDragRef.current=false;},[vb]);
+  const onMove=useCallback(e=>{
+    if(!dragRef.current)return;
+    const{sx,sy,vb:dv}=dragRef.current;
+    const rect=svgRef.current?.getBoundingClientRect();
+    if(!rect)return;
+    if(Math.abs(e.clientX-sx)>3||Math.abs(e.clientY-sy)>3)didDragRef.current=true;
+    const nv=[dv[0]-(e.clientX-sx)/rect.width*dv[2],dv[1]-(e.clientY-sy)/rect.height*dv[3],dv[2],dv[3]];
+    setVb(nv);dragRef.current={sx:e.clientX,sy:e.clientY,vb:nv};
+  },[]);
+  const onUp=useCallback(()=>{dragRef.current=null;},[]);
+
+  const onTouchStart=useCallback(e=>{
+    if(e.touches.length===2){const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;touchRef.current={dist:Math.hypot(dx,dy),vb};}
+    else if(e.touches.length===1){dragRef.current={sx:e.touches[0].clientX,sy:e.touches[0].clientY,vb};}
+  },[vb]);
+  const onTouchMove=useCallback(e=>{
+    e.preventDefault();
+    if(e.touches.length===2&&touchRef.current){
+      const dx=e.touches[0].clientX-e.touches[1].clientX,dy=e.touches[0].clientY-e.touches[1].clientY;
+      const d2=Math.hypot(dx,dy);const f=touchRef.current.dist/d2;const tv=touchRef.current.vb;
+      const nw=Math.max(80,Math.min(720,tv[2]*f));const nh=nw*(380/720);
+      const nv=[tv[0],tv[1],nw,nh];setVb(nv);touchRef.current={dist:d2,vb:nv};
+    }else if(e.touches.length===1&&dragRef.current){
+      const t=e.touches[0];const rect=svgRef.current?.getBoundingClientRect();if(!rect)return;
+      const{sx,sy,vb:dv}=dragRef.current;
+      const nv=[dv[0]-(t.clientX-sx)/rect.width*dv[2],dv[1]-(t.clientY-sy)/rect.height*dv[3],dv[2],dv[3]];
+      setVb(nv);dragRef.current={sx:t.clientX,sy:t.clientY,vb:nv};
+    }
+  },[]);
+  const onTouchEnd=useCallback(()=>{dragRef.current=null;touchRef.current=null;},[]);
+
+  const showTip=useCallback((e,a2)=>{
+    const el=tipRef.current,svg=svgRef.current;if(!el||!svg)return;
+    const rect=svg.getBoundingClientRect();
+    const x=e.clientX-rect.left,y=e.clientY-rect.top;
+    const seen=seenMap[a2];const name=seen?.name||A2_NAMES[a2]||(a2?a2.toUpperCase():'');
+    if(!name){el.style.display='none';return;}
+    const flagUrl=fFlag(a2);
+    const flagHtml=flagUrl?`<img src="${flagUrl}" style="height:14px;border-radius:2px;vertical-align:middle;margin-right:5px;"/>`:'';
+    const clickHint=seen?'<div style="font-size:10px;color:#aaa;margin-top:3px;">Tik voor spelers →</div>':'';
+    el.style.display='block';
+    el.style.left=Math.min(x+12,rect.width-160)+'px';
+    el.style.top=Math.max(y-70,4)+'px';
+    el.innerHTML=`<div style="display:flex;align-items:center;gap:4px;margin-bottom:2px;">${flagHtml}<b>${name}</b></div><span style="color:${seen?'#90d4ff':'#999'}">${seen?seen.count+'\u00a0speler'+(seen.count!==1?'s':'')+'\u00a0gezien':'Nog niet gezien'}</span>${clickHint}`;
+  },[seenMap]);
+  const hideTip=useCallback(()=>{if(tipRef.current)tipRef.current.style.display='none';},[]);
+
+  const handleClick=useCallback((a2)=>{
+    if(didDragRef.current)return;
+    const seen=seenMap[a2];
+    if(seen&&onCountryClick)onCountryClick(a2,seen.name);
+  },[seenMap,onCountryClick]);
+
+  const resetZoom=useCallback(()=>setVb([0,0,720,380]),[]);
+
+  const seenCount=Object.keys(seenMap).length;
+
+  return html`<div>
+    <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
+      <span style=${{fontSize:11,color:T.dim}}>Scroll/knijp om in te zoomen · sleep om te verschuiven</span>
+      <div style=${{display:'flex',gap:8,alignItems:'center'}}>
+        <button onClick=${resetZoom} style=${{fontSize:10,color:T.blue,background:'none',border:`1px solid ${T.blue}`,borderRadius:5,padding:'1px 7px',cursor:'pointer'}}>Reset</button>
+        <span style=${{fontSize:11,fontWeight:700,color:T.blue}}>${seenCount} landen</span>
+      </div>
+    </div>
+    <div style=${{position:'relative',borderRadius:10,overflow:'hidden',border:`1px solid ${T.border}`}}>
+      <svg ref=${svgRef}
+        viewBox=${vb.join(' ')}
+        style=${{width:'100%',display:'block',background:'#c8dff0',cursor:'grab',touchAction:'none'}}
+        onWheel=${handleWheel}
+        onMouseDown=${onDown}
+        onMouseMove=${onMove}
+        onMouseUp=${onUp}
+        onMouseLeave=${()=>{onUp();hideTip();}}
+        onTouchStart=${onTouchStart}
+        onTouchMove=${onTouchMove}
+        onTouchEnd=${onTouchEnd}
+      >
+        ${paths.length===0&&html`<text x="360" y="190" textAnchor="middle" fill="#6b8fa8" fontSize="16">Kaart laden…</text>`}
+        ${paths.map((p,i)=>html`<path key=${i} d=${p.d}
+          fill=${seenMap[p.a2]?T.blue:'#d4e4ef'}
+          stroke="#fff" strokeWidth="0.4"
+          style=${{cursor:seenMap[p.a2]?'pointer':'default'}}
+          onMouseEnter=${e=>showTip(e,p.a2)}
+          onMouseMove=${e=>showTip(e,p.a2)}
+          onMouseLeave=${hideTip}
+          onClick=${()=>handleClick(p.a2)}
+        />`)}
+      </svg>
+      <div ref=${tipRef} style=${{display:'none',position:'absolute',background:'rgba(0,0,0,0.82)',color:'#fff',padding:'5px 10px',borderRadius:7,fontSize:12,pointerEvents:'none',zIndex:10,lineHeight:1.5}}></div>
+    </div>
+  </div>`;
+}
+
+// ─── TAB: HOME ─────────────────────────────────────────────────────────────
+function TabHome({data,onCountryClick}){
+  const {total_matches=0,total_goals_witnessed=0,players=[],records={},seasons=[],tournaments=[],teams_visited=[],date_range={}}=data;
+  const firstYear=date_range.first?date_range.first.slice(0,4):'—';
+  const lastYear=date_range.last?date_range.last.slice(0,4):'—';
+  const jaren=firstYear!=='—'&&lastYear!=='—'?parseInt(lastYear)-parseInt(firstYear)+1:'—';
+  const ageSpan=useMemo(()=>{
+    let best=null,bestDiff=0;
+    players.forEach(p=>{
+      const y=p.youngest_age_seen,o=p.oldest_age_seen;
+      if(!y||!o)return;
+      const diff=(o.age_years*365+o.age_days)-(y.age_years*365+y.age_days);
+      if(diff>bestDiff){bestDiff=diff;best={name:p.name,years:Math.floor(diff/365),days:diff%365,from:fAge(y.age_years,y.age_days),to:fAge(o.age_years,o.age_days)};}
+    });
+    return best;
+  },[players]);
+  const donutData=tournaments.slice(0,6).map(t=>({name:t.name.replace('Champions League','CL').replace('Eredivisie','Eredivisie'),value:t.matches_count}));
+  const seasonBar=[...seasons].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>({name:s.name.slice(2,4)+'/'+s.name.slice(7,9)||s.name.slice(0,4),value:s.matches_count}));
+  const recentMatches=(data.matches||[]).slice(0,5);
+
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:16}}>
+
+    <!-- Hero stat band -->
+    <${Card} glow=${true} style=${{background:'rgba(0,122,255,0.05)',border:'1px solid rgba(0,122,255,0.18)'}}>
+      <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4}}>
+        <${StatBox} label="Wedstrijden" value=${total_matches} color=${T.blue} />
+        <${StatBox} label="Spelers" value=${players.length} color=${T.green} />
+        <${StatBox} label="Goals" value=${total_goals_witnessed} color=${T.yellow} />
+        <${StatBox} label="Jaar actief" value=${jaren} color=${T.purple} sub=${`${firstYear}–${lastYear}`} />
+      </div>
+    </${Card}>
+
+    <!-- Records -->
+    <${Card}>
+      <${SectionTitle} icon="trophy">Records</${SectionTitle}>
+      <div style=${{display:'flex',flexDirection:'column',gap:10}}>
+        ${records.youngest_player&&html`<${RecordItem} icon="person" label="Jongste speler" value=${`${records.youngest_player.name} — ${fAge(records.youngest_player.age_years,records.youngest_player.age_days)}`} sub=${records.youngest_player.match} />`}
+        ${records.oldest_player&&html`<${RecordItem} icon="person" label="Oudste speler" value=${`${records.oldest_player.name} — ${fAge(records.oldest_player.age_years,records.oldest_player.age_days)}`} sub=${records.oldest_player.match} />`}
+        ${records.most_goals_single_match&&html`<${RecordItem} icon="target" label="Meeste goals in 1 duel" value=${`${records.most_goals_single_match.count} goals — ${records.most_goals_single_match.match}`} />`}
+        ${records.biggest_win&&html`<${RecordItem} icon="trophy" label="Grootste overwinning" value=${records.biggest_win.match} sub=${fDate(records.biggest_win.date)} />`}
+        ${records.highest_attendance&&html`<${RecordItem} icon="users" label="Meeste toeschouwers" value=${`${fNum(records.highest_attendance.count)} — ${records.highest_attendance.venue}`} sub=${records.highest_attendance.match} />`}
+        ${ageSpan&&html`<${RecordItem} icon="ruler" label="Langste leeftijdsspanne" value=${`${ageSpan.name} — ${ageSpan.years}j ${ageSpan.days}d`} sub=${`Gezien op ${ageSpan.from} t/m ${ageSpan.to}`} />`}
+      </div>
+    </${Card}>
+
+    <!-- Recente wedstrijden -->
+    ${recentMatches.length>0&&html`<${Card}>
+      <${SectionTitle} icon="clock" right="alle wedstrijden →">Recent</${SectionTitle}>
+      <div style=${{display:'flex',flexDirection:'column',gap:8}}>
+        ${recentMatches.map(m=>html`<${MiniMatchRow} key=${m.id} match=${m} />`)}
+      </div>
+    </${Card}>`}
+
+    <!-- Competities donut -->
+    ${donutData.length>0&&html`<${Card}>
+      <${SectionTitle} icon="trophy">Competities</${SectionTitle}>
+      <${DonutChart} data=${donutData} size=${100} />
+    </${Card}>`}
+
+    <!-- Seizoenen bar -->
+    ${seasonBar.length>1&&html`<${Card}>
+      <${SectionTitle} icon="calendar">Per seizoen</${SectionTitle}>
+      <${BarChart} data=${seasonBar} color=${T.blue} height=${110} />
+    </${Card}>`}
+
+    <!-- Top 5 meest geziene teams -->
+    ${teams_visited.length>0&&html`<${Card}>
+      <${SectionTitle} icon="repeat">Meest gevolgd</${SectionTitle}>
+      <div class="scroll-x" style=${{display:'flex',gap:12,paddingBottom:4}}>
+        ${teams_visited.slice(0,10).map(t=>html`<div key=${t.id} style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:6,minWidth:60,flexShrink:0}}>
+          <div style=${{width:48,height:48,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <${TeamBadge} id=${t.id} name=${t.name} size=${40} />
+          </div>
+          <div style=${{fontSize:9,color:T.muted,textAlign:'center',lineHeight:1.2,maxWidth:60,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${t.name}</div>
+          <div style=${{fontSize:10,fontWeight:700,color:T.blue}}>${t.matches_count}x</div>
+        </div>`)}
+      </div>
+    </${Card}>`}
+
+    <!-- Wereldkaart -->
+    <${Card}>
+      <${SectionTitle} icon="globe">Landen gezien spelen</${SectionTitle}>
+      <${WorldMap} players=${players} onCountryClick=${onCountryClick} />
+    </${Card}>
+  </div>`;
+}
+
+function RecordItem({icon,label,value,sub}){
+  return html`<div style=${{display:'flex',gap:10,alignItems:'flex-start',padding:'6px 0',borderBottom:`1px solid ${T.border}`}}>
+    <div style=${{flexShrink:0,marginTop:2,width:22,display:'flex',justifyContent:'center'}}>
+      <${Icon} name=${icon} size=${17} color=${T.muted} />
+    </div>
+    <div style=${{minWidth:0}}>
+      <div style=${{fontSize:11,color:T.dim,textTransform:'uppercase',letterSpacing:'0.04em'}}>${label}</div>
+      <div style=${{fontSize:13,fontWeight:600,color:T.text,marginTop:1}}>${value}</div>
+      ${sub&&html`<div style=${{fontSize:11,color:T.muted}}>${sub}</div>`}
+    </div>
+  </div>`;
+}
+
+function MiniMatchRow({match:m}){
+  const diff=(m.home_score??0)-(m.away_score??0);
+  const color=diff>0?T.green:diff<0?T.red:T.yellow;
+  return html`<div style=${{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:`1px solid ${T.border}`}}>
+    <div style=${{fontSize:11,color:T.dim,width:60,flexShrink:0}}>${m.date?.slice(5).replace('-','/')}</div>
+    <div style=${{flex:1,minWidth:0}}>
+      <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${m.home_team?.name} ${m.home_score??'?'}–${m.away_score??'?'} ${m.away_team?.name}</div>
+      <div style=${{fontSize:11,color:T.dim}}>${m.tournament}</div>
+    </div>
+    <div style=${{width:28,height:28,borderRadius:6,background:color+'22',display:'flex',alignItems:'center',justifyContent:'center'}}>
+      <span style=${{fontSize:13,fontWeight:700,color}}>${diff>0?'W':diff<0?'V':'G'}</span>
+    </div>
+  </div>`;
+}
+
+// ─── TAB: SPELERS ──────────────────────────────────────────────────────────
+const SORTS=[
+  {k:'matches_seen',l:'Gezien'},{k:'goals',l:'Doelpunten'},{k:'assists',l:'Assists'},
+  {k:'xg_total',l:'xG'},{k:'avg_rating',l:'Cijfer'},{k:'minutes_played',l:'Minuten'},
+  {k:'yellow_cards',l:'Geel'},{k:'age_asc',l:'Jongste'},{k:'age_desc',l:'Oudste'},
+  {k:'clubs',l:'Clubs'},{k:'height_desc',l:'Grootste'},{k:'height_asc',l:'Kleinste'},
+  {k:'max_transfer_fee',l:'Transfersom'},{k:'national_team_caps',l:'Interlands'},
+];
+
+const ROLE_FILTERS=[
+  {k:'all',l:'Alle'},
+  {k:'played',l:'Gespeeld'},
+  {k:'starter',l:'Basis'},
+  {k:'sub',l:'Invaller'},
+  {k:'bench',l:'Bank'},
+  {k:'international',l:'Interland'},
+];
+
+const PAGE=25;
+function TabSpelers({data,initCountry}){
+  const [q,setQ]=useState('');
+  const [sort,setSort]=useState('matches_seen');
+  const [role,setRole]=useState('played');
+  const [country,setCountry]=useState(initCountry||'');
+  const [gender,setGender]=useState('all');
+  const [detail,setDetail]=useState(null);
+  const [shown,setShown]=useState(PAGE);
+
+  // Sync when initCountry changes (e.g. navigated from map)
+  useEffect(()=>{setCountry(initCountry||'');},[initCountry]);
+  // Reset paginering bij filter/sort wijziging
+  useEffect(()=>{setShown(PAGE);},[q,sort,role,country,gender]);
+
+  const countryOptions=useMemo(()=>{
+    const seen=new Map();
+    (data.players||[]).forEach(p=>{
+      if((p.starter_appearances||0)+(p.sub_appearances||0)===0)return;
+      const a2=normA2(p.nationality_alpha2);
+      if(!a2||seen.has(a2))return;
+      seen.set(a2,p.nationality||a2.toUpperCase());
+    });
+    return[...seen.entries()].sort((a,b)=>a[1].localeCompare(b[1]));
+  },[data.players]);
+
+  const list=useMemo(()=>{
+    let ps=[...(data.players||[])];
+    if(gender==='M') ps=ps.filter(p=>!p.gender||p.gender==='M');
+    if(gender==='F') ps=ps.filter(p=>p.gender==='F');
+    if(q)ps=ps.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
+    if(country)ps=ps.filter(p=>normA2(p.nationality_alpha2)===country);
+    if(role==='played')        ps=ps.filter(p=>(p.starter_appearances||0)>0||(p.sub_appearances||0)>0);
+    if(role==='starter')       ps=ps.filter(p=>(p.starter_appearances||0)>0);
+    if(role==='sub')           ps=ps.filter(p=>(p.sub_appearances||0)>0);
+    if(role==='bench')         ps=ps.filter(p=>(p.bench_appearances||0)>0 && (p.starter_appearances||0)===0 && (p.sub_appearances||0)===0);
+    if(role==='international') ps=ps.filter(p=>(p.national_team_caps||0)>0);
+    ps.sort((a,b)=>{
+      if(sort==='age_asc'){const ya=a.youngest_age_seen,yb=b.youngest_age_seen;if(!ya&&!yb)return 0;if(!ya)return 1;if(!yb)return-1;return ya.age_years!==yb.age_years?ya.age_years-yb.age_years:ya.age_days-yb.age_days;}
+      if(sort==='age_desc'){const oa=a.oldest_age_seen,ob=b.oldest_age_seen;if(!oa&&!ob)return 0;if(!oa)return 1;if(!ob)return-1;return ob.age_years!==oa.age_years?ob.age_years-oa.age_years:ob.age_days-oa.age_days;}
+      if(sort==='clubs')return(b.teams_seen_for||[]).length-(a.teams_seen_for||[]).length;
+      if(sort==='height_desc'){const ha=a.height_cm||0,hb=b.height_cm||0;return hb-ha;}
+      if(sort==='height_asc'){const ha=a.height_cm||999,hb=b.height_cm||999;return ha-hb;}
+      return(b[sort]??-1)-(a[sort]??-1);
+    });
+    return ps;
+  },[data.players,q,sort,role,country]);
+
+  if(detail)return html`<${PlayerDetail} player=${detail} onBack=${()=>setDetail(null)} />`;
+
+  const selectedName=country?countryOptions.find(([a2])=>a2===country)?.[1]:'';
+
+  const sortLabel=SORTS.find(s=>s.k===sort)?.l||'';
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:10}}>
+    <${SearchInput} value=${q} onChange=${setQ} placeholder="Naam zoeken..." />
+    <!-- Toolbar: rol + sort dropdown -->
+    <div style=${{display:'flex',gap:8,alignItems:'center'}}>
+      <div class="scroll-x" style=${{display:'flex',gap:5,flex:1,minWidth:0}}>
+        ${ROLE_FILTERS.map(r=>html`<${Pill} key=${r.k} active=${role===r.k} onClick=${()=>setRole(r.k)} size="sm">${r.l}</${Pill}>`)}
+      </div>
+      <div style=${{display:'flex',gap:3,flexShrink:0,background:T.bg3,borderRadius:999,padding:3}}>
+        ${[{k:'M',l:'♂',c:T.blue},{k:'F',l:'♀',c:T.pink},{k:'all',l:'··',c:T.muted}].map(g=>html`<button key=${g.k} onClick=${()=>setGender(g.k)} style=${{
+          background:gender===g.k?g.c:'transparent',color:gender===g.k?'#fff':T.muted,
+          border:'none',borderRadius:999,padding:'3px 9px',fontSize:12,fontWeight:700,
+          cursor:'pointer',transition:'all 0.15s ease',lineHeight:1,
+        }}>${g.l}</button>`)}
+      </div>
+      <div style=${{position:'relative',flexShrink:0}}>
+        <select value=${sort} onChange=${e=>setSort(e.target.value)} style=${{
+          background:T.blue,color:'#fff',border:'none',borderRadius:999,
+          padding:'5px 24px 5px 11px',fontSize:10,fontWeight:700,
+          appearance:'none',cursor:'pointer',outline:'none',
+        }}>
+          ${SORTS.map(s=>html`<option key=${s.k} value=${s.k}>${s.l}</option>`)}
+        </select>
+        <span style=${{position:'absolute',right:8,top:'50%',transform:'translateY(-50%)',pointerEvents:'none',fontSize:8,color:'rgba(255,255,255,0.85)'}}>▾</span>
+      </div>
+    </div>
+    <!-- Land dropdown -->
+    <div style=${{position:'relative'}}>
+      <select value=${country} onChange=${e=>setCountry(e.target.value)} style=${{
+        width:'100%',padding:'9px 12px',borderRadius:12,border:`1px solid ${country?T.blue:T.border}`,
+        background:country?'#e8f4ff':T.bg2,color:country?T.blue:T.text,
+        fontSize:13,fontWeight:country?600:400,appearance:'none',cursor:'pointer',outline:'none',
+      }}>
+        <option value="">Alle landen</option>
+        ${countryOptions.map(([a2,name])=>html`<option key=${a2} value=${a2}>${name}</option>`)}
+      </select>
+      ${country&&html`<button onClick=${()=>setCountry('')} style=${{
+        position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',
+        background:'none',border:'none',cursor:'pointer',color:T.blue,fontSize:16,padding:4,
+      }}>×</button>`}
+    </div>
+    <div style=${{fontSize:11,color:T.dim,display:'flex',alignItems:'center',gap:4}}>
+      ${list.length} spelers
+      ${country&&selectedName&&html`<span>uit</span>`}
+      ${country&&fFlag(normA2(country))&&html`<img src=${fFlag(normA2(country))} style=${{height:11,borderRadius:1,verticalAlign:'middle'}} />`}
+      ${selectedName&&html`<b style=${{color:T.blue}}>${selectedName}</b>`}
+    </div>
+    ${list.slice(0,shown).map((p,i)=>html`<${PlayerCard} key=${p.id} player=${p} onClick=${()=>setDetail(p)} rank=${i+1} sort=${sort} />`)}
+    ${shown<list.length&&html`<button onClick=${()=>setShown(s=>s+PAGE)} style=${{
+      width:'100%',padding:'11px',borderRadius:14,border:`1px solid ${T.border}`,
+      background:T.bg3,color:T.blue,fontSize:13,fontWeight:700,cursor:'pointer',
+    }}>Toon ${Math.min(PAGE,list.length-shown)} meer — ${list.length-shown} resterend</button>`}
+  </div>`;
+}
+
+function PlayerCard({player:p,onClick,rank,sort}){
+  const [hovered,setHovered]=useState(false);
+  const pos=posLabel[p.position]||p.position||'';
+  const lead=(()=>{
+    if(sort==='goals') return{val:p.goals||0,lbl:'goals',color:T.green};
+    if(sort==='assists') return{val:p.assists||0,lbl:'assists',color:T.blue};
+    if(sort==='xg_total') return{val:fXg(p.xg_total),lbl:'xG',color:T.orange};
+    if(sort==='avg_rating') return{val:fRating(p.avg_rating),lbl:'cijfer',color:rBg(p.avg_rating)};
+    if(sort==='minutes_played') return{val:fNum(p.minutes_played),lbl:'min',color:T.teal};
+    if(sort==='yellow_cards') return{val:p.yellow_cards||0,lbl:'geel',color:T.yellow};
+    if(sort==='age_asc'){const a=p.youngest_age_seen;return{val:a?`${a.age_years}j`:'—',sub:a?`${a.age_days}d`:null,lbl:'jongste',color:T.purple};}
+    if(sort==='age_desc'){const a=p.oldest_age_seen;return{val:a?`${a.age_years}j`:'—',sub:a?`${a.age_days}d`:null,lbl:'oudste',color:T.orange};}
+    if(sort==='clubs') return{val:(p.teams_seen_for||[]).length,lbl:'clubs',color:T.purple};
+    if(sort==='height_desc'||sort==='height_asc') return{val:p.height_cm||'—',lbl:'cm',color:T.muted};
+    if(sort==='max_transfer_fee') return{val:fMarket(p.max_transfer_fee),lbl:'transfer',color:T.green};
+    if(sort==='national_team_caps') return{val:p.national_team_caps||0,lbl:'interlands',color:T.orange};
+    return{val:p.matches_seen||0,lbl:'gezien',color:T.blue};
+  })();
+  const apps=[];
+  if((p.starter_appearances||0)>0) apps.push(`${p.starter_appearances}× basis`);
+  if((p.sub_appearances||0)>0) apps.push(`${p.sub_appearances}× invaller`);
+  if((p.bench_appearances||0)>0&&apps.length===0) apps.push('bank');
+  return html`<div
+    onClick=${onClick}
+    onMouseEnter=${()=>setHovered(true)}
+    onMouseLeave=${()=>setHovered(false)}
+    style=${{
+      background:hovered?'rgba(255,255,255,0.88)':T.bg2,
+      backdropFilter:T.blur,
+      WebkitBackdropFilter:T.blur,
+      borderRadius:18,padding:'11px 14px',
+      border:`1px solid ${T.glassBorder}`,
+      boxShadow:hovered?T.shadowGlassHover:T.shadowGlass,
+      cursor:'pointer',display:'flex',alignItems:'center',gap:10,
+      transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
+      transform:hovered?'translateY(-1px)':'none',
+    }}>
+    <div style=${{width:22,textAlign:'center',flexShrink:0}}>
+      <span style=${{fontSize:11,fontWeight:800,color:lead.color,opacity:0.6}}>#${rank}</span>
+    </div>
+    <${Avatar} player=${p} size=${40} />
+    <div style=${{flex:1,minWidth:0}}>
+      <div style=${{display:'flex',alignItems:'center',gap:5}}>
+        <span style=${{fontWeight:700,fontSize:14,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${p.name}</span>
+        ${p.nationality_alpha2&&html`<${Flag} a2=${p.nationality_alpha2} size=${13} />`}
+        ${p.gender==='F'&&html`<span style=${{background:'#ff2d5518',color:T.pink,borderRadius:6,padding:'1px 6px',fontSize:9,fontWeight:700,flexShrink:0}}>Vrouwen</span>`}
+      </div>
+      <div style=${{fontSize:11,color:T.muted,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${(p.teams_seen_for||[]).join(' · ')}${pos?` · ${pos}`:''}</div>
+      <div style=${{display:'flex',gap:6,marginTop:4,alignItems:'center',flexWrap:'wrap'}}>
+        ${apps.length>0&&html`<span style=${{fontSize:10,color:T.dim}}>${apps.join(' · ')}</span>`}
+        ${p.avg_rating&&sort!=='avg_rating'&&html`<${RatingBadge} rating=${p.avg_rating} />`}
+        ${(p.goals||0)>0&&sort!=='goals'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:700}}>${p.goals}G</span>`}
+        ${(p.assists||0)>0&&sort!=='assists'&&html`<span style=${{fontSize:10,color:T.blue,fontWeight:700}}>${p.assists}A</span>`}
+        ${p.height_cm&&(sort==='height_desc'||sort==='height_asc')===false&&html`<span style=${{fontSize:10,color:T.dim}}>${p.height_cm}cm</span>`}
+        ${p.max_transfer_fee&&sort!=='max_transfer_fee'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:600}}>${fMarket(p.max_transfer_fee)}</span>`}
+        ${(p.national_team_caps||0)>0&&sort!=='national_team_caps'&&html`<span style=${{fontSize:10,color:T.orange,fontWeight:600}}>${p.national_team_caps}×cap</span>`}
+      </div>
+    </div>
+    <div style=${{textAlign:'right',flexShrink:0,minWidth:52}}>
+      <div style=${{fontSize:20,fontWeight:800,color:lead.color,lineHeight:1}}>${lead.val}</div>
+      ${lead.sub&&html`<div style=${{fontSize:12,fontWeight:700,color:lead.color,opacity:0.7,lineHeight:1,marginTop:1}}>${lead.sub}</div>`}
+      <div style=${{fontSize:9,color:T.dim,marginTop:2,textTransform:'uppercase',letterSpacing:'0.06em'}}>${lead.lbl}</div>
+    </div>
+  </div>`;
+}
+
+function PlayerDetail({player:p,onBack}){
+  const details=[...(p.matches_detail||[])].sort((a,b)=>b.date.localeCompare(a.date));
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
+    <button onClick=${onBack} style=${{background:'none',border:'none',color:T.blue,fontSize:14,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:6,padding:'4px 0',fontWeight:600}}>
+      <${Icon} name="arrowleft" size=${16} color=${T.blue} /> Terug
+    </button>
+
+    <${Card} style=${{background:'rgba(0,122,255,0.05)',border:'1px solid rgba(0,122,255,0.15)'}}>
+      <div style=${{display:'flex',gap:16,alignItems:'flex-start'}}>
+        <${Avatar} player=${p} size=${76} />
+        <div style=${{flex:1}}>
+          <div style=${{fontSize:22,fontWeight:800,lineHeight:1.1,color:T.text}}>${p.name}</div>
+          <div style=${{display:'flex',gap:8,alignItems:'center',marginTop:6,flexWrap:'wrap'}}>
+            ${p.nationality_alpha2&&html`<${Flag} a2=${p.nationality_alpha2} size=${22} />`}
+            <span style=${{fontSize:13,color:T.muted}}>${p.nationality}</span>
+            ${p.position&&html`<span style=${{background:T.bg4,color:T.text,borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>${posLabel[p.position]||p.position}</span>`}
+          </div>
+          ${p.date_of_birth&&html`<div style=${{fontSize:12,color:T.dim,marginTop:6,display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>
+            <${Icon} name="cake" size=${13} color=${T.dim} /> ${p.date_of_birth}
+            ${p.height_cm&&html`<span>· <${Icon} name="ruler" size=${13} color=${T.dim} /> ${p.height_cm}cm</span>`}
+            ${p.weight_kg&&html`<span>· ${p.weight_kg}kg</span>`}
+          </div>`}
+          <div style=${{fontSize:12,color:T.dim,marginTop:2}}>${(p.teams_seen_for||[]).length} club${(p.teams_seen_for||[]).length!==1?'s':''}: ${(p.teams_seen_for||[]).join(', ')}</div>
+        </div>
+        ${p.avg_rating&&html`<div style=${{background:rBg(p.avg_rating),borderRadius:10,padding:'8px 12px',textAlign:'center',flexShrink:0}}>
+          <div style=${{fontSize:22,fontWeight:800,color:'#fff'}}>${fRating(p.avg_rating)}</div>
+          <div style=${{fontSize:9,color:'rgba(255,255,255,0.8)',textTransform:'uppercase'}}>Cijfer</div>
+        </div>`}
+      </div>
+    </${Card}>
+
+    <${Card}>
+      <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4}}>
+        <${StatBox} label="Basis" value=${p.starter_appearances||0} color=${T.blue} />
+        <${StatBox} label="Invaller" value=${p.sub_appearances||0} color=${T.teal} />
+        <${StatBox} label="Bank" value=${p.bench_appearances||0} color=${T.dim} />
+        <${StatBox} label="Minuten" value=${fNum(p.minutes_played)} />
+        <${StatBox} label="Goals" value=${p.goals} color=${T.green} />
+        <${StatBox} label="Assists" value=${p.assists} color=${T.blue} />
+        <${StatBox} label="xG" value=${fXg(p.xg_total)} color=${T.orange} />
+        <${StatBox} label="Passes%" value=${p.pass_accuracy_pct?`${Math.round(p.pass_accuracy_pct)}%`:'—'} />
+        <${StatBox} label="Schoten" value=${p.total_shots||0} />
+        <${StatBox} label="Op doel" value=${p.shots_on_target||0} color=${T.green} />
+        <${StatBox} label="Duels W" value=${p.duels_won||0} color=${T.blue} />
+        <${StatBox} label="Duels V" value=${p.duels_lost||0} color=${T.red} />
+        <${StatBox} label="Tackles" value=${p.tackles||0} />
+        <${StatBox} label="Intercept" value=${p.interceptions||0} />
+        <${StatBox} label="Geel" value=${p.yellow_cards||0} color=${T.yellow} />
+        <${StatBox} label="Rood" value=${p.red_cards||0} color=${T.red} />
+      </div>
+      ${(p.max_transfer_fee||p.national_team_caps)&&html`<div style=${{marginTop:10,paddingTop:10,borderTop:`1px solid ${T.border}`,display:'flex',gap:16,flexWrap:'wrap'}}>
+        ${p.max_transfer_fee&&html`<div style=${{flex:1}}>
+          <div style=${{fontSize:10,color:T.muted,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:2}}>Hoogste transfersom</div>
+          <div style=${{fontSize:16,fontWeight:800,color:T.green}}>${fMarket(p.max_transfer_fee)}</div>
+        </div>`}
+        ${(p.national_team_caps||0)>0&&html`<div style=${{flex:1}}>
+          <div style=${{fontSize:10,color:T.muted,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:2}}>Interlands</div>
+          <div style=${{display:'flex',alignItems:'baseline',gap:6}}>
+            ${p.national_team_alpha2&&html`<${Flag} a2=${p.national_team_alpha2} size=${16} />`}
+            <span style=${{fontSize:16,fontWeight:800,color:T.orange}}>${p.national_team_caps}</span>
+            <span style=${{fontSize:11,color:T.muted}}>${p.national_team_name||''}</span>
+            ${p.national_team_goals>0&&html`<span style=${{fontSize:11,color:T.green,fontWeight:700,display:'inline-flex',alignItems:'center',gap:2}}><${Icon} name="ball" size=${12} color=${T.green} sw=${2}/>${p.national_team_goals}</span>`}
+          </div>
+          ${p.national_team_debut&&html`<div style=${{fontSize:10,color:T.dim,marginTop:2}}>Debuut: ${fDate(p.national_team_debut)}</div>`}
+        </div>`}
+      </div>`}
+    </${Card}>
+
+    ${(p.youngest_age_seen||p.oldest_age_seen)&&html`<${Card}>
+      <${SectionTitle} icon="calendar">Leeftijden</${SectionTitle}>
+      <div style=${{display:'flex',gap:24}}>
+        ${p.youngest_age_seen&&html`<div>
+          <div style=${{fontSize:11,color:T.dim}}>Jongste gezien</div>
+          <div style=${{fontWeight:700,color:T.green,fontSize:18}}>${fAge(p.youngest_age_seen.age_years,p.youngest_age_seen.age_days)}</div>
+          <div style=${{fontSize:11,color:T.muted,marginTop:2}}>${p.youngest_age_seen.match}</div>
+        </div>`}
+        ${p.oldest_age_seen&&html`<div>
+          <div style=${{fontSize:11,color:T.dim}}>Oudste gezien</div>
+          <div style=${{fontWeight:700,color:T.orange,fontSize:18}}>${fAge(p.oldest_age_seen.age_years,p.oldest_age_seen.age_days)}</div>
+          <div style=${{fontSize:11,color:T.muted,marginTop:2}}>${p.oldest_age_seen.match}</div>
+        </div>`}
+      </div>
+    </${Card}>`}
+
+    <${Card}>
+      <${SectionTitle} icon="list" right=${`${details.length} duels`}>Per wedstrijd</${SectionTitle}>
+      <div style=${{display:'flex',flexDirection:'column',gap:6}}>
+        ${details.map(d=>html`<div key=${d.match_id} style=${{background:T.bg3,borderRadius:10,padding:'10px 12px'}}>
+          <div style=${{display:'flex',gap:8,justifyContent:'space-between',alignItems:'flex-start'}}>
+            <div style=${{flex:1,minWidth:0}}>
+              <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${d.match_label}</div>
+              <div style=${{fontSize:11,color:T.muted}}>${fDate(d.date)} · ${d.starter?'Basisspeler':(`invaller ${d.minutes}'`)}</div>
+            </div>
+            <${RatingBadge} rating=${d.rating} />
+          </div>
+          <div style=${{display:'flex',gap:10,marginTop:6,fontSize:12,flexWrap:'wrap'}}>
+            ${d.goals>0&&html`<span style=${{color:T.green,display:'flex',alignItems:'center',gap:3}}><${Icon} name="ball" size=${12} color=${T.green} sw=${2}/> ${d.goals}</span>`}
+            ${d.assists>0&&html`<span style=${{color:T.blue,fontWeight:700}}>${d.assists}A</span>`}
+            ${d.yellow>0&&html`<span style=${{display:'inline-flex',alignItems:'center',gap:3}}><div style=${{width:8,height:12,background:T.yellow,borderRadius:1.5,flexShrink:0}}></div></span>`}
+            ${d.red>0&&html`<span style=${{display:'inline-flex',alignItems:'center',gap:3}}><div style=${{width:8,height:12,background:T.red,borderRadius:1.5,flexShrink:0}}></div></span>`}
+            ${d.minutes>0&&html`<span style=${{color:T.dim,display:'flex',alignItems:'center',gap:3}}><${Icon} name="clock" size=${12} color=${T.dim}/> ${d.minutes}'</span>`}
+            ${d.xg>0&&html`<span style=${{color:T.orange}}>xG ${fXg(d.xg)}</span>`}
+            ${d.age_years>0&&html`<span style=${{color:T.dim}}>(${fAge(d.age_years,d.age_days)})</span>`}
+          </div>
+        </div>`)}
+      </div>
+    </${Card}>
+  </div>`;
+}
+
+// ─── TAB: CLUBS ────────────────────────────────────────────────────────────
+function TabClubs({data}){
+  const [detail,setDetail]=useState(null);
+  const teams=data.teams_visited||[];
+
+  if(detail) return html`<${ClubDetail} team=${detail} data=${data} onBack=${()=>setDetail(null)} />`;
+
+  return html`<div>
+    <${SectionTitle} icon="stadium" right=${`${teams.length} clubs`}>Bezochte clubs</${SectionTitle}>
+    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
+      ${teams.map(t=>html`<${Card} key=${t.id} onClick=${()=>setDetail(t)} style=${{padding:14}}>
+        <div style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:8,textAlign:'center'}}>
+          <div style=${{width:52,height:52,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
+            <${TeamBadge} id=${t.id} name=${t.name} size=${44} />
+          </div>
+          <div style=${{fontWeight:700,fontSize:14,lineHeight:1.2,color:T.text}}>${t.name}</div>
+          <div style=${{fontSize:22,fontWeight:800,color:T.blue}}>${t.matches_count}</div>
+          <div style=${{fontSize:10,color:T.dim}}>duels bezocht</div>
+          <div style=${{display:'flex',gap:8,fontSize:11,color:T.muted}}>
+            <span style=${{display:'flex',alignItems:'center',gap:3}}><${Icon} name="home" size=${12} color=${T.muted} sw=${2}/> ${t.as_home}</span>
+            <span style=${{display:'flex',alignItems:'center',gap:3}}><${Icon} name="plane" size=${12} color=${T.muted} sw=${2}/> ${t.as_away}</span>
+          </div>
+        </div>
+      </${Card}>`)}
+    </div>
+  </div>`;
+}
+
+function ClubDetail({team,data,onBack}){
+  const matches=(data.matches||[]).filter(m=>m.home_team?.id===team.id||m.away_team?.id===team.id);
+  const wins=matches.filter(m=>{const isHome=m.home_team?.id===team.id;const ts=isHome?m.home_score:m.away_score,os=isHome?m.away_score:m.home_score;return ts>os;}).length;
+  const draws=matches.filter(m=>m.home_score===m.away_score).length;
+  const losses=matches.length-wins-draws;
+
+  const goalPlayers={};
+  matches.forEach(m=>(m.goals||[]).filter(g=>g.team===team.name).forEach(g=>{if(g.player_id){goalPlayers[g.player_id]=(goalPlayers[g.player_id]||{name:g.player,count:0});goalPlayers[g.player_id].count++;}}) );
+  const topScorers=Object.entries(goalPlayers).sort((a,b)=>b[1].count-a[1].count).slice(0,5);
+
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
+    <button onClick=${onBack} style=${{background:'none',border:'none',color:T.blue,fontSize:14,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:6,padding:'4px 0',fontWeight:600}}>
+      <${Icon} name="arrowleft" size=${16} color=${T.blue} /> Terug
+    </button>
+    <${Card} style=${{background:'rgba(0,122,255,0.05)',border:'1px solid rgba(0,122,255,0.15)'}}>
+      <div style=${{display:'flex',gap:16,alignItems:'center'}}>
+        <div style=${{width:64,height:64,background:T.bg3,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <${TeamBadge} id=${team.id} name=${team.name} size=${56} />
+        </div>
+        <div>
+          <div style=${{fontSize:22,fontWeight:800,color:T.text}}>${team.name}</div>
+          <div style=${{fontSize:13,color:T.muted,marginTop:4}}>${matches.length} wedstrijden bezocht</div>
+          <div style=${{display:'flex',gap:12,marginTop:6,fontSize:13}}>
+            <span style=${{color:T.green,fontWeight:700}}>W ${wins}</span>
+            <span style=${{color:T.yellow,fontWeight:700}}>G ${draws}</span>
+            <span style=${{color:T.red,fontWeight:700}}>V ${losses}</span>
+          </div>
+        </div>
+      </div>
+    </${Card}>
+    ${topScorers.length>0&&html`<${Card}>
+      <${SectionTitle} icon="ball">Topscorers (in jouw duels)</${SectionTitle}>
+      ${topScorers.map(([id,p],i)=>html`<div key=${id} style=${{display:'flex',gap:10,alignItems:'center',padding:'6px 0',borderBottom:i<topScorers.length-1?`1px solid ${T.border}`:'none'}}>
+        <span style=${{color:T.dim,width:20,textAlign:'right',fontSize:13}}>${i+1}</span>
+        <div style=${{flex:1,fontWeight:600,color:T.text}}>${p.name}</div>
+        <span style=${{color:T.green,fontWeight:700,display:'flex',alignItems:'center',gap:3}}><${Icon} name="ball" size=${13} color=${T.green} sw=${2}/>${p.count}</span>
+      </div>`)}
+    </${Card}>`}
+    <${Card}>
+      <${SectionTitle} right=${`${matches.length} duels`}>Alle wedstrijden</${SectionTitle}>
+      <div style=${{display:'flex',flexDirection:'column',gap:6}}>
+        ${matches.map(m=>html`<${MiniMatchRow} key=${m.id} match=${m} />`)}
+      </div>
+    </${Card}>
+  </div>`;
+}
+
+// ─── TAB: STADIONS ─────────────────────────────────────────────────────────
+function TabStadions({data}){
+  const venues=data.venues||[];
+  const maxVisits=Math.max(...venues.map(v=>v.matches_count),1);
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:10}}>
+    <${SectionTitle} icon="location" right=${`${venues.length} stadions`}>Bezochte stadions</${SectionTitle}>
+    ${venues.map((v,i)=>html`<${Card} key=${v.id||i}>
+      <div style=${{display:'flex',gap:14,alignItems:'flex-start'}}>
+        <div style=${{width:48,height:48,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+          <${Icon} name="location" size=${24} color=${T.muted} />
+        </div>
+        <div style=${{flex:1,minWidth:0}}>
+          <div style=${{fontWeight:700,fontSize:16,color:T.text}}>${v.name}</div>
+          <div style=${{fontSize:13,color:T.muted,marginTop:2}}>${v.city}</div>
+          <div style=${{marginTop:8,height:4,background:T.bg3,borderRadius:2,overflow:'hidden'}}>
+            <div style=${{width:`${v.matches_count/maxVisits*100}%`,height:'100%',background:`linear-gradient(90deg,${T.blue},${T.purple})`,borderRadius:2}}></div>
+          </div>
+          <div style=${{display:'flex',gap:16,marginTop:8,flexWrap:'wrap'}}>
+            <div><span style=${{fontSize:22,fontWeight:800,color:T.blue}}>${v.matches_count}</span><span style=${{fontSize:11,color:T.dim,marginLeft:4}}>bezoeken</span></div>
+            ${v.max_attendance&&html`<div><span style=${{fontSize:14,fontWeight:700,color:T.text}}>${fNum(v.max_attendance)}</span><span style=${{fontSize:11,color:T.dim,marginLeft:4}}>max bezoekers</span></div>`}
+          </div>
+          <div style=${{display:'flex',gap:16,marginTop:4,fontSize:11,color:T.dim}}>
+            <span>Eerste: ${fDate(v.first_visit)}</span>
+            ${v.last_visit!==v.first_visit&&html`<span>Laatste: ${fDate(v.last_visit)}</span>`}
+          </div>
+        </div>
+      </div>
+    </${Card}>`)}
+  </div>`;
+}
+
+// ─── TAB: ZOEKEN (wedstrijden toevoegen) ──────────────────────────────────
+function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
+  const [step,setStep]=useState('search');
+  const [query,setQuery]=useState('');
+  const [results,setResults]=useState([]);
+  const [loading,setLoading]=useState(false);
+  const [team,setTeam]=useState(null);
+  const [seasons,setSeasons]=useState([]);
+  const [selSeason,setSelSeason]=useState(null);
+  const [events,setEvents]=useState([]);
+  const [checked,setChecked]=useState(new Set());
+  const [saving,setSaving]=useState(false);
+  const [savedMsg,setSavedMsg]=useState('');
+
+  async function searchTeams(){
+    if(!query.trim())return;
+    setLoading(true);setResults([]);
+    const data=await apiFetch(`/sofascore/search/teams/${encodeURIComponent(query.trim())}`);
+    setResults(data?.teams||[]);
+    setLoading(false);
+  }
+
+  async function selectTeam(t){
+    setTeam(t);setLoading(true);setStep('seasons');setSeasons([]);
+    const data=await apiFetch(`/sofascore/team/${t.id}/unique-tournaments`);
+    const tournaments=data?.uniqueTournaments||[];
+    const results=await Promise.all(
+      tournaments.slice(0,20).map(tn=>apiFetch(`/sofascore/unique-tournament/${tn.id}/seasons`))
+    );
+    const yearMap={};
+    results.forEach(r=>{
+      (r?.seasons||[]).forEach(s=>{
+        const yr=s.year||'';
+        if(!yr.includes('/')) return;
+        if(!yearMap[yr]||s.id>yearMap[yr].id) yearMap[yr]={...s};
+      });
+    });
+    const toFullYear=p=>{const n=parseInt(p);if(n>=100)return n;return n<=30?2000+n:1900+n;};
+    const sorted=Object.values(yearMap).sort((a,b)=>{
+      const ay=toFullYear((a.year||'0').split('/')[0]);
+      const by=toFullYear((b.year||'0').split('/')[0]);
+      return by-ay;
+    });
+    setSeasons(sorted);
+    setLoading(false);
+  }
+
+  async function selectSeason(s){
+    setSelSeason(s);setLoading(true);setEvents([]);setChecked(new Set());
+    setStep('matches');
+    const yr=s.year||'';
+    const [startYr,endYr]=yr.split('/').map(p=>parseInt(p.length===2?'20'+p:p));
+    const seasonStart=new Date(startYr,6,1).getTime()/1000;
+    const seasonEnd=new Date(endYr,5,30,23,59,59).getTime()/1000;
+    let allEvents=[], page=0, seenSeason=false, emptyAfterSeason=0;
+    while(allEvents.length<400){
+      const data=await apiFetch(`/sofascore/team/${team.id}/events/last/${page}`);
+      const evs=data?.events||[];
+      if(!evs.length) break;
+      const filtered=evs.filter(e=>{
+        const ts=e.startTimestamp||0;
+        return ts>=seasonStart && ts<=seasonEnd;
+      });
+      if(filtered.length>0){ seenSeason=true; emptyAfterSeason=0; }
+      else if(seenSeason){ emptyAfterSeason++; if(emptyAfterSeason>=2) break; }
+      const oldest=evs[evs.length-1]?.startTimestamp||0;
+      if(oldest>0 && oldest<seasonStart-60*24*3600) break;
+      else if(page>14) break;
+      allEvents=[...allEvents,...filtered];
+      page++;
+    }
+    allEvents.sort((a,b)=>b.startTimestamp-a.startTimestamp);
+    setEvents(allEvents);
+    setLoading(false);
+  }
+
+  function toggleMatch(id){
+    const s=new Set(checked);
+    if(s.has(id))s.delete(id);else s.add(id);
+    setChecked(s);
+  }
+  function toggleAll(){
+    const nieuweIds=events.filter(e=>!savedIds.has(e.id)).map(e=>e.id);
+    if(checked.size===nieuweIds.length) setChecked(new Set());
+    else setChecked(new Set(nieuweIds));
+  }
+
+  async function saveMatches(){
+    if(!checked.size)return;
+    setSaving(true);
+    const toSave=events.filter(e=>checked.has(e.id)).map(e=>{
+      const ht=e.homeTeam||{}, at=e.awayTeam||{};
+      const ts=e.startTimestamp;
+      const date=ts?new Date(ts*1000).toISOString().slice(0,10):'';
+      const tnmt=e.tournament?.uniqueTournament||e.tournament||{};
+      return{
+        id:e.id, date, startTimestamp:ts,
+        home_team:{name:ht.name||'',id:ht.id,slug:ht.slug||''},
+        away_team:{name:at.name||'',id:at.id,slug:at.slug||''},
+        home_score:(e.homeScore?.current??null),
+        away_score:(e.awayScore?.current??null),
+        half_time:{home:e.homeScore?.period1??null,away:e.awayScore?.period1??null},
+        tournament:tnmt.name||e.tournament?.name||'',
+        tournament_id:tnmt.id||e.tournament?.id,
+        season:e.season?.name||'',
+        season_id:e.season?.id,
+        round:e.roundInfo?.round||null,
+        venue:{name:e.venue?.name||'',city:e.venue?.city?.name||e.venue?.city||'',id:e.venue?.id||null},
+        attendance:e.attendance||null,
+        referee:{name:e.referee?.name||'',id:e.referee?.id||null},
+        source_team:team.name,
+        goals:[], cards:[], substitutions:[], team_stats:{home:{},away:{}},
+      };
+    });
+    const result=await fetch('/api/matches/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave)}).then(r=>r.json()).catch(()=>null);
+    setSaving(false);
+    if(result){
+      setSavedMsg(`${result.added} wedstrijden opgeslagen (totaal: ${result.total})`);
+      if(onSaved) onSaved();
+      setChecked(new Set());
+      if(onMatchesAdded) onMatchesAdded();
+    }
+  }
+
+  function reset(){setStep('search');setQuery('');setResults([]);setTeam(null);setSeasons([]);setSelSeason(null);setEvents([]);setChecked(new Set());setSavedMsg('');}
+
+  // ── Render ──
+  if(step==='search') return html`<div style=${{display:'flex',flexDirection:'column',gap:16}}>
+    <${Card} style=${{background:'linear-gradient(135deg,#e8f4ff,#f0f7ff)',border:'1px solid rgba(0,122,255,0.15)'}}>
+      <div style=${{fontSize:18,fontWeight:700,marginBottom:4,color:T.text}}>Wedstrijd toevoegen</div>
+      <div style=${{fontSize:13,color:T.muted}}>Zoek een club, kies een seizoen en vink de wedstrijden aan die je bezocht hebt.</div>
+    </${Card}>
+    <div style=${{display:'flex',gap:8}}>
+      <${SearchInput} value=${query} onChange=${setQuery} placeholder="Bijv. PSV, Ajax, Bayern..." />
+    </div>
+    <button onClick=${searchTeams} disabled=${loading||!query.trim()} style=${{
+      background:T.blue,color:'#fff',border:'none',borderRadius:12,padding:'14px',
+      fontSize:16,fontWeight:700,cursor:'pointer',opacity:loading||!query.trim()?0.4:1,
+      boxShadow:'0 2px 8px rgba(0,122,255,0.25)',
+    }}>${loading?'Zoeken...':'Zoeken'}</button>
+    ${savedMsg&&html`<${Card} style=${{background:'rgba(52,199,89,0.08)',border:'1px solid rgba(52,199,89,0.2)'}}>
+      <div style=${{color:T.green,fontWeight:600,fontSize:14}}>${savedMsg}</div>
+    </${Card}>`}
+    ${results.length>0&&html`<div>
+      <div style=${{fontSize:12,color:T.dim,marginBottom:8}}>${results.length} resultaten</div>
+      <div style=${{display:'flex',flexDirection:'column',gap:8}}>
+        ${results.slice(0,10).map(t=>html`<${Card} key=${t.id} onClick=${()=>selectTeam(t)}>
+          <div style=${{display:'flex',gap:12,alignItems:'center'}}>
+            <div style=${{width:44,height:44,background:T.bg3,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <${TeamBadge} id=${t.id} name=${t.name} size=${38} />
+            </div>
+            <div>
+              <div style=${{display:'flex',alignItems:'center',gap:6}}>
+                <span style=${{fontWeight:700,fontSize:15,color:T.text}}>${t.name}</span>
+                ${t.gender==='F'&&html`<span style=${{background:'#ff2d5518',color:'#ff2d55',borderRadius:6,padding:'1px 7px',fontSize:10,fontWeight:700}}>Vrouwen</span>`}
+              </div>
+              <div style=${{fontSize:12,color:T.muted}}>${t.country?.name||''}</div>
+            </div>
+            <span style=${{marginLeft:'auto',color:T.blue,fontSize:20}}>›</span>
+          </div>
+        </${Card}>`)}
+      </div>
+    </div>`}
+  </div>`;
+
+  if(step==='seasons') return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
+    <button onClick=${reset} style=${{background:'none',border:'none',color:T.blue,fontSize:14,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:6,padding:'4px 0',fontWeight:600}}>
+      <${Icon} name="arrowleft" size=${16} color=${T.blue} /> Opnieuw zoeken
+    </button>
+    <${Card} style=${{display:'flex',gap:12,alignItems:'center'}}>
+      <div style=${{width:48,height:48,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <${TeamBadge} id=${team.id} name=${team.name} size=${42} />
+      </div>
+      <div><div style=${{fontWeight:700,fontSize:18,color:T.text}}>${team.name}</div><div style=${{fontSize:13,color:T.muted}}>Kies een seizoen</div></div>
+    </${Card}>
+    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:24}}>Seizoenen laden...</div>`}
+    ${!loading&&seasons.map(s=>html`<${Card} key=${s.id} onClick=${()=>selectSeason(s)}>
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+        <div style=${{fontWeight:600,fontSize:16,color:T.text}}>${s.year||s.name}</div>
+        <span style=${{color:T.blue,fontSize:20}}>›</span>
+      </div>
+    </${Card}>`)}
+  </div>`;
+
+  if(step==='matches') return html`<div style=${{display:'flex',flexDirection:'column',gap:12,paddingBottom:80}}>
+    <button onClick=${()=>setStep('seasons')} style=${{background:'none',border:'none',color:T.blue,fontSize:14,cursor:'pointer',textAlign:'left',display:'flex',alignItems:'center',gap:6,padding:'4px 0',fontWeight:600}}>
+      <${Icon} name="arrowleft" size=${16} color=${T.blue} /> Terug naar seizoenen
+    </button>
+    <${Card} style=${{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
+      <div style=${{width:40,height:40,background:T.bg3,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <${TeamBadge} id=${team.id} name=${team.name} size=${34} />
+      </div>
+      <div style=${{flex:1}}>
+        <div style=${{fontWeight:700,color:T.text}}>${team.name} — ${selSeason?.year||selSeason?.name}</div>
+        <div style=${{fontSize:12,color:T.muted}}>Alle competities</div>
+      </div>
+    </${Card}>
+    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:32}}>Wedstrijden ophalen... (even geduld)</div>`}
+    ${!loading&&events.length>0&&html`<div>
+      <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+        <div style=${{fontSize:13,color:T.muted}}>${events.length} wedstrijden gevonden · ${checked.size} geselecteerd</div>
+        <button onClick=${toggleAll} style=${{background:T.bg3,border:'none',borderRadius:8,padding:'4px 12px',color:T.blue,fontSize:12,cursor:'pointer',fontWeight:600}}>
+          ${checked.size===events.length?'Geen':'Alle'}
+        </button>
+      </div>
+      <div style=${{display:'flex',flexDirection:'column',gap:6}}>
+        ${events.map(e=>{
+          const ht=e.homeTeam||{},at=e.awayTeam||{};
+          const hs=e.homeScore?.current,as_=e.awayScore?.current;
+          const date=e.startTimestamp?new Date(e.startTimestamp*1000).toISOString().slice(0,10):'';
+          const isChecked=checked.has(e.id);
+          const alreadySaved=savedIds.has(e.id);
+          return html`<div key=${e.id} onClick=${()=>!alreadySaved&&toggleMatch(e.id)} style=${{
+            background:T.bg2,
+            border:`1px solid ${isChecked?T.blue:T.border}`,
+            borderLeft:alreadySaved?`3px solid ${T.green}`:isChecked?`3px solid ${T.blue}`:`1px solid ${T.border}`,
+            borderRadius:12,padding:'12px 14px',cursor:alreadySaved?'default':'pointer',
+            transition:'all 0.15s',display:'flex',gap:12,alignItems:'center',
+            boxShadow:T.shadow,
+          }}>
+            <div style=${{
+              width:22,height:22,borderRadius:6,
+              border:`2px solid ${alreadySaved?T.green:isChecked?T.blue:T.bg4}`,
+              background:alreadySaved?T.green:isChecked?T.blue:'transparent',
+              display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0,
+              transition:'all 0.15s',
+            }}>
+              ${(alreadySaved||isChecked)&&html`<${Icon} name="check" size=${14} color="#fff" sw=${3}/>`}
+            </div>
+            <div style=${{flex:1,minWidth:0}}>
+              <div style=${{fontSize:14,fontWeight:600,color:T.text}}>
+                ${ht.name} <span style=${{color:T.blue,fontWeight:800}}>${hs??'?'}–${as_??'?'}</span> ${at.name}
+              </div>
+              <div style=${{fontSize:11,color:T.dim,marginTop:2}}>${fDate(date)} · ${e.tournament?.name||''} · R${e.roundInfo?.round||'?'}${alreadySaved?html` · <span style=${{color:T.green,fontWeight:600}}>al opgeslagen</span>`:''}</div>
+            </div>
+          </div>`;
+        })}
+      </div>
+    </div>`}
+    ${!loading&&events.length===0&&selSeason&&html`<${Card}>
+      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen wedstrijden gevonden</div>
+    </${Card}>`}
+    <!-- Sticky save button -->
+    ${checked.size>0&&html`<div style=${{position:'fixed',bottom:'calc(90px + env(safe-area-inset-bottom,0px))',left:0,right:0,padding:'12px 16px',background:'rgba(242,242,247,0.88)',backdropFilter:'blur(20px) saturate(160%)',WebkitBackdropFilter:'blur(20px) saturate(160%)',borderTop:`1px solid rgba(255,255,255,0.5)`,zIndex:20}}>
+      <button onClick=${saveMatches} disabled=${saving} style=${{
+        width:'100%',background:T.green,color:'#fff',border:'none',borderRadius:14,
+        padding:'16px',fontSize:17,fontWeight:800,cursor:'pointer',opacity:saving?0.7:1,
+        boxShadow:`0 4px 24px ${T.greenGlow}`,
+      }}>${saving?'Opslaan...':`${checked.size} wedstrijd${checked.size===1?'':'en'} opslaan`}</button>
+    </div>`}
+  </div>`;
+
+  return null;
+}
+
+// ─── HOOFD APP ─────────────────────────────────────────────────────────────
+const TABS=[
+  {id:'spelers', icon:'person',     label:'Spelers'},
+  {id:'clubs',   icon:'building2',  label:'Clubs'},
+  {id:'home',    icon:'house',      label:'Home', center:true},
+  {id:'stadions',icon:'location',   label:'Stadions'},
+  {id:'zoeken',  icon:'searchplus', label:'Zoeken'},
+];
+
+function App(){
+  const [data,setData]=useState(null);
+  const [tab,setTab]=useState('home');
+  const [countryFilter,setCountryFilter]=useState('');
+  const [loading,setLoading]=useState(true);
+  const [syncing,setSyncing]=useState(false);
+  const [savedIds,setSavedIds]=useState(new Set());
+  const fileRef=useRef();
+
+  // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
+  const reloadSavedIds=useCallback(()=>{
+    apiFetch('data/selected_matches.json').then(ms=>{if(ms)setSavedIds(new Set(ms.map(m=>m.id)));});
+  },[]);
+
+  const handleCountryClick=useCallback((a2)=>{
+    setCountryFilter(a2);
+    setTab('spelers');
+  },[]);
+  useEffect(()=>{reloadSavedIds();},[]);
+
+  useEffect(()=>{
+    apiFetch('data/dashboard_data.json').then(d=>{
+      if(d&&d.total_matches!=null){setData(d);setLoading(false);}
+      else{setLoading(false);}
+    }).catch(()=>setLoading(false));
+  },[]);
+
+  function handleFile(file){
+    if(!file)return;
+    const r=new FileReader();
+    r.onload=e=>{try{setData(JSON.parse(e.target.result));}catch{alert('Ongeldig JSON bestand');}};
+    r.readAsText(file);
+  }
+
+  function handleMatchesAdded(){
+    apiFetch('data/dashboard_data.json').then(d=>{if(d&&d.total_matches!=null)setData(d);});
+  }
+
+  async function triggerSync(){
+    setSyncing(true);
+    await fetch('/api/sync',{method:'POST'}).catch(()=>{});
+    setTimeout(()=>setSyncing(false),2000);
+  }
+
+  if(loading) return html`<div style=${{minHeight:'100dvh',display:'flex',alignItems:'center',justifyContent:'center',flexDirection:'column',gap:20}}>
+    <div style=${{position:'relative',width:64,height:64}}>
+      <div style=${{
+        position:'absolute',inset:0,borderRadius:'50%',
+        background:T.bg2,backdropFilter:T.blur,WebkitBackdropFilter:T.blur,
+        border:`1px solid ${T.glassBorder}`,boxShadow:T.shadowGlass,
+        display:'flex',alignItems:'center',justifyContent:'center',
+      }}>
+        <${Icon} name="globe" size=${28} color=${T.blue} />
+      </div>
+      <div style=${{
+        position:'absolute',inset:-4,borderRadius:'50%',
+        border:'2px solid transparent',
+        borderTopColor:T.blue,borderRightColor:'rgba(0,122,255,0.3)',
+        animation:'spin 0.9s linear infinite',
+      }}></div>
+    </div>
+    <div style=${{color:T.muted,fontSize:14,fontWeight:500}}>Laden...</div>
+  </div>`;
+
+  if(!data) return html`<div style=${{minHeight:'100dvh',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:24,gap:24}}>
+    <div style=${{textAlign:'center'}}>
+      <div style=${{
+        width:72,height:72,borderRadius:22,margin:'0 auto 16px',
+        background:T.bg2,backdropFilter:T.blur,WebkitBackdropFilter:T.blur,
+        border:`1px solid ${T.glassBorder}`,boxShadow:T.shadowGlass,
+        display:'flex',alignItems:'center',justifyContent:'center',
+      }}>
+        <${Icon} name="globe" size=${36} color=${T.blue} />
+      </div>
+      <div style=${{fontSize:30,fontWeight:900,letterSpacing:'-0.02em',color:T.text}}>
+        <span style=${{color:T.green}}>Ground</span>Hop
+      </div>
+      <div style=${{fontSize:14,color:T.muted,marginTop:6}}>Jouw persoonlijke voetbalarchief</div>
+    </div>
+    <${Card} style=${{width:'100%',maxWidth:400,textAlign:'center',padding:32,border:'1px solid rgba(0,122,255,0.18)'}}>
+      <div style=${{marginBottom:16,display:'flex',justifyContent:'center'}}>
+        <${Icon} name="folder" size=${44} color=${T.blue} />
+      </div>
+      <div style=${{fontWeight:700,fontSize:18,marginBottom:8,color:T.text}}>Geen data gevonden</div>
+      ${IS_LOCAL
+        ?html`<div style=${{color:T.muted,fontSize:13,marginBottom:20}}>
+          Klik hieronder om <code>dashboard_data.json</code> te kiezen,<br/>of gebruik <code>example_data/dashboard_data.json</code> om te testen.
+        </div>
+        <button onClick=${()=>fileRef.current.click()} style=${{
+          background:T.blue,color:'#fff',border:'none',borderRadius:14,padding:'14px 28px',
+          fontSize:16,fontWeight:700,cursor:'pointer',width:'100%',
+          boxShadow:'0 4px 16px rgba(0,122,255,0.35)',
+        }}>Bestand kiezen</button>
+        <input ref=${fileRef} type="file" accept=".json" onChange=${e=>handleFile(e.target.files[0])} style=${{display:'none'}} />`
+        :html`<div style=${{color:T.muted,fontSize:13}}>
+          De data is nog niet gesynchroniseerd.<br/>Sync lokaal en push naar git.
+        </div>`}
+    </${Card}>
+    ${IS_LOCAL&&html`<div style=${{color:T.dim,fontSize:12,textAlign:'center',lineHeight:1.6}}>
+      Geen data? Gebruik eerst:<br/>
+      <code style=${{color:T.blue}}>python3 sofascore_tracker.py</code>
+    </div>`}
+  </div>`;
+
+  let content;
+  if(tab==='home')     content=html`<${TabHome}     data=${data} onCountryClick=${handleCountryClick} />`;
+  if(tab==='spelers')  content=html`<${TabSpelers}  data=${data} initCountry=${countryFilter} />`;
+  if(tab==='clubs')    content=html`<${TabClubs}    data=${data} />`;
+  if(tab==='stadions') content=html`<${TabStadions} data=${data} />`;
+  if(tab==='zoeken')   content=html`<${TabZoeken}   onMatchesAdded=${handleMatchesAdded} savedIds=${savedIds} onSaved=${reloadSavedIds} />`;
+
+  return html`<div style=${{display:'flex',flexDirection:'column',minHeight:'100dvh'}}>
+    <!-- Header: Liquid Glass -->
+    <div style=${{
+      background:'rgba(242,242,247,0.82)',
+      backdropFilter:'blur(40px) saturate(180%) brightness(1.04)',
+      WebkitBackdropFilter:'blur(40px) saturate(180%) brightness(1.04)',
+      padding:'12px 20px',
+      borderBottom:'1px solid rgba(255,255,255,0.5)',
+      boxShadow:'0 1px 0 rgba(0,0,0,0.05)',
+      display:'flex',alignItems:'center',justifyContent:'space-between',
+      position:'sticky',top:0,zIndex:10,
+    }}>
+      <div style=${{fontWeight:900,fontSize:20,letterSpacing:'-0.02em',color:T.text}}>
+        <span style=${{color:T.green}}>Ground</span>Hop
+      </div>
+      <div style=${{display:'flex',gap:8,alignItems:'center'}}>
+        <div style=${{
+          background:'rgba(0,122,255,0.1)',
+          border:'1px solid rgba(0,122,255,0.18)',
+          borderRadius:999,padding:'4px 12px',fontSize:12,fontWeight:700,color:T.blue,
+        }}>
+          ${data.total_matches} duels
+        </div>
+        ${IS_LOCAL&&html`<button onClick=${triggerSync} disabled=${syncing} title="Sync starten" style=${{
+          background:T.bg2,
+          backdropFilter:T.blur,
+          WebkitBackdropFilter:T.blur,
+          border:`1px solid ${T.glassBorder}`,
+          boxShadow:T.shadowGlass,
+          color:syncing?T.blue:T.muted,
+          cursor:'pointer',borderRadius:10,padding:'7px 9px',
+          display:'flex',alignItems:'center',
+          transition:'all 0.2s cubic-bezier(0.4,0,0.2,1)',
+          animation:syncing?'spin 1s linear infinite':'none',
+        }}>
+          <${Icon} name="refresh" size=${17} color=${syncing?T.blue:T.muted} />
+        </button>`}
+      </div>
+    </div>
+
+    <!-- Sync Banner -->
+    ${IS_LOCAL&&html`<${SyncBanner} />`}
+
+    <!-- Content -->
+    <div style=${{flex:1,overflowY:'auto',padding:'16px 16px 120px'}}>
+      ${content}
+    </div>
+
+    <!-- Floating Liquid Glass nav pill — iOS 26 -->
+    <nav style=${{
+      position:'fixed',
+      bottom:'calc(20px + env(safe-area-inset-bottom,0px))',
+      left:'50%',transform:'translateX(-50%)',
+      width:'calc(100% - 28px)',maxWidth:460,
+      borderRadius:34,
+      /* Solid-glass basis — meer body, minder film */
+      background:'rgba(235,235,240,0.78)',
+      backdropFilter:'blur(80px) saturate(200%) brightness(1.22)',
+      WebkitBackdropFilter:'blur(80px) saturate(200%) brightness(1.22)',
+      border:'1px solid rgba(255,255,255,0.90)',
+      boxShadow:[
+        'inset 0 2px 0 rgba(255,255,255,1)',
+        'inset 0 -1px 0 rgba(255,255,255,0.4)',
+        'inset 0 0 0 0.5px rgba(255,255,255,0.7)',
+        '0 0 0 0.5px rgba(0,0,0,0.06)',
+        '0 4px 16px rgba(0,0,0,0.10)',
+        '0 16px 48px rgba(0,0,0,0.16)',
+        '0 36px 88px rgba(0,0,0,0.20)',
+      ].join(','),
+      display:'flex',alignItems:'center',
+      padding:'5px 5px',
+      zIndex:10,
+      overflow:'hidden',
+    }}>
+      <!-- caustic/lens highlight: brede lichtlaag boven in het glas -->
+      <div style=${{
+        position:'absolute',top:0,left:0,right:0,height:'52%',
+        background:'linear-gradient(180deg,rgba(255,255,255,0.52) 0%,rgba(255,255,255,0.18) 55%,rgba(255,255,255,0) 100%)',
+        pointerEvents:'none',
+        borderRadius:'34px 34px 0 0',
+      }}></div>
+      <!-- onderste reflectie: zacht weerkaatst licht van het oppervlak eronder -->
+      <div style=${{
+        position:'absolute',bottom:0,left:'15%',right:'15%',height:'28%',
+        background:'linear-gradient(0deg,rgba(255,255,255,0.22) 0%,rgba(255,255,255,0) 100%)',
+        pointerEvents:'none',
+      }}></div>
+
+      ${TABS.filter(t=>IS_LOCAL||t.id!=='zoeken').map(t=>html`<button key=${t.id} onClick=${()=>{if(t.id==='spelers')setCountryFilter('');setTab(t.id);}} style=${{
+        flex:t.center?1.3:1,
+        border:tab===t.id?'1px solid rgba(255,255,255,0.88)':'1px solid transparent',
+        /* actief = glass bubble: helder wit glas drijvend in het glas */
+        background:tab===t.id
+          ?'linear-gradient(180deg,rgba(255,255,255,0.90) 0%,rgba(255,255,255,0.70) 100%)'
+          :'transparent',
+        boxShadow:tab===t.id?[
+          'inset 0 1.5px 0 rgba(255,255,255,1)',
+          'inset 0 0 10px rgba(255,255,255,0.65)',
+          '0 2px 8px rgba(0,0,0,0.13)',
+          '0 6px 20px rgba(0,0,0,0.08)',
+        ].join(','):'none',
+        cursor:'pointer',
+        padding:t.center?'12px 6px':'10px 4px',
+        display:'flex',flexDirection:'column',alignItems:'center',gap:3,
+        borderRadius:29,
+        position:'relative',zIndex:1,
+        transition:'all 0.26s cubic-bezier(0.34,1.56,0.64,1)',
+        transform:tab===t.id?'scale(1.05)':'scale(1)',
+      }}>
+        <${Icon}
+          name=${t.icon}
+          size=${t.center?27:22}
+          color=${tab===t.id?T.blue:T.muted}
+          sw=${tab===t.id?2:1.5}
+        />
+        <span style=${{
+          fontSize:t.center?9.5:9,
+          fontWeight:tab===t.id?700:500,
+          color:tab===t.id?T.blue:T.muted,
+          transition:'color 0.2s ease',
+          letterSpacing:'0.02em',
+        }}>${t.label}</span>
+      </button>`)}
+    </nav>
+  </div>`;
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(React.createElement(App));
+</script>
+</body>
+</html>

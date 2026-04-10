@@ -1,0 +1,7702 @@
+[
+  {
+    "id": 14566891,
+    "date": "2026-01-28",
+    "startTimestamp": 1769630400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Bayern München",
+      "id": 2672,
+      "slug": "fc-bayern-munchen"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 25/26",
+    "season_id": 76953,
+    "round": 8,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14566892,
+    "date": "2025-12-09",
+    "startTimestamp": 1765310400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Atlético Madrid",
+      "id": 2836,
+      "slug": "atletico-madrid"
+    },
+    "home_score": 2,
+    "away_score": 3,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 25/26",
+    "season_id": 76953,
+    "round": 6,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14566893,
+    "date": "2025-10-21",
+    "startTimestamp": 1761073200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Napoli",
+      "id": 2714,
+      "slug": "napoli"
+    },
+    "home_score": 6,
+    "away_score": 2,
+    "half_time": {
+      "home": 2,
+      "away": 1
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 25/26",
+    "season_id": 76953,
+    "round": 3,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14566706,
+    "date": "2025-10-01",
+    "startTimestamp": 1759345200,
+    "home_team": {
+      "name": "Bayer 04 Leverkusen",
+      "id": 2681,
+      "slug": "bayer-04-leverkusen"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 25/26",
+    "season_id": 76953,
+    "round": 2,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14566894,
+    "date": "2025-09-16",
+    "startTimestamp": 1758041100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Royale Union Saint-Gilloise",
+      "id": 4860,
+      "slug": "royale-union-saint-gilloise"
+    },
+    "home_score": 1,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 25/26",
+    "season_id": 76953,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13511927,
+    "date": "2025-03-04",
+    "startTimestamp": 1741118400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Arsenal",
+      "id": 42,
+      "slug": "arsenal"
+    },
+    "home_score": 1,
+    "away_score": 7,
+    "half_time": {
+      "home": 1,
+      "away": 3
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 24/25",
+    "season_id": 61644,
+    "round": 5,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13412181,
+    "date": "2025-02-19",
+    "startTimestamp": 1739995200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Juventus",
+      "id": 2687,
+      "slug": "juventus"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 24/25",
+    "season_id": 61644,
+    "round": 636,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12764399,
+    "date": "2025-01-29",
+    "startTimestamp": 1738180800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Liverpool",
+      "id": 44,
+      "slug": "liverpool"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 3,
+      "away": 2
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 24/25",
+    "season_id": 61644,
+    "round": 8,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12764404,
+    "date": "2024-11-27",
+    "startTimestamp": 1732737600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Shakhtar Donetsk",
+      "id": 3313,
+      "slug": "shakhtar-donetsk"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 24/25",
+    "season_id": 61644,
+    "round": 5,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12764396,
+    "date": "2024-11-05",
+    "startTimestamp": 1730828700,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Girona FC",
+      "id": 24264,
+      "slug": "girona-fc"
+    },
+    "home_score": 4,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 24/25",
+    "season_id": 61644,
+    "round": 4,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12764410,
+    "date": "2024-10-01",
+    "startTimestamp": 1727809200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sporting CP",
+      "id": 3001,
+      "slug": "sporting"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 24/25",
+    "season_id": 61644,
+    "round": 2,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 15253788,
+    "date": "2026-01-14",
+    "startTimestamp": 1768412700,
+    "home_team": {
+      "name": "FC Den Bosch",
+      "id": 2963,
+      "slug": "fc-den-bosch"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 4,
+    "half_time": {
+      "home": 0,
+      "away": 4
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 25/26",
+    "season_id": 81932,
+    "round": 5,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 15003762,
+    "date": "2025-12-16",
+    "startTimestamp": 1765915200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "GVVV",
+      "id": 25383,
+      "slug": "gvvv"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 25/26",
+    "season_id": 81932,
+    "round": 2,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Erwin Blank",
+      "id": 181557
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11905287,
+    "date": "2024-03-13",
+    "startTimestamp": 1710360000,
+    "home_team": {
+      "name": "Borussia Dortmund",
+      "id": 2673,
+      "slug": "borussia-dortmund"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 5,
+    "venue": {
+      "name": "Signal Iduna Park",
+      "city": "Dortmund",
+      "id": 759
+    },
+    "attendance": 81365,
+    "referee": {
+      "name": "Daniele Orsato",
+      "id": 52303
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11905260,
+    "date": "2024-02-20",
+    "startTimestamp": 1708459200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Borussia Dortmund",
+      "id": 2673,
+      "slug": "borussia-dortmund"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 5,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 34950,
+    "referee": {
+      "name": "Srdan Jovanovic",
+      "id": 789199
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11605961,
+    "date": "2023-12-12",
+    "startTimestamp": 1702403100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Arsenal",
+      "id": 42,
+      "slug": "arsenal"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 6,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 35000,
+    "referee": {
+      "name": "Tobias Stieler",
+      "id": 71289
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11605845,
+    "date": "2023-11-08",
+    "startTimestamp": 1699473600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "RC Lens",
+      "id": 1648,
+      "slug": "rc-lens"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 4,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 34200,
+    "referee": {
+      "name": "Daniel Siebert",
+      "id": 67092
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11605855,
+    "date": "2023-10-24",
+    "startTimestamp": 1698174000,
+    "home_team": {
+      "name": "RC Lens",
+      "id": 1648,
+      "slug": "rc-lens"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 3,
+    "venue": {
+      "name": "Stade Bollaert-Delelis",
+      "city": "Lens",
+      "id": 835
+    },
+    "attendance": 38133,
+    "referee": {
+      "name": "Radu Marian Petrescu",
+      "id": 73576
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11605841,
+    "date": "2023-10-03",
+    "startTimestamp": 1696359600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sevilla",
+      "id": 2833,
+      "slug": "sevilla"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 2,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 34206,
+    "referee": {
+      "name": "Daniele Orsato",
+      "id": 52303
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11542081,
+    "date": "2023-08-30",
+    "startTimestamp": 1693422000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Rangers",
+      "id": 2351,
+      "slug": "rangers"
+    },
+    "home_score": 5,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 636,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "José María Sánchez Martínez",
+      "id": 129910
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10558690,
+    "date": "2022-08-24",
+    "startTimestamp": 1661367600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Rangers",
+      "id": 2351,
+      "slug": "rangers"
+    },
+    "home_score": 0,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 22/23",
+    "season_id": 41897,
+    "round": 4,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Szymon Marciniak",
+      "id": 72926
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10493690,
+    "date": "2022-08-09",
+    "startTimestamp": 1660069800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AS Monaco",
+      "id": 1653,
+      "slug": "as-monaco"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 22/23",
+    "season_id": 41897,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jesus Gil Manzano",
+      "id": 86508
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 9685257,
+    "date": "2021-08-03",
+    "startTimestamp": 1628013600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Midtjylland",
+      "id": 1289,
+      "slug": "fc-midtjylland"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 21/22",
+    "season_id": 36886,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Sergey Karasev",
+      "id": 68479
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14004887,
+    "date": "2025-08-03",
+    "startTimestamp": 1754236800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Go Ahead Eagles",
+      "id": 2979,
+      "slug": "go-ahead-eagles"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Johan Cruijff Schaal",
+    "tournament_id": 340,
+    "season": "Johan Cruijff Schaal 2025",
+    "season_id": 76817,
+    "round": 29,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11340545,
+    "date": "2023-08-04",
+    "startTimestamp": 1691172000,
+    "home_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 0,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Johan Cruijff Schaal",
+    "tournament_id": 340,
+    "season": "Johan Cruijff Schaal 2023",
+    "season_id": 52044,
+    "round": 29,
+    "venue": {
+      "name": "De Kuip",
+      "city": "Rotterdam",
+      "id": 612
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053764,
+    "date": "2026-04-04",
+    "startTimestamp": 1775313000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Utrecht",
+      "id": 2948,
+      "slug": "fc-utrecht"
+    },
+    "home_score": 4,
+    "away_score": 3,
+    "half_time": {
+      "home": 1,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 29,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053685,
+    "date": "2025-09-17",
+    "startTimestamp": 1758132000,
+    "home_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "away_team": {
+      "name": "Fortuna Sittard",
+      "id": 2957,
+      "slug": "fortuna-sittard"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 3,
+    "venue": {
+      "name": "De Kuip",
+      "city": "Rotterdam",
+      "id": 612
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "Feyenoord",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053716,
+    "date": "2026-03-14",
+    "startTimestamp": 1773510300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "home_score": 2,
+    "away_score": 3,
+    "half_time": {
+      "home": 1,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 27,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053691,
+    "date": "2026-03-07",
+    "startTimestamp": 1772910000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AZ Alkmaar",
+      "id": 2950,
+      "slug": "az-alkmaar"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 26,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Sander van der Eijk",
+      "id": 785879
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053802,
+    "date": "2026-01-24",
+    "startTimestamp": 1769281200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NAC Breda",
+      "id": 2947,
+      "slug": "nac-breda"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 20,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053745,
+    "date": "2026-01-10",
+    "startTimestamp": 1768071600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Excelsior",
+      "id": 2967,
+      "slug": "excelsior"
+    },
+    "home_score": 5,
+    "away_score": 1,
+    "half_time": {
+      "home": 4,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 18,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14035974,
+    "date": "2025-12-27",
+    "startTimestamp": 1766855700,
+    "home_team": {
+      "name": "KV Mechelen",
+      "id": 5044,
+      "slug": "kv-mechelen"
+    },
+    "away_team": {
+      "name": "FCV Dender",
+      "id": 389232,
+      "slug": "fcv-dender-eh"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Pro League",
+    "tournament_id": 38,
+    "season": "Pro League 25/26",
+    "season_id": 77040,
+    "round": 20,
+    "venue": {
+      "name": "Veoliastadion Achter De Kazerne",
+      "city": "Mechelen",
+      "id": 1254
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Massimiliano Ledda",
+      "id": 789317
+    },
+    "source_team": "KV Mechelen",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053639,
+    "date": "2025-11-30",
+    "startTimestamp": 1764501300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Volendam",
+      "id": 2968,
+      "slug": "fc-volendam"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 14,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Martin Van den Kerkhof",
+      "id": 82518
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053808,
+    "date": "2025-10-31",
+    "startTimestamp": 1761937200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Fortuna Sittard",
+      "id": 2957,
+      "slug": "fortuna-sittard"
+    },
+    "home_score": 5,
+    "away_score": 2,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 11,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053765,
+    "date": "2025-10-18",
+    "startTimestamp": 1760805900,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Go Ahead Eagles",
+      "id": 2979,
+      "slug": "go-ahead-eagles"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 9,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Sander van der Eijk",
+      "id": 785879
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053705,
+    "date": "2025-09-21",
+    "startTimestamp": 1758457800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 6,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14053615,
+    "date": "2025-08-23",
+    "startTimestamp": 1755967500,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "home_score": 4,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "VriendenLoterij Eredivisie 25/26",
+    "season_id": 77012,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14050549,
+    "date": "2025-07-26",
+    "startTimestamp": 1753543800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Athletic Club",
+      "id": 2825,
+      "slug": "athletic-club"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2025",
+    "season_id": 69580,
+    "round": null,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14147674,
+    "date": "2026-04-05",
+    "startTimestamp": 1775384100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 178262,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Ajax",
+      "id": 178260,
+      "slug": "ajax"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Eurojackpot Vrouwen Eredivisie",
+    "tournament_id": 2123,
+    "season": "Eredivisie, Women 25/26",
+    "season_id": 78084,
+    "round": 18,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 14163722,
+    "date": "2025-07-12",
+    "startTimestamp": 1752318000,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Lommel SK",
+      "id": 5046,
+      "slug": "lommel-sk"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2025",
+    "season_id": 69580,
+    "round": null,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13805272,
+    "date": "2025-05-10",
+    "startTimestamp": 1746878400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 178262,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Twente Vrouwen",
+      "id": 55511,
+      "slug": "fc-twente-vrouwen"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "KNVB Beker, Women",
+    "tournament_id": 18504,
+    "season": "KNVB beker, Women 2025",
+    "season_id": 72068,
+    "round": 29,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12441681,
+    "date": "2025-05-04",
+    "startTimestamp": 1746361800,
+    "home_team": {
+      "name": "Go Ahead Eagles",
+      "id": 2979,
+      "slug": "go-ahead-eagles"
+    },
+    "away_team": {
+      "name": "AZ Alkmaar",
+      "id": 2950,
+      "slug": "az-alkmaar"
+    },
+    "home_score": 0,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 31,
+    "venue": {
+      "name": "De Adelaarshorst",
+      "city": "Deventer",
+      "id": 3293
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "Go Ahead Eagles",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12585768,
+    "date": "2025-03-22",
+    "startTimestamp": 1742657400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 178262,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Ajax",
+      "id": 178260,
+      "slug": "ajax"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Eurojackpot Vrouwen Eredivisie",
+    "tournament_id": 2123,
+    "season": "Eredivisie, Women 24/25",
+    "season_id": 64306,
+    "round": 18,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12441711,
+    "date": "2025-05-14",
+    "startTimestamp": 1747245600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Heracles Almelo",
+      "id": 2977,
+      "slug": "heracles-almelo"
+    },
+    "home_score": 4,
+    "away_score": 1,
+    "half_time": {
+      "home": 4,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 33,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12441691,
+    "date": "2025-05-03",
+    "startTimestamp": 1746298800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Fortuna Sittard",
+      "id": 2957,
+      "slug": "fortuna-sittard"
+    },
+    "home_score": 4,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 31,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12441663,
+    "date": "2025-04-12",
+    "startTimestamp": 1744480800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Almere City FC",
+      "id": 2990,
+      "slug": "almere-city-fc"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 4,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 29,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13447488,
+    "date": "2025-02-26",
+    "startTimestamp": 1740596400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Go Ahead Eagles",
+      "id": 2979,
+      "slug": "go-ahead-eagles"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 24/25",
+    "season_id": 67562,
+    "round": 28,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448341,
+    "date": "2025-02-15",
+    "startTimestamp": 1739633400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Utrecht",
+      "id": 2948,
+      "slug": "fc-utrecht"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 23,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13354791,
+    "date": "2025-02-05",
+    "startTimestamp": 1738777500,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 24/25",
+    "season_id": 67562,
+    "round": 27,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Pol van Boekel",
+      "id": 536822
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448322,
+    "date": "2025-01-25",
+    "startTimestamp": 1737827100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NAC Breda",
+      "id": 2947,
+      "slug": "nac-breda"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 2,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 20,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13269057,
+    "date": "2025-01-14",
+    "startTimestamp": 1736884800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Excelsior",
+      "id": 2967,
+      "slug": "excelsior"
+    },
+    "home_score": 5,
+    "away_score": 4,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 24/25",
+    "season_id": 67562,
+    "round": 5,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448280,
+    "date": "2024-12-22",
+    "startTimestamp": 1734874200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 17,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448250,
+    "date": "2024-12-06",
+    "startTimestamp": 1733511600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Twente",
+      "id": 2955,
+      "slug": "fc-twente"
+    },
+    "home_score": 6,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 15,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Sander van der Eijk",
+      "id": 785879
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448415,
+    "date": "2024-11-23",
+    "startTimestamp": 1732392000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 13,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448391,
+    "date": "2024-10-26",
+    "startTimestamp": 1729961100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "PEC Zwolle",
+      "id": 2971,
+      "slug": "pec-zwolle"
+    },
+    "home_score": 6,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 10,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448373,
+    "date": "2024-10-05",
+    "startTimestamp": 1728151200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sparta Rotterdam",
+      "id": 2960,
+      "slug": "sparta-rotterdam"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 8,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448345,
+    "date": "2024-09-14",
+    "startTimestamp": 1726324200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 5,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12449872,
+    "date": "2024-08-10",
+    "startTimestamp": 1723316400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "RKC Waalwijk",
+      "id": 2956,
+      "slug": "rkc-waalwijk"
+    },
+    "home_score": 5,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 1,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12445164,
+    "date": "2024-08-09",
+    "startTimestamp": 1723226400,
+    "home_team": {
+      "name": "Vitesse",
+      "id": 2958,
+      "slug": "vitesse"
+    },
+    "away_team": {
+      "name": "SC Telstar",
+      "id": 2972,
+      "slug": "sc-telstar"
+    },
+    "home_score": 2,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 24/25",
+    "season_id": 61667,
+    "round": 1,
+    "venue": {
+      "name": "Gelredome",
+      "city": "Arnhem",
+      "id": 643
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Robin Hensgens",
+      "id": 787932
+    },
+    "source_team": "Vitesse",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12445052,
+    "date": "2024-10-25",
+    "startTimestamp": 1729879200,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "FC Den Bosch",
+      "id": 2963,
+      "slug": "fc-den-bosch"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 24/25",
+    "season_id": 61667,
+    "round": 12,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Robin Hensgens",
+      "id": 787932
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12445104,
+    "date": "2024-09-20",
+    "startTimestamp": 1726855200,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Jong PSV Eindhoven",
+      "id": 46168,
+      "slug": "jong-psv-eindhoven"
+    },
+    "home_score": 0,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 24/25",
+    "season_id": 61667,
+    "round": 7,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Thomas Hardeman",
+      "id": 789121
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12444985,
+    "date": "2024-12-13",
+    "startTimestamp": 1734116400,
+    "home_team": {
+      "name": "FC Den Bosch",
+      "id": 2963,
+      "slug": "fc-den-bosch"
+    },
+    "away_team": {
+      "name": "Jong PSV Eindhoven",
+      "id": 46168,
+      "slug": "jong-psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 24/25",
+    "season_id": 61667,
+    "round": 19,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Luuk Timmer",
+      "id": 787930
+    },
+    "source_team": "FC Den Bosch",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 13115423,
+    "date": "2024-12-17",
+    "startTimestamp": 1734458400,
+    "home_team": {
+      "name": "Floriana FC",
+      "id": 33584,
+      "slug": "floriana-fc"
+    },
+    "away_team": {
+      "name": "Sliema Wanderers",
+      "id": 5206,
+      "slug": "sliema-wanderers"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "YoHealth Malta Premier",
+    "tournament_id": 629,
+    "season": "Premier League 24/25",
+    "season_id": 65067,
+    "round": 4,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "Floriana FC",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12421174,
+    "date": "2024-12-27",
+    "startTimestamp": 1735328700,
+    "home_team": {
+      "name": "Sint-Truidense VV",
+      "id": 2895,
+      "slug": "sint-truidense-vv"
+    },
+    "away_team": {
+      "name": "Cercle Brugge",
+      "id": 2929,
+      "slug": "cercle-brugge"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Pro League",
+    "tournament_id": 38,
+    "season": "Pro League 24/25",
+    "season_id": 61459,
+    "round": 20,
+    "venue": {
+      "name": "Stayen",
+      "city": "Sint- Truiden",
+      "id": 1252
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bram Van Driessche",
+      "id": 369764
+    },
+    "source_team": "Sint-Truidense VV",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12441882,
+    "date": "2025-03-07",
+    "startTimestamp": 1741374000,
+    "home_team": {
+      "name": "Helmond Sport",
+      "id": 2974,
+      "slug": "helmond-sport"
+    },
+    "away_team": {
+      "name": "MVV Maastricht",
+      "id": 2976,
+      "slug": "mvv-maastricht"
+    },
+    "home_score": 4,
+    "away_score": 0,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 24/25",
+    "season_id": 61667,
+    "round": 29,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Martin Van den Kerkhof",
+      "id": 82518
+    },
+    "source_team": "Helmond Sport",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12448329,
+    "date": "2025-02-01",
+    "startTimestamp": 1738440000,
+    "home_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 3,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 24/25",
+    "season_id": 61666,
+    "round": 21,
+    "venue": {
+      "name": "Stadion de Goffert",
+      "city": "Nijmegen",
+      "id": 689
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12192379,
+    "date": "2024-05-26",
+    "startTimestamp": 1716741000,
+    "home_team": {
+      "name": "Royal Antwerp FC",
+      "id": 2889,
+      "slug": "royal-antwerp-fc"
+    },
+    "away_team": {
+      "name": "RSC Anderlecht",
+      "id": 2900,
+      "slug": "anderlecht"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Pro League",
+    "tournament_id": 38,
+    "season": "Pro League 23/24",
+    "season_id": 52383,
+    "round": 40,
+    "venue": {
+      "name": "Bosuilstadion",
+      "city": "Antwerp",
+      "id": 3056
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bram Van Driessche",
+      "id": 369764
+    },
+    "source_team": "Royal Antwerp FC",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 12192468,
+    "date": "2024-05-25",
+    "startTimestamp": 1716661800,
+    "home_team": {
+      "name": "KAA Gent",
+      "id": 2903,
+      "slug": "kaa-gent"
+    },
+    "away_team": {
+      "name": "Sint-Truidense VV",
+      "id": 2895,
+      "slug": "sint-truidense-vv"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Pro League",
+    "tournament_id": 38,
+    "season": "Pro League 23/24",
+    "season_id": 52383,
+    "round": 40,
+    "venue": {
+      "name": "Planet Group Arena",
+      "city": "Gent",
+      "id": 13232
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Matonga Simonini",
+      "id": 788751
+    },
+    "source_team": "KAA Gent",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388938,
+    "date": "2024-05-10",
+    "startTimestamp": 1715364000,
+    "home_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "away_team": {
+      "name": "Roda JC Kerkrade",
+      "id": 2954,
+      "slug": "roda-jc-kerkrade"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 23/24",
+    "season_id": 52556,
+    "round": 38,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jeroen Manschot",
+      "id": 130151
+    },
+    "source_team": "FC Groningen",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388900,
+    "date": "2024-04-14",
+    "startTimestamp": 1713105900,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "home_score": 0,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 23/24",
+    "season_id": 52556,
+    "round": 34,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Martin Van den Kerkhof",
+      "id": 82518
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11478537,
+    "date": "2024-03-24",
+    "startTimestamp": 1711287000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 178262,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Feyenoord",
+      "id": 388668,
+      "slug": "feyenoord"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Eurojackpot Vrouwen Eredivisie",
+    "tournament_id": 2123,
+    "season": "Vrouwen Eredivisie 23/24",
+    "season_id": 53465,
+    "round": 18,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388857,
+    "date": "2024-03-11",
+    "startTimestamp": 1710183600,
+    "home_team": {
+      "name": "Jong PSV Eindhoven",
+      "id": 46168,
+      "slug": "jong-psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "home_score": 2,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 23/24",
+    "season_id": 52556,
+    "round": 31,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Nick Smit",
+      "id": 787398
+    },
+    "source_team": "FC Groningen",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388392,
+    "date": "2024-05-19",
+    "startTimestamp": 1716121800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "RKC Waalwijk",
+      "id": 2956,
+      "slug": "rkc-waalwijk"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 34,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388388,
+    "date": "2024-05-05",
+    "startTimestamp": 1714904100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sparta Rotterdam",
+      "id": 2960,
+      "slug": "sparta-rotterdam"
+    },
+    "home_score": 4,
+    "away_score": 2,
+    "half_time": {
+      "home": 2,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 32,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388425,
+    "date": "2024-04-13",
+    "startTimestamp": 1713018600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Vitesse",
+      "id": 2958,
+      "slug": "vitesse"
+    },
+    "home_score": 6,
+    "away_score": 0,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 30,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jeroen Manschot",
+      "id": 130151
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388432,
+    "date": "2024-04-06",
+    "startTimestamp": 1712421900,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AZ Alkmaar",
+      "id": 2950,
+      "slug": "az-alkmaar"
+    },
+    "home_score": 5,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 29,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388448,
+    "date": "2024-03-30",
+    "startTimestamp": 1711812600,
+    "home_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 27,
+    "venue": {
+      "name": "Stadion de Goffert",
+      "city": "Nijmegen",
+      "id": 689
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Pol van Boekel",
+      "id": 536822
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388459,
+    "date": "2024-03-17",
+    "startTimestamp": 1710702000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Twente",
+      "id": 2955,
+      "slug": "fc-twente"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 26,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388477,
+    "date": "2024-03-03",
+    "startTimestamp": 1709472600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 24,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401998,
+    "date": "2024-02-16",
+    "startTimestamp": 1708110000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Heracles Almelo",
+      "id": 2977,
+      "slug": "heracles-almelo"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 22,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Ingmar Oostrom",
+      "id": 127416
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401968,
+    "date": "2024-01-27",
+    "startTimestamp": 1706377500,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Almere City FC",
+      "id": 2990,
+      "slug": "almere-city-fc"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 19,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401962,
+    "date": "2024-01-21",
+    "startTimestamp": 1705835700,
+    "home_team": {
+      "name": "FC Utrecht",
+      "id": 2948,
+      "slug": "fc-utrecht"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 18,
+    "venue": {
+      "name": "Stadion Galgenwaard",
+      "city": "Utrecht",
+      "id": 786
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11915573,
+    "date": "2024-01-17",
+    "startTimestamp": 1705521600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Twente",
+      "id": 2955,
+      "slug": "fc-twente"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 23/24",
+    "season_id": 55337,
+    "round": 2,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jeroen Manschot",
+      "id": 130151
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401930,
+    "date": "2023-12-07",
+    "startTimestamp": 1701971100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "SC Heerenveen",
+      "id": 2964,
+      "slug": "sc-heerenveen"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 15,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401907,
+    "date": "2023-10-29",
+    "startTimestamp": 1698586200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "home_score": 5,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 10,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401891,
+    "date": "2023-10-08",
+    "startTimestamp": 1696776300,
+    "home_team": {
+      "name": "Sparta Rotterdam",
+      "id": 2960,
+      "slug": "sparta-rotterdam"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 0,
+    "away_score": 4,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 8,
+    "venue": {
+      "name": "Het Kasteel",
+      "city": "Rotterdam",
+      "id": 656
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401876,
+    "date": "2023-09-30",
+    "startTimestamp": 1696092300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Volendam",
+      "id": 2968,
+      "slug": "fc-volendam"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 7,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11558910,
+    "date": "2023-09-27",
+    "startTimestamp": 1695833100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Go Ahead Eagles",
+      "id": 2979,
+      "slug": "go-ahead-eagles"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Marc Nagtegaal",
+      "id": 786645
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11401855,
+    "date": "2023-09-16",
+    "startTimestamp": 1694887200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "home_score": 4,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 5,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Joey Kooij",
+      "id": 785404
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11473307,
+    "date": "2023-08-08",
+    "startTimestamp": 1691519400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "SK Sturm Graz",
+      "id": 2051,
+      "slug": "sk-sturm-graz"
+    },
+    "home_score": 4,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 1
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 23/24",
+    "season_id": 52162,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Radu Marian Petrescu",
+      "id": 73576
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11336965,
+    "date": "2023-07-30",
+    "startTimestamp": 1690734600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Nottingham Forest",
+      "id": 14,
+      "slug": "nottingham-forest"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2023",
+    "season_id": 47778,
+    "round": null,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11350896,
+    "date": "2023-07-26",
+    "startTimestamp": 1690394400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Eindhoven",
+      "id": 2994,
+      "slug": "fc-eindhoven"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2023",
+    "season_id": 47778,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11369945,
+    "date": "2023-12-27",
+    "startTimestamp": 1703698200,
+    "home_team": {
+      "name": "Standard Liège",
+      "id": 2901,
+      "slug": "standard-liege"
+    },
+    "away_team": {
+      "name": "Sint-Truidense VV",
+      "id": 2895,
+      "slug": "sint-truidense-vv"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Pro League",
+    "tournament_id": 38,
+    "season": "Pro League 23/24",
+    "season_id": 52383,
+    "round": 20,
+    "venue": {
+      "name": "Maurice Dufrasne",
+      "city": "Liege",
+      "id": 1133
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Eric Lambrechts",
+      "id": 171215
+    },
+    "source_team": "Standard Liège",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11399410,
+    "date": "2023-11-25",
+    "startTimestamp": 1700942400,
+    "home_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "away_team": {
+      "name": "Vitesse",
+      "id": 2958,
+      "slug": "vitesse"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 23/24",
+    "season_id": 52554,
+    "round": 13,
+    "venue": {
+      "name": "Johan Cruijff Arena",
+      "city": "Amsterdam",
+      "id": 577
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "AFC Ajax",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11369389,
+    "date": "2023-11-12",
+    "startTimestamp": 1699819200,
+    "home_team": {
+      "name": "Atlético Madrid",
+      "id": 2836,
+      "slug": "atletico-madrid"
+    },
+    "away_team": {
+      "name": "Villarreal",
+      "id": 2819,
+      "slug": "villarreal"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "LaLiga",
+    "tournament_id": 8,
+    "season": "LaLiga 23/24",
+    "season_id": 52376,
+    "round": 13,
+    "venue": {
+      "name": "Riyadh Air Metropolitano",
+      "city": "Madrid",
+      "id": 18391
+    },
+    "attendance": 56632,
+    "referee": {
+      "name": "Francisco Hernandez Maeso",
+      "id": 134753
+    },
+    "source_team": "Atlético Madrid",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11369394,
+    "date": "2023-11-11",
+    "startTimestamp": 1699707600,
+    "home_team": {
+      "name": "Rayo Vallecano",
+      "id": 2818,
+      "slug": "rayo-vallecano"
+    },
+    "away_team": {
+      "name": "Girona FC",
+      "id": 24264,
+      "slug": "girona-fc"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "LaLiga",
+    "tournament_id": 8,
+    "season": "LaLiga 23/24",
+    "season_id": 52376,
+    "round": 13,
+    "venue": {
+      "name": "Estadio de Vallecas",
+      "city": "Madrid",
+      "id": 2440
+    },
+    "attendance": 13177,
+    "referee": {
+      "name": "Pablo Gonzalez Fuertes",
+      "id": 787707
+    },
+    "source_team": "Rayo Vallecano",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11369390,
+    "date": "2023-11-11",
+    "startTimestamp": 1699732800,
+    "home_team": {
+      "name": "Real Madrid",
+      "id": 2829,
+      "slug": "real-madrid"
+    },
+    "away_team": {
+      "name": "Valencia",
+      "id": 2828,
+      "slug": "valencia"
+    },
+    "home_score": 5,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "LaLiga",
+    "tournament_id": 8,
+    "season": "LaLiga 23/24",
+    "season_id": 52376,
+    "round": 13,
+    "venue": {
+      "name": "Bernabéu",
+      "city": "Madrid",
+      "id": 754
+    },
+    "attendance": 72475,
+    "referee": {
+      "name": "José María Sánchez Martínez",
+      "id": 129910
+    },
+    "source_team": "Real Madrid",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11636577,
+    "date": "2023-10-24",
+    "startTimestamp": 1698148800,
+    "home_team": {
+      "name": "Lens U19",
+      "id": 296210,
+      "slug": "lens-u19"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven U19",
+      "id": 90140,
+      "slug": "psv-eindhoven-u19"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "UEFA Youth League",
+    "tournament_id": 2132,
+    "season": "UEFA Youth League 23/24",
+    "season_id": 54972,
+    "round": 3,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven U19",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11636544,
+    "date": "2023-10-03",
+    "startTimestamp": 1696341600,
+    "home_team": {
+      "name": "PSV Eindhoven U19",
+      "id": 90140,
+      "slug": "psv-eindhoven-u19"
+    },
+    "away_team": {
+      "name": "Sevilla U19",
+      "id": 206326,
+      "slug": "sevilla-u19"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "UEFA Youth League",
+    "tournament_id": 2132,
+    "season": "UEFA Youth League 23/24",
+    "season_id": 54972,
+    "round": 2,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven U19",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11396119,
+    "date": "2023-09-24",
+    "startTimestamp": 1695555000,
+    "home_team": {
+      "name": "Fortuna Düsseldorf",
+      "id": 2588,
+      "slug": "fortuna-dusseldorf"
+    },
+    "away_team": {
+      "name": "Hannover 96",
+      "id": 2541,
+      "slug": "hannover-96"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "2. Bundesliga",
+    "tournament_id": 44,
+    "season": "2nd Bundesliga 23/24",
+    "season_id": 52607,
+    "round": 7,
+    "venue": {
+      "name": "Merkur Spiel-Arena",
+      "city": "Dusseldorf",
+      "id": 680
+    },
+    "attendance": 35444,
+    "referee": {
+      "name": "Florian Lechner",
+      "id": 785370
+    },
+    "source_team": "Fortuna Düsseldorf",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11388616,
+    "date": "2023-09-22",
+    "startTimestamp": 1695405600,
+    "home_team": {
+      "name": "Jong PSV Eindhoven",
+      "id": 46168,
+      "slug": "jong-psv-eindhoven"
+    },
+    "away_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "home_score": 0,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 23/24",
+    "season_id": 52556,
+    "round": 7,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Robin Vereijken",
+      "id": 787963
+    },
+    "source_team": "Jong PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11368596,
+    "date": "2023-08-26",
+    "startTimestamp": 1693078200,
+    "home_team": {
+      "name": "Sevilla",
+      "id": 2833,
+      "slug": "sevilla"
+    },
+    "away_team": {
+      "name": "Girona FC",
+      "id": 24264,
+      "slug": "girona-fc"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "LaLiga",
+    "tournament_id": 8,
+    "season": "LaLiga 23/24",
+    "season_id": 52376,
+    "round": 3,
+    "venue": {
+      "name": "Ramón Sánchez Pizjuán",
+      "city": "Seville",
+      "id": 730
+    },
+    "attendance": 29304,
+    "referee": {
+      "name": "Jesus Gil Manzano",
+      "id": 86508
+    },
+    "source_team": "Sevilla",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11432986,
+    "date": "2023-07-15",
+    "startTimestamp": 1689429600,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "FC Viktoria Köln",
+      "id": 53365,
+      "slug": "fc-viktoria-koln"
+    },
+    "home_score": 0,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2023",
+    "season_id": 47778,
+    "round": null,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11374178,
+    "date": "2023-07-12",
+    "startTimestamp": 1689177600,
+    "home_team": {
+      "name": "KRC Genk",
+      "id": 2890,
+      "slug": "krc-genk"
+    },
+    "away_team": {
+      "name": "PAOK",
+      "id": 3251,
+      "slug": "paok"
+    },
+    "home_score": 2,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2023",
+    "season_id": 47778,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "KRC Genk",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11364832,
+    "date": "2023-07-05",
+    "startTimestamp": 1688574600,
+    "home_team": {
+      "name": "FCSB",
+      "id": 3301,
+      "slug": "fcsb"
+    },
+    "away_team": {
+      "name": "PAOK",
+      "id": 3251,
+      "slug": "paok"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2023",
+    "season_id": 47778,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PAOK",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11353240,
+    "date": "2023-06-18",
+    "startTimestamp": 1687093200,
+    "home_team": {
+      "name": "Netherlands",
+      "id": 4705,
+      "slug": "netherlands"
+    },
+    "away_team": {
+      "name": "Italy",
+      "id": 4707,
+      "slug": "italy"
+    },
+    "home_score": 2,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "UEFA Nations League",
+    "tournament_id": 10783,
+    "season": "UEFA Nations League 22/23",
+    "season_id": 40128,
+    "round": 50,
+    "venue": {
+      "name": "De Grolsch Veste",
+      "city": "Enschede",
+      "id": 584
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Glenn Nyberg",
+      "id": 96648
+    },
+    "source_team": "Netherlands",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382033,
+    "date": "2023-05-13",
+    "startTimestamp": 1684004400,
+    "home_team": {
+      "name": "FC Utrecht",
+      "id": 2948,
+      "slug": "fc-utrecht"
+    },
+    "away_team": {
+      "name": "RKC Waalwijk",
+      "id": 2956,
+      "slug": "rkc-waalwijk"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 32,
+    "venue": {
+      "name": "Stadion Galgenwaard",
+      "city": "Utrecht",
+      "id": 786
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Ingmar Oostrom",
+      "id": 127416
+    },
+    "source_team": "FC Utrecht",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10491110,
+    "date": "2023-05-13",
+    "startTimestamp": 1683982800,
+    "home_team": {
+      "name": "VV IJsselmeervogels",
+      "id": 6482,
+      "slug": "vv-ijsselmeervogels"
+    },
+    "away_team": {
+      "name": "VV Noordwijk",
+      "id": 44346,
+      "slug": "vv-noordwijk"
+    },
+    "home_score": 0,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Tweede Divisie",
+    "tournament_id": 11402,
+    "season": "Tweede Divisie 22/23",
+    "season_id": 42724,
+    "round": 34,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "VV IJsselmeervogels",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382670,
+    "date": "2023-05-12",
+    "startTimestamp": 1683914400,
+    "home_team": {
+      "name": "FC Den Bosch",
+      "id": 2963,
+      "slug": "fc-den-bosch"
+    },
+    "away_team": {
+      "name": "Almere City FC",
+      "id": 2990,
+      "slug": "almere-city-fc"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 22/23",
+    "season_id": 42258,
+    "round": 37,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Luuk Timmer",
+      "id": 787930
+    },
+    "source_team": "FC Den Bosch",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382626,
+    "date": "2023-04-24",
+    "startTimestamp": 1682359200,
+    "home_team": {
+      "name": "Jong FC Utrecht",
+      "id": 53067,
+      "slug": "jong-fc-utrecht"
+    },
+    "away_team": {
+      "name": "Jong Ajax",
+      "id": 46160,
+      "slug": "jong-ajax"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 22/23",
+    "season_id": 42258,
+    "round": 34,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Wouter Wiersma",
+      "id": 788509
+    },
+    "source_team": "Jong FC Utrecht",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10465252,
+    "date": "2023-03-25",
+    "startTimestamp": 1679749200,
+    "home_team": {
+      "name": "Rot-Weiss Essen",
+      "id": 2562,
+      "slug": "rot-weiss-essen"
+    },
+    "away_team": {
+      "name": "SV Wehen Wiesbaden",
+      "id": 2597,
+      "slug": "sv-wehen-wiesbaden"
+    },
+    "home_score": 1,
+    "away_score": 3,
+    "half_time": {
+      "home": 1,
+      "away": 2
+    },
+    "tournament": "3. Liga",
+    "tournament_id": 491,
+    "season": "3. Liga 22/23",
+    "season_id": 42444,
+    "round": 29,
+    "venue": {
+      "name": "Stadion Essen",
+      "city": "Essen",
+      "id": 645
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Assad Nouhoum",
+      "id": 787837
+    },
+    "source_team": "Rot-Weiss Essen",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382636,
+    "date": "2023-01-06",
+    "startTimestamp": 1673031600,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Helmond Sport",
+      "id": 2974,
+      "slug": "helmond-sport"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 22/23",
+    "season_id": 42258,
+    "round": 19,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Robin Vereijken",
+      "id": 787963
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10405749,
+    "date": "2022-10-19",
+    "startTimestamp": 1666206000,
+    "home_team": {
+      "name": "Millwall",
+      "id": 25,
+      "slug": "millwall"
+    },
+    "away_team": {
+      "name": "Watford",
+      "id": 24,
+      "slug": "watford"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "Championship",
+    "tournament_id": 18,
+    "season": "Championship 22/23",
+    "season_id": 42401,
+    "round": 16,
+    "venue": {
+      "name": "The Den",
+      "city": "London",
+      "id": 2352
+    },
+    "attendance": null,
+    "referee": {
+      "name": "David Webb",
+      "id": 91485
+    },
+    "source_team": "Millwall",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10520885,
+    "date": "2022-08-02",
+    "startTimestamp": 1659466800,
+    "home_team": {
+      "name": "Benfica",
+      "id": 3006,
+      "slug": "benfica"
+    },
+    "away_team": {
+      "name": "FC Midtjylland",
+      "id": 1289,
+      "slug": "fc-midtjylland"
+    },
+    "home_score": 4,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 22/23",
+    "season_id": 41897,
+    "round": 3,
+    "venue": {
+      "name": "Estádio da Luz",
+      "city": "Lisbon",
+      "id": 902
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Alejandro Hernandez",
+      "id": 86571
+    },
+    "source_team": "Benfica",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382043,
+    "date": "2023-05-21",
+    "startTimestamp": 1684672200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "SC Heerenveen",
+      "id": 2964,
+      "slug": "sc-heerenveen"
+    },
+    "home_score": 3,
+    "away_score": 3,
+    "half_time": {
+      "home": 1,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 33,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11193617,
+    "date": "2023-04-30",
+    "startTimestamp": 1682870400,
+    "home_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 3,
+    "away_score": 4,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 22/23",
+    "season_id": 46333,
+    "round": 29,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10381989,
+    "date": "2023-04-23",
+    "startTimestamp": 1682253000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 30,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382287,
+    "date": "2023-04-08",
+    "startTimestamp": 1680976800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Excelsior",
+      "id": 2967,
+      "slug": "excelsior"
+    },
+    "home_score": 4,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 28,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382273,
+    "date": "2023-04-01",
+    "startTimestamp": 1680372000,
+    "home_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 2,
+    "away_score": 4,
+    "half_time": {
+      "home": 0,
+      "away": 3
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 27,
+    "venue": {
+      "name": "Stadion de Goffert",
+      "city": "Nijmegen",
+      "id": 689
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Edwin Van de Graaf",
+      "id": 86338
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382258,
+    "date": "2023-03-12",
+    "startTimestamp": 1678635900,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "SC Cambuur",
+      "id": 2970,
+      "slug": "sc-cambuur"
+    },
+    "home_score": 5,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 25,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jannick van der Laan",
+      "id": 786889
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 11061796,
+    "date": "2023-03-02",
+    "startTimestamp": 1677779100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "ADO Den Haag",
+      "id": 2966,
+      "slug": "ado-den-haag"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 22/23",
+    "season_id": 46333,
+    "round": 27,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382249,
+    "date": "2023-02-26",
+    "startTimestamp": 1677426300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Twente",
+      "id": 2955,
+      "slug": "fc-twente"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 23,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10865970,
+    "date": "2023-02-23",
+    "startTimestamp": 1677174300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sevilla",
+      "id": 2833,
+      "slug": "sevilla"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 22/23",
+    "season_id": 44509,
+    "round": 636,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 34000,
+    "referee": {
+      "name": "Daniele Orsato",
+      "id": 52303
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382222,
+    "date": "2023-02-11",
+    "startTimestamp": 1676142000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "home_score": 6,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 21,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Dennis Higler",
+      "id": 84100
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382206,
+    "date": "2023-01-28",
+    "startTimestamp": 1674919800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Go Ahead Eagles",
+      "id": 2979,
+      "slug": "go-ahead-eagles"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 19,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382173,
+    "date": "2023-01-07",
+    "startTimestamp": 1673121600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sparta Rotterdam",
+      "id": 2960,
+      "slug": "sparta-rotterdam"
+    },
+    "home_score": 0,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 15,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Sander van der Eijk",
+      "id": 785879
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10893302,
+    "date": "2022-12-30",
+    "startTimestamp": 1672420500,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Milan",
+      "id": 2692,
+      "slug": "milan"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2022",
+    "season_id": 40098,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382158,
+    "date": "2022-11-12",
+    "startTimestamp": 1668283200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AZ Alkmaar",
+      "id": 2950,
+      "slug": "az-alkmaar"
+    },
+    "home_score": 0,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 14,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382135,
+    "date": "2022-10-30",
+    "startTimestamp": 1667136600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 12,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Martin Van den Kerkhof",
+      "id": 82518
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10642320,
+    "date": "2022-10-27",
+    "startTimestamp": 1666889100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Arsenal",
+      "id": 42,
+      "slug": "arsenal"
+    },
+    "home_score": 2,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 22/23",
+    "season_id": 44509,
+    "round": 5,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 35000,
+    "referee": {
+      "name": "Marco Di Bello",
+      "id": 132573
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10686588,
+    "date": "2022-10-20",
+    "startTimestamp": 1666285200,
+    "home_team": {
+      "name": "Arsenal",
+      "id": 42,
+      "slug": "arsenal"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 22/23",
+    "season_id": 44509,
+    "round": 2,
+    "venue": {
+      "name": "Emirates Stadium",
+      "city": "London",
+      "id": 624
+    },
+    "attendance": 52200,
+    "referee": {
+      "name": "Alejandro Hernandez",
+      "id": 86571
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382119,
+    "date": "2022-10-16",
+    "startTimestamp": 1665923400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Utrecht",
+      "id": 2948,
+      "slug": "fc-utrecht"
+    },
+    "home_score": 6,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 10,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jochem Kamphuis",
+      "id": 74503
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10642303,
+    "date": "2022-10-13",
+    "startTimestamp": 1665687600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Zürich",
+      "id": 2450,
+      "slug": "fc-zurich"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 22/23",
+    "season_id": 44509,
+    "round": 4,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 30000,
+    "referee": {
+      "name": "Ali Palabiyik",
+      "id": 102472
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10642299,
+    "date": "2022-10-06",
+    "startTimestamp": 1665074700,
+    "home_team": {
+      "name": "FC Zürich",
+      "id": 2450,
+      "slug": "fc-zurich"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 5,
+    "half_time": {
+      "home": 0,
+      "away": 4
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 22/23",
+    "season_id": 44509,
+    "round": 3,
+    "venue": {
+      "name": "Letzigrund",
+      "city": "Zurich",
+      "id": 790
+    },
+    "attendance": 10626,
+    "referee": {
+      "name": "William Collum",
+      "id": 52463
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382093,
+    "date": "2022-09-18",
+    "startTimestamp": 1663504200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "home_score": 4,
+    "away_score": 3,
+    "half_time": {
+      "home": 2,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 7,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10382074,
+    "date": "2022-09-11",
+    "startTimestamp": 1662899400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "RKC Waalwijk",
+      "id": 2956,
+      "slug": "rkc-waalwijk"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 6,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10642300,
+    "date": "2022-09-08",
+    "startTimestamp": 1662655500,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Bodø/Glimt",
+      "id": 656,
+      "slug": "bodoglimt"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 22/23",
+    "season_id": 44509,
+    "round": 1,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 28627,
+    "referee": {
+      "name": "Georgi Kabakov",
+      "id": 76626
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10582149,
+    "date": "2022-08-31",
+    "startTimestamp": 1661964300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Volendam",
+      "id": 2968,
+      "slug": "fc-volendam"
+    },
+    "home_score": 7,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Sander van der Eijk",
+      "id": 785879
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10385076,
+    "date": "2022-08-06",
+    "startTimestamp": 1659808800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Emmen",
+      "id": 2965,
+      "slug": "fc-emmen"
+    },
+    "home_score": 4,
+    "away_score": 1,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 22/23",
+    "season_id": 42256,
+    "round": 1,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Martin Van den Kerkhof",
+      "id": 82518
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10460509,
+    "date": "2022-07-19",
+    "startTimestamp": 1658253600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Eindhoven",
+      "id": 2994,
+      "slug": "fc-eindhoven"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 3,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2022",
+    "season_id": 40098,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10413907,
+    "date": "2022-07-16",
+    "startTimestamp": 1657990800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Villarreal",
+      "id": 2819,
+      "slug": "villarreal"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2022",
+    "season_id": 40098,
+    "round": 1,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 9564458,
+    "date": "2022-05-11",
+    "startTimestamp": 1652292000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "NEC Nijmegen",
+      "id": 2962,
+      "slug": "nec-nijmegen"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 21/22",
+    "season_id": 36890,
+    "round": 33,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10173277,
+    "date": "2022-04-17",
+    "startTimestamp": 1650211200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 21/22",
+    "season_id": 39040,
+    "round": 1,
+    "venue": {
+      "name": "",
+      "city": "",
+      "id": null
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10201514,
+    "date": "2022-04-14",
+    "startTimestamp": 1649954700,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Leicester City",
+      "id": 31,
+      "slug": "leicester-city"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Conference League",
+    "tournament_id": 17015,
+    "season": "UEFA Europa Conference League 21/22",
+    "season_id": 37074,
+    "round": 4,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Benoît Bastien",
+      "id": 90179
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 10012141,
+    "date": "2022-02-17",
+    "startTimestamp": 1645119900,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Maccabi Tel Aviv",
+      "id": 5198,
+      "slug": "maccabi-tel-aviv"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "UEFA Conference League",
+    "tournament_id": 17015,
+    "season": "UEFA Europa Conference League 21/22",
+    "season_id": 37074,
+    "round": null,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Glenn Nyberg",
+      "id": 96648
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 9564495,
+    "date": "2022-02-05",
+    "startTimestamp": 1644087600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AZ Alkmaar",
+      "id": 2950,
+      "slug": "az-alkmaar"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 21/22",
+    "season_id": 36890,
+    "round": 21,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 9567721,
+    "date": "2021-11-05",
+    "startTimestamp": 1636138800,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Jong Ajax",
+      "id": 46160,
+      "slug": "jong-ajax"
+    },
+    "home_score": 1,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 21/22",
+    "season_id": 36893,
+    "round": 14,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 9567705,
+    "date": "2021-10-29",
+    "startTimestamp": 1635530400,
+    "home_team": {
+      "name": "FC Emmen",
+      "id": 2965,
+      "slug": "fc-emmen"
+    },
+    "away_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "Eerste Divisie",
+    "tournament_id": 131,
+    "season": "Eerste Divisie 21/22",
+    "season_id": 36893,
+    "round": 13,
+    "venue": {
+      "name": "De Oude Meerdijk",
+      "city": "Emmen",
+      "id": 2250
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805264,
+    "date": "2021-01-30",
+    "startTimestamp": 1612033200,
+    "home_team": {
+      "name": "Fortuna Sittard",
+      "id": 2957,
+      "slug": "fortuna-sittard"
+    },
+    "away_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 20,
+    "venue": {
+      "name": "Fortuna Sittard Stadion",
+      "city": "Sittard-Geleen",
+      "id": 2769
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805263,
+    "date": "2021-01-10",
+    "startTimestamp": 1610285400,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Willem II Tilburg",
+      "id": 2961,
+      "slug": "willem-ii-tilburg"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 15,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Jochem Kamphuis",
+      "id": 74503
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805322,
+    "date": "2020-12-19",
+    "startTimestamp": 1608399900,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "FC Twente",
+      "id": 2955,
+      "slug": "fc-twente"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 13,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Serdar Gozubuyuk",
+      "id": 78563
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805299,
+    "date": "2020-12-13",
+    "startTimestamp": 1607866200,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Feyenoord",
+      "id": 2959,
+      "slug": "feyenoord"
+    },
+    "home_score": 0,
+    "away_score": 3,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 12,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bjorn Kuipers",
+      "id": 52624
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805220,
+    "date": "2020-11-28",
+    "startTimestamp": 1606593600,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "PEC Zwolle",
+      "id": 2971,
+      "slug": "pec-zwolle"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 10,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805203,
+    "date": "2020-11-07",
+    "startTimestamp": 1604771100,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Heracles Almelo",
+      "id": 2977,
+      "slug": "heracles-almelo"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 8,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Richard Martens",
+      "id": 272661
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 9108412,
+    "date": "2020-10-27",
+    "startTimestamp": 1603824300,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "FC Den Bosch",
+      "id": 2963,
+      "slug": "fc-den-bosch"
+    },
+    "home_score": 4,
+    "away_score": 2,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "Eurojackpot KNVB Beker",
+    "tournament_id": 330,
+    "season": "KNVB beker 20/21",
+    "season_id": 34503,
+    "round": 7,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Laurens Gerrets",
+      "id": 780208
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805187,
+    "date": "2020-10-24",
+    "startTimestamp": 1603549800,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "home_score": 0,
+    "away_score": 13,
+    "half_time": {
+      "home": 0,
+      "away": 4
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 6,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805161,
+    "date": "2020-10-03",
+    "startTimestamp": 1601748000,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "ADO Den Haag",
+      "id": 2966,
+      "slug": "ado-den-haag"
+    },
+    "home_score": 1,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 4,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8805140,
+    "date": "2020-09-18",
+    "startTimestamp": 1600452000,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "FC Utrecht",
+      "id": 2948,
+      "slug": "fc-utrecht"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 20/21",
+    "season_id": 29186,
+    "round": 2,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": 1435,
+    "referee": {
+      "name": "Rob Dieperink",
+      "id": 125438
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8970709,
+    "date": "2020-09-04",
+    "startTimestamp": 1599238800,
+    "home_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "away_team": {
+      "name": "Borussia M'gladbach",
+      "id": 2527,
+      "slug": "borussia-mgladbach"
+    },
+    "home_score": 0,
+    "away_score": 4,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "Club Friendly Games",
+    "tournament_id": 853,
+    "season": "Club Friendly Games 2020",
+    "season_id": 26870,
+    "round": 1,
+    "venue": {
+      "name": "Covebo Stadion - De Koel",
+      "city": "Venlo",
+      "id": 2082
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "VVV-Venlo",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246488,
+    "date": "2020-02-02",
+    "startTimestamp": 1580658300,
+    "home_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "away_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "home_score": 1,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 21,
+    "venue": {
+      "name": "Johan Cruijff Arena",
+      "city": "Amsterdam",
+      "id": 577
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bjorn Kuipers",
+      "id": 52624
+    },
+    "source_team": "AFC Ajax",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8391682,
+    "date": "2019-12-12",
+    "startTimestamp": 1576173300,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Rosenborg BK",
+      "id": 1161,
+      "slug": "rosenborg-bk"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 19/20",
+    "season_id": 23755,
+    "round": 6,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 24000,
+    "referee": {
+      "name": "Vitali Meshkov",
+      "id": 80586
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246424,
+    "date": "2019-11-24",
+    "startTimestamp": 1574602200,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "SC Heerenveen",
+      "id": 2964,
+      "slug": "sc-heerenveen"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 14,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 33800,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246395,
+    "date": "2019-10-27",
+    "startTimestamp": 1572183000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AZ Alkmaar",
+      "id": 2950,
+      "slug": "az-alkmaar"
+    },
+    "home_score": 0,
+    "away_score": 4,
+    "half_time": {
+      "home": 0,
+      "away": 2
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 11,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Pol van Boekel",
+      "id": 536822
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8391642,
+    "date": "2019-10-24",
+    "startTimestamp": 1571943600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "LASK",
+      "id": 2058,
+      "slug": "lask"
+    },
+    "home_score": 0,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 19/20",
+    "season_id": 23755,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 29000,
+    "referee": {
+      "name": "Chris Kavanagh",
+      "id": 107059
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246382,
+    "date": "2019-10-06",
+    "startTimestamp": 1570373100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "VVV-Venlo",
+      "id": 2980,
+      "slug": "vvv-venlo"
+    },
+    "home_score": 4,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 9,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 33000,
+    "referee": {
+      "name": "Allard Lindhout",
+      "id": 786096
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8364606,
+    "date": "2019-09-25",
+    "startTimestamp": 1569429000,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "FC Groningen",
+      "id": 2951,
+      "slug": "fc-groningen"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 4,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 32800,
+    "referee": {
+      "name": "Bas Nijhuis",
+      "id": 56693
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246370,
+    "date": "2019-09-22",
+    "startTimestamp": 1569163500,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "AFC Ajax",
+      "id": 2953,
+      "slug": "ajax"
+    },
+    "home_score": 1,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 7,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8391598,
+    "date": "2019-09-19",
+    "startTimestamp": 1568912100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Sporting CP",
+      "id": 3001,
+      "slug": "sporting"
+    },
+    "home_score": 3,
+    "away_score": 2,
+    "half_time": {
+      "home": 2,
+      "away": 1
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 19/20",
+    "season_id": 23755,
+    "round": 1,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 30000,
+    "referee": {
+      "name": "Ivan Kružliak",
+      "id": 75262
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246347,
+    "date": "2019-09-14",
+    "startTimestamp": 1568486700,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Vitesse",
+      "id": 2958,
+      "slug": "vitesse"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 2,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 6,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 33300,
+    "referee": {
+      "name": "Pol van Boekel",
+      "id": 536822
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8362543,
+    "date": "2019-08-22",
+    "startTimestamp": 1566498600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Apollon Limassol",
+      "id": 3402,
+      "slug": "apollon-limassol"
+    },
+    "home_score": 3,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 19/20",
+    "season_id": 23755,
+    "round": 17,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 17500,
+    "referee": {
+      "name": "Aleksey Kulbakov",
+      "id": 52389
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8341628,
+    "date": "2019-08-15",
+    "startTimestamp": 1565893800,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Haugesund",
+      "id": 673,
+      "slug": "haugesund"
+    },
+    "home_score": 0,
+    "away_score": 0,
+    "half_time": {
+      "home": 0,
+      "away": 0
+    },
+    "tournament": "UEFA Europa League",
+    "tournament_id": 679,
+    "season": "UEFA Europa League 19/20",
+    "season_id": 23755,
+    "round": 16,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "",
+      "id": null
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 8246321,
+    "date": "2019-08-11",
+    "startTimestamp": 1565546400,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "ADO Den Haag",
+      "id": 2966,
+      "slug": "ado-den-haag"
+    },
+    "home_score": 3,
+    "away_score": 1,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 19/20",
+    "season_id": 23873,
+    "round": 2,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 32000,
+    "referee": {
+      "name": "Danny Makkelie",
+      "id": 72792
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 7827023,
+    "date": "2019-02-03",
+    "startTimestamp": 1549200600,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Fortuna Sittard",
+      "id": 2957,
+      "slug": "fortuna-sittard"
+    },
+    "home_score": 5,
+    "away_score": 0,
+    "half_time": {
+      "home": 1,
+      "away": 0
+    },
+    "tournament": "VriendenLoterij Eredivisie",
+    "tournament_id": 37,
+    "season": "Eredivisie 18/19",
+    "season_id": 17353,
+    "round": 20,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Bernie Raymond Blom",
+      "id": 786099
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 7959253,
+    "date": "2018-10-24",
+    "startTimestamp": 1540400100,
+    "home_team": {
+      "name": "PSV Eindhoven",
+      "id": 2952,
+      "slug": "psv-eindhoven"
+    },
+    "away_team": {
+      "name": "Tottenham Hotspur",
+      "id": 33,
+      "slug": "tottenham-hotspur"
+    },
+    "home_score": 2,
+    "away_score": 2,
+    "half_time": {
+      "home": 1,
+      "away": 1
+    },
+    "tournament": "UEFA Champions League",
+    "tournament_id": 7,
+    "season": "UEFA Champions League 18/19",
+    "season_id": 17351,
+    "round": 3,
+    "venue": {
+      "name": "Philips Stadion",
+      "city": "Eindhoven",
+      "id": 726
+    },
+    "attendance": 35000,
+    "referee": {
+      "name": "Slavko Vinčić",
+      "id": 68557
+    },
+    "source_team": "PSV Eindhoven",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  },
+  {
+    "id": 7936344,
+    "date": "2018-09-06",
+    "startTimestamp": 1536259500,
+    "home_team": {
+      "name": "Netherlands",
+      "id": 4705,
+      "slug": "netherlands"
+    },
+    "away_team": {
+      "name": "Peru",
+      "id": 4790,
+      "slug": "peru"
+    },
+    "home_score": 2,
+    "away_score": 1,
+    "half_time": {
+      "home": 0,
+      "away": 1
+    },
+    "tournament": "International Friendly Games",
+    "tournament_id": 851,
+    "season": "Int. Friendly Games 2018",
+    "season_id": 15612,
+    "round": 1,
+    "venue": {
+      "name": "Johan Cruijff Arena",
+      "city": "Amsterdam",
+      "id": 577
+    },
+    "attendance": null,
+    "referee": {
+      "name": "Tobias Stieler",
+      "id": 71289
+    },
+    "source_team": "Netherlands",
+    "goals": [],
+    "cards": [],
+    "substitutions": [],
+    "team_stats": {
+      "home": {},
+      "away": {}
+    }
+  }
+]
