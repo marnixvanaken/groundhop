@@ -1317,13 +1317,115 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
   return null;
 }
 
+// ─── TAB: WEDSTRIJDEN ──────────────────────────────────────────────────────
+function TabWedstrijden({data}){
+  const [q,setQ]=useState('');
+  const [comp,setComp]=useState('all');
+  const [season,setSeason]=useState('all');
+
+  const matches=useMemo(()=>[...(data.matches||[])].sort((a,b)=>b.startTimestamp-a.startTimestamp),[data]);
+
+  const comps=useMemo(()=>{
+    const s=new Set(matches.map(m=>m.tournament).filter(Boolean));
+    return['all',...[...s].sort()];
+  },[matches]);
+
+  const seasons=useMemo(()=>{
+    const s=new Set(matches.map(m=>m.season).filter(Boolean));
+    return['all',...[...s].sort().reverse()];
+  },[matches]);
+
+  const filtered=useMemo(()=>matches.filter(m=>{
+    if(comp!=='all'&&m.tournament!==comp)return false;
+    if(season!=='all'&&m.season!==season)return false;
+    if(q){
+      const ql=q.toLowerCase();
+      if(!(
+        m.home_team?.name?.toLowerCase().includes(ql)||
+        m.away_team?.name?.toLowerCase().includes(ql)||
+        m.tournament?.toLowerCase().includes(ql)||
+        m.venue?.name?.toLowerCase().includes(ql)||
+        m.venue?.city?.toLowerCase().includes(ql)
+      ))return false;
+    }
+    return true;
+  }),[matches,q,comp,season]);
+
+  // Groepeer op jaar-maand
+  const grouped=useMemo(()=>{
+    const map=new Map();
+    filtered.forEach(m=>{
+      const key=m.date?.slice(0,7)||'';
+      if(!map.has(key))map.set(key,[]);
+      map.get(key).push(m);
+    });
+    return[...map.entries()];
+  },[filtered]);
+
+  const fMonth=key=>{if(!key)return'';const[y,mo]=key.split('-');return`${MND[parseInt(mo)-1]} ${y}`;};
+  const diff=m=>(m.home_score??0)-(m.away_score??0);
+  const wdl=m=>{const d=diff(m);return d>0?{l:'W',c:T.green}:d<0?{l:'V',c:T.red}:{l:'G',c:T.yellow};};
+
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
+    <${SearchInput} value=${q} onChange=${setQ} placeholder="Zoek wedstrijd, club, stad..." />
+
+    <!-- Competitie filter -->
+    <div class="scroll-x" style=${{display:'flex',gap:6,padding:'2px 0'}}>
+      ${comps.map(c=>html`<${Pill} key=${c} active=${comp===c} onClick=${()=>setComp(c)} size="sm">
+        ${c==='all'?'Alle competities':c}
+      </${Pill}>`)}
+    </div>
+
+    <div style=${{fontSize:12,color:T.muted}}>${filtered.length} wedstrijden</div>
+
+    ${grouped.map(([key,ms])=>html`<div key=${key}>
+      <div style=${{fontSize:12,fontWeight:700,color:T.muted,textTransform:'uppercase',letterSpacing:'0.06em',marginBottom:8,marginTop:4}}>
+        ${fMonth(key)}
+      </div>
+      <${Card}>
+        ${ms.map((m,i)=>{
+          const {l,c}=wdl(m);
+          const htId=m.home_team?.id, atId=m.away_team?.id;
+          return html`<div key=${m.id} style=${{
+            display:'flex',alignItems:'center',gap:10,
+            padding:'10px 0',
+            borderBottom:i<ms.length-1?`1px solid ${T.border}`:'none',
+          }}>
+            <div style=${{fontSize:11,color:T.dim,width:36,flexShrink:0,textAlign:'center'}}>
+              ${m.date?.slice(8)}/${m.date?.slice(5,7)}
+            </div>
+            <div style=${{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0}}>
+              <${TeamBadge} id=${htId} name=${m.home_team?.name} size=${22} />
+              <div style=${{flex:1,minWidth:0}}>
+                <div style=${{fontSize:13,fontWeight:600,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                  ${m.home_team?.name}
+                  <span style=${{color:T.blue,fontWeight:800,margin:'0 4px'}}>${m.home_score??'?'}–${m.away_score??'?'}</span>
+                  ${m.away_team?.name}
+                </div>
+                <div style=${{fontSize:11,color:T.dim,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                  ${m.tournament}${m.venue?.city?` · ${m.venue.city}`:''}
+                </div>
+              </div>
+              <${TeamBadge} id=${atId} name=${m.away_team?.name} size=${22} />
+            </div>
+            <div style=${{width:26,height:26,borderRadius:6,background:c+'22',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+              <span style=${{fontSize:12,fontWeight:700,color:c}}>${l}</span>
+            </div>
+          </div>`;
+        })}
+      </${Card}>
+    </div>`)}
+  </div>`;
+}
+
 // ─── HOOFD APP ─────────────────────────────────────────────────────────────
 const TABS=[
-  {id:'spelers', icon:'person',     label:'Spelers'},
-  {id:'clubs',   icon:'building2',  label:'Clubs'},
-  {id:'home',    icon:'house',      label:'Home', center:true},
-  {id:'stadions',icon:'location',   label:'Stadions'},
-  {id:'zoeken',  icon:'searchplus', label:'Zoeken'},
+  {id:'spelers',    icon:'person',     label:'Spelers'},
+  {id:'clubs',      icon:'building2',  label:'Clubs'},
+  {id:'home',       icon:'house',      label:'Home', center:true},
+  {id:'wedstrijden',icon:'ball',       label:'Duels'},
+  {id:'stadions',   icon:'location',   label:'Stadions'},
+  {id:'zoeken',     icon:'searchplus', label:'Zoeken'},
 ];
 
 function App(){
@@ -1434,6 +1536,7 @@ function App(){
   if(tab==='home')     content=html`<${TabHome}     data=${data} onCountryClick=${handleCountryClick} />`;
   if(tab==='spelers')  content=html`<${TabSpelers}  data=${data} initCountry=${countryFilter} />`;
   if(tab==='clubs')    content=html`<${TabClubs}    data=${data} />`;
+  if(tab==='wedstrijden') content=html`<${TabWedstrijden} data=${data} />`;
   if(tab==='stadions') content=html`<${TabStadions} data=${data} />`;
   if(tab==='zoeken')   content=html`<${TabZoeken}   onMatchesAdded=${handleMatchesAdded} savedIds=${savedIds} onSaved=${reloadSavedIds} />`;
 
