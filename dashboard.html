@@ -1433,6 +1433,41 @@ function App(){
   const [savedIds,setSavedIds]=useState(new Set());
   const fileRef=useRef();
 
+  // Swipe state — moet vóór early returns staan (rules of hooks)
+  const swipeRef=useRef(null);
+  const [dragX,setDragX]=useState(0);
+  const [dragging,setDragging]=useState(false);
+
+  const visibleTabs=TABS.filter(t=>IS_LOCAL||t.id!=='zoeken');
+  const tabIdx=visibleTabs.findIndex(t=>t.id===tab);
+
+  const goTo=useCallback((id)=>{if(id==='spelers')setCountryFilter('');setTab(id);},[]);
+
+  const onTouchStart=useCallback(e=>{
+    swipeRef.current={x:e.touches[0].clientX,y:e.touches[0].clientY,moved:false};
+    setDragging(false);setDragX(0);
+  },[]);
+
+  const onTouchMove=useCallback(e=>{
+    if(!swipeRef.current)return;
+    const dx=e.touches[0].clientX-swipeRef.current.x;
+    const dy=e.touches[0].clientY-swipeRef.current.y;
+    if(!swipeRef.current.moved&&Math.abs(dy)>Math.abs(dx))return;
+    if(Math.abs(dx)>6){swipeRef.current.moved=true;setDragging(true);}
+    if(swipeRef.current.moved){
+      const atEdge=(dx>0&&tabIdx===0)||(dx<0&&tabIdx===visibleTabs.length-1);
+      setDragX(atEdge?dx*0.2:dx);
+    }
+  },[tabIdx,visibleTabs.length]);
+
+  const onTouchEnd=useCallback(e=>{
+    if(!swipeRef.current?.moved){setDragX(0);setDragging(false);swipeRef.current=null;return;}
+    const dx=dragX;
+    setDragX(0);setDragging(false);swipeRef.current=null;
+    if(dx<-60&&tabIdx<visibleTabs.length-1) goTo(visibleTabs[tabIdx+1].id);
+    else if(dx>60&&tabIdx>0) goTo(visibleTabs[tabIdx-1].id);
+  },[dragX,tabIdx,visibleTabs,goTo]);
+
   // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
   const reloadSavedIds=useCallback(()=>{
     apiFetch('/data/selected_matches.json').then(ms=>{if(ms)setSavedIds(new Set(ms.map(m=>m.id)));});
@@ -1527,42 +1562,6 @@ function App(){
       <code style=${{color:T.blue}}>python3 sofascore_tracker.py</code>
     </div>`}
   </div>`;
-
-  const visibleTabs=TABS.filter(t=>IS_LOCAL||t.id!=='zoeken');
-  const tabIdx=visibleTabs.findIndex(t=>t.id===tab);
-
-  // ── Swipe state ──────────────────────────────────────────────────────────
-  const swipeRef=useRef(null);
-  const [dragX,setDragX]=useState(0);   // px offset tijdens drag
-  const [dragging,setDragging]=useState(false);
-
-  const goTo=useCallback((id)=>{if(id==='spelers')setCountryFilter('');setTab(id);},[]);
-
-  const onTouchStart=useCallback(e=>{
-    swipeRef.current={x:e.touches[0].clientX,y:e.touches[0].clientY,moved:false};
-    setDragging(false);setDragX(0);
-  },[]);
-
-  const onTouchMove=useCallback(e=>{
-    if(!swipeRef.current)return;
-    const dx=e.touches[0].clientX-swipeRef.current.x;
-    const dy=e.touches[0].clientY-swipeRef.current.y;
-    if(!swipeRef.current.moved&&Math.abs(dy)>Math.abs(dx))return; // vertical scroll
-    if(Math.abs(dx)>6){swipeRef.current.moved=true;setDragging(true);}
-    if(swipeRef.current.moved){
-      // weerstand aan de randen
-      const atEdge=(dx>0&&tabIdx===0)||(dx<0&&tabIdx===visibleTabs.length-1);
-      setDragX(atEdge?dx*0.2:dx);
-    }
-  },[tabIdx,visibleTabs.length]);
-
-  const onTouchEnd=useCallback(e=>{
-    if(!swipeRef.current?.moved){setDragX(0);setDragging(false);swipeRef.current=null;return;}
-    const dx=dragX;
-    setDragX(0);setDragging(false);swipeRef.current=null;
-    if(dx<-60&&tabIdx<visibleTabs.length-1) goTo(visibleTabs[tabIdx+1].id);
-    else if(dx>60&&tabIdx>0) goTo(visibleTabs[tabIdx-1].id);
-  },[dragX,tabIdx,visibleTabs,goTo]);
 
   let content;
   if(tab==='home')        content=html`<${TabHome}        data=${data} onCountryClick=${handleCountryClick} />`;
