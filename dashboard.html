@@ -890,7 +890,7 @@ function PlayerCard({player:p,onClick,rank,sort}){
         ${p.gender==='F'&&html`<span style=${{background:'#ff2d5518',color:T.pink,borderRadius:6,padding:'1px 6px',fontSize:9,fontWeight:700,flexShrink:0}}>Vrouwen</span>`}
       </div>
       <div style=${{fontSize:11,color:T.muted,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${(p.teams_seen_for||[]).join(' · ')}${pos?` · ${pos}`:''}</div>
-      <div style=${{display:'flex',gap:6,marginTop:5,alignItems:'center',flexWrap:'wrap'}}>
+      <div style=${{display:'flex',gap:6,marginTop:5,alignItems:'center',flexWrap:'nowrap',overflow:'hidden'}}>
         ${apps.length>0&&html`<span style=${{fontSize:10,color:T.dim}}>${apps.join(' · ')}</span>`}
         ${p.avg_rating&&sort!=='avg_rating'&&html`<${RatingBadge} rating=${p.avg_rating} />`}
         ${(p.goals||0)>0&&sort!=='goals'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:700}}>${p.goals}G</span>`}
