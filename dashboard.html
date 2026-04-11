@@ -895,9 +895,9 @@ function PlayerCard({player:p,onClick,rank,sort}){
         ${p.avg_rating&&sort!=='avg_rating'&&html`<${RatingBadge} rating=${p.avg_rating} />`}
         ${(p.goals||0)>0&&sort!=='goals'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:700}}>${p.goals}G</span>`}
         ${(p.assists||0)>0&&sort!=='assists'&&html`<span style=${{fontSize:10,color:T.blue,fontWeight:700}}>${p.assists}A</span>`}
-        ${p.height_cm&&(sort==='height_desc'||sort==='height_asc')===false&&html`<span style=${{fontSize:10,color:T.dim}}>${p.height_cm}cm</span>`}
-        ${p.max_transfer_fee&&sort!=='max_transfer_fee'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:600}}>${fMarket(p.max_transfer_fee)}</span>`}
-        ${(p.national_team_caps||0)>0&&sort!=='national_team_caps'&&html`<span style=${{fontSize:10,color:T.orange,fontWeight:600}}>${p.national_team_caps}×cap</span>`}
+        ${p.height_cm&&(sort==='height_desc'||sort==='height_asc')&&html`<span style=${{fontSize:10,color:T.dim}}>${p.height_cm}cm</span>`}
+        ${sort==='max_transfer_fee'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:600}}>${fMarket(p.max_transfer_fee)}</span>`}
+        ${sort==='national_team_caps'&&(p.national_team_caps||0)>0&&html`<span style=${{fontSize:10,color:T.orange,fontWeight:600}}>${p.national_team_caps}×cap</span>`}
       </div>
     </div>
     <div style=${{textAlign:'right',flexShrink:0,minWidth:52}}>
