@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a84ff"/>
+      <stop offset="100%" stop-color="#30d158"/>
+    </linearGradient>
+  </defs>
+  <rect width="180" height="180" rx="38" fill="url(#bg)"/>
+  <!-- Pitch outline -->
+  <rect x="28" y="44" width="124" height="92" rx="7" fill="none" stroke="white" stroke-width="6" stroke-opacity="0.95"/>
+  <!-- Center line -->
+  <line x1="90" y1="44" x2="90" y2="136" stroke="white" stroke-width="4.5" stroke-opacity="0.95"/>
+  <!-- Center circle -->
+  <circle cx="90" cy="90" r="22" fill="none" stroke="white" stroke-width="4.5" stroke-opacity="0.95"/>
+  <!-- Center dot -->
+  <circle cx="90" cy="90" r="4.5" fill="white"/>
+  <!-- Left goal area -->
+  <rect x="28" y="69" width="24" height="42" rx="3" fill="none" stroke="white" stroke-width="4" stroke-opacity="0.95"/>
+  <!-- Right goal area -->
+  <rect x="128" y="69" width="24" height="42" rx="3" fill="none" stroke="white" stroke-width="4" stroke-opacity="0.95"/>
+</svg>

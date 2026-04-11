@@ -2,9 +2,14 @@
 <html lang="nl">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#f2f2f7">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#f2f2f7" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
 <title>GroundHop</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg">
+<link rel="apple-touch-icon" href="favicon.svg">
+<meta name="apple-mobile-web-app-title" content="GroundHop">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -22,6 +27,13 @@ a,button,div[onclick]{transition:all 0.2s cubic-bezier(0.4,0,0.2,1);}
 @keyframes pulse-blue{0%,100%{opacity:1;}50%{opacity:0.6;}}
 @keyframes fadeout{0%{opacity:1;}80%{opacity:1;}100%{opacity:0;}}
 @keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+:focus-visible{outline:2px solid #007aff;outline-offset:2px;border-radius:6px;}
+button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid #007aff;outline-offset:2px;}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:0.01ms!important;animation-iteration-count:1!important;transition-duration:0.01ms!important;}}
+@media(prefers-color-scheme:dark){
+  body{background:radial-gradient(ellipse 80% 60% at 15% 0%,rgba(0,100,255,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 100%,rgba(48,209,88,0.10) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 60% 45%,rgba(191,90,242,0.08) 0%,transparent 65%),#1c1c1e;}
+  html{color:#f5f5f7;}
+}
 </style>
 </head>
 <body>
@@ -36,7 +48,41 @@ const html=htm.bind(React.createElement);
 const IS_LOCAL=location.hostname==='localhost'||location.hostname==='127.0.0.1';
 
 // ─── Design tokens ─────────────────────────────────────────────────────────
-const T={
+const isDark=window.matchMedia?.('(prefers-color-scheme: dark)').matches??false;
+const T=isDark?{
+  bg0:'#1c1c1e',
+  bg1:'rgba(58,58,60,0.85)',
+  bg2:'rgba(58,58,60,0.70)',
+  bg3:'rgba(58,58,60,0.45)',
+  bg4:'rgba(58,58,60,0.25)',
+  text:'#f5f5f7',
+  muted:'#8e8e93',
+  dim:'#636366',
+  green:'#30d158',
+  greenDark:'#1a7a2e',
+  greenGlow:'rgba(48,209,88,0.15)',
+  yellow:'#ffd60a',
+  red:'#ff453a',
+  blue:'#0a84ff',
+  purple:'#bf5af2',
+  orange:'#ff9f0a',
+  teal:'#64d2ff',
+  pink:'#ff375f',
+  border:'rgba(255,255,255,0.10)',
+  glassBorder:'rgba(255,255,255,0.18)',
+  blur:'blur(28px) saturate(180%) brightness(0.85)',
+  blurHeavy:'blur(48px) saturate(200%) brightness(0.80)',
+  shadowGlass:'inset 0 1px 0 rgba(255,255,255,0.08),inset 0 0 0 0.5px rgba(255,255,255,0.06),0 4px 20px rgba(0,0,0,0.40),0 1px 4px rgba(0,0,0,0.25)',
+  shadowGlassHover:'inset 0 1px 0 rgba(255,255,255,0.10),inset 0 0 0 0.5px rgba(255,255,255,0.08),0 12px 40px rgba(0,0,0,0.50),0 3px 10px rgba(0,0,0,0.30)',
+  shadow:'0 4px 20px rgba(0,0,0,0.30),0 1px 3px rgba(0,0,0,0.20)',
+  shadowMd:'0 8px 32px rgba(0,0,0,0.40),0 2px 8px rgba(0,0,0,0.25)',
+  card:'rgba(44,44,46,0.72)',
+  cardHov:'rgba(54,54,56,0.88)',
+  cardBorder:'rgba(255,255,255,0.12)',
+  headerBg:'rgba(28,28,30,0.82)',
+  navBg:'rgba(44,44,46,0.55)',
+  navActiveBg:'rgba(64,64,66,0.75)',
+}:{
   bg0:'#e8eaf0',
   bg1:'rgba(255,255,255,0.75)',
   bg2:'rgba(255,255,255,0.55)',
@@ -44,7 +90,7 @@ const T={
   bg4:'rgba(255,255,255,0.18)',
   text:'#1d1d1f',
   muted:'#6e6e73',
-  dim:'#aeaeb2',
+  dim:'#8e8e93',
   green:'#34c759',
   greenDark:'#248a3d',
   greenGlow:'rgba(52,199,89,0.12)',
@@ -63,6 +109,12 @@ const T={
   shadowGlassHover:'inset 0 1.5px 0 rgba(255,255,255,1),inset 0 0 0 0.5px rgba(255,255,255,0.6),0 12px 40px rgba(0,0,0,0.14),0 3px 10px rgba(0,0,0,0.07)',
   shadow:'0 4px 20px rgba(0,0,0,0.07),0 1px 3px rgba(0,0,0,0.04)',
   shadowMd:'0 8px 32px rgba(0,0,0,0.10),0 2px 8px rgba(0,0,0,0.05)',
+  card:'rgba(255,255,255,0.52)',
+  cardHov:'rgba(255,255,255,0.66)',
+  cardBorder:'rgba(255,255,255,0.78)',
+  headerBg:'rgba(232,234,240,0.60)',
+  navBg:'rgba(255,255,255,0.18)',
+  navActiveBg:'rgba(255,255,255,0.58)',
 };
 const PIE=[T.blue,T.green,T.purple,T.orange,T.teal,T.yellow,T.red,T.pink];
 
@@ -134,13 +186,13 @@ function BarChart({data,valueKey='value',labelKey='name',color,height=120,horizo
       <div style=${{width:32,fontSize:12,fontWeight:700,color:color||T.blue}}>${d[valueKey]}</div>
     </div>`)}
   </div>`;
-  return html`<div style=${{display:'flex',alignItems:'flex-end',gap:3,height,padding:'0 4px'}}>
-    ${data.map((d,i)=>html`<div key=${i} style=${{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:3,height:'100%',justifyContent:'flex-end'}}>
+  return html`<div class="scroll-x"><div style=${{display:'flex',alignItems:'flex-end',gap:3,height,padding:'0 4px',minWidth:data.length*32}}>
+    ${data.map((d,i)=>html`<div key=${i} style=${{flex:1,minWidth:28,display:'flex',flexDirection:'column',alignItems:'center',gap:3,height:'100%',justifyContent:'flex-end'}}>
       <div style=${{fontSize:9,color:T.dim,fontWeight:600}}>${d[valueKey]||0}</div>
       <div style=${{width:'100%',background:`linear-gradient(180deg,${color||T.blue},${color||T.blue}88)`,borderRadius:'4px 4px 0 0',height:`${Math.max((d[valueKey]||0)/max*100,4)}%`,minHeight:4}}></div>
       <div style=${{fontSize:9,color:T.dim,textAlign:'center',lineHeight:1.2}}>${d[labelKey]}</div>
     </div>`)}
-  </div>`;
+  </div></div>`;
 }
 
 function DonutChart({data,size=120}){
@@ -170,12 +222,12 @@ function Card({children,onClick,style,glow}){
     onMouseEnter=${()=>setHovered(true)}
     onMouseLeave=${()=>setHovered(false)}
     style=${{
-      background:'rgba(255,255,255,0.52)',
+      background:hovered&&onClick?T.cardHov:T.card,
       backdropFilter:T.blurHeavy,
       WebkitBackdropFilter:T.blurHeavy,
       borderRadius:20,
       padding:16,
-      border:'1px solid rgba(255,255,255,0.78)',
+      border:`1px solid ${T.cardBorder}`,
       boxShadow:glow
         ?`inset 0 0 0 1px rgba(52,199,89,0.2),${hovered&&onClick?T.shadowGlassHover:T.shadowGlass}`
         :hovered&&onClick?T.shadowGlassHover:T.shadowGlass,
@@ -207,19 +259,19 @@ function Avatar({player,size=44}){
   const init=(player.short_name||player.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
   const style={width:size,height:size,borderRadius:'50%',objectFit:'cover',background:T.bg4,flexShrink:0};
   if(err) return html`<div style=${{...style,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.33,fontWeight:700,color:T.muted}}>${init}</div>`;
-  return html`<img src=${pImg(player.id)} alt="" onError=${()=>setErr(true)} style=${style} />`;
+  return html`<img src=${pImg(player.id)} alt=${player.short_name||player.name||''} loading="lazy" onError=${()=>setErr(true)} style=${style} />`;
 }
 
 function TeamBadge({id,name,size=32}){
   const [err,setErr]=useState(false);
   if(err) return html`<div style=${{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.35,fontWeight:700,color:T.muted}}>${(name||'?').slice(0,3)}</div>`;
-  return html`<img src=${tImg(id)} alt="" onError=${()=>setErr(true)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
+  return html`<img src=${tImg(id)} alt="" loading="lazy" onError=${()=>setErr(true)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
 }
 
 function Flag({a2,size=18}){
   const url=fFlag(a2);
   if(!url)return null;
-  return html`<img src=${url} alt="" style=${{width:size,height:Math.round(size*0.67),borderRadius:2,objectFit:'cover',flexShrink:0}} />`;
+  return html`<img src=${url} alt="" loading="lazy" style=${{width:size,height:Math.round(size*0.67),borderRadius:2,objectFit:'cover',flexShrink:0}} />`;
 }
 
 function SearchInput({value,onChange,placeholder,onClear}){
@@ -239,13 +291,13 @@ function SearchInput({value,onChange,placeholder,onClear}){
       boxShadow:T.shadowGlass,
       transition:'all 0.2s cubic-bezier(0.4,0,0.2,1)',
     }} />
-    ${value&&html`<button onClick=${()=>onChange('')} style=${{
-      position:'absolute',right:10,
+    ${value&&html`<button onClick=${()=>onChange('')} aria-label="Zoekopdracht wissen" style=${{
+      position:'absolute',right:6,
       background:'rgba(120,120,128,0.18)',
       border:'none',color:T.muted,cursor:'pointer',
-      width:24,height:24,borderRadius:'50%',
+      width:36,height:36,borderRadius:'50%',
       display:'flex',alignItems:'center',justifyContent:'center',
-      fontSize:14,lineHeight:1,
+      fontSize:15,lineHeight:1,
     }}>×</button>`}
   </div>`;
 }
@@ -507,14 +559,14 @@ function WorldMap({players,onCountryClick}){
     <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:6}}>
       <span style=${{fontSize:11,color:T.dim}}>Scroll/knijp om in te zoomen · sleep om te verschuiven</span>
       <div style=${{display:'flex',gap:8,alignItems:'center'}}>
-        <button onClick=${resetZoom} style=${{fontSize:10,color:T.blue,background:'none',border:`1px solid ${T.blue}`,borderRadius:5,padding:'1px 7px',cursor:'pointer'}}>Reset</button>
+        <button onClick=${resetZoom} aria-label="Kaart resetten" style=${{fontSize:11,color:T.blue,background:'none',border:`1px solid ${T.blue}`,borderRadius:6,padding:'5px 10px',cursor:'pointer',minHeight:30}}>Reset</button>
         <span style=${{fontSize:11,fontWeight:700,color:T.blue}}>${seenCount} landen</span>
       </div>
     </div>
     <div style=${{position:'relative',borderRadius:10,overflow:'hidden',border:`1px solid ${T.border}`}}>
       <svg ref=${svgRef}
         viewBox=${vb.join(' ')}
-        style=${{width:'100%',display:'block',background:'#c8dff0',cursor:'grab',touchAction:'none'}}
+        style=${{width:'100%',minHeight:180,display:'block',background:isDark?'#1a2a38':'#c8dff0',cursor:'grab',touchAction:'none'}}
         onWheel=${handleWheel}
         onMouseDown=${onDown}
         onMouseMove=${onMove}
@@ -682,6 +734,7 @@ function TabSpelers({data,initCountry}){
   const [gender,setGender]=useState('all');
   const [detail,setDetail]=useState(null);
   const [shown,setShown]=useState(PAGE);
+  const listScrollY=useRef(0);
 
   // Sync when initCountry changes (e.g. navigated from map)
   useEffect(()=>{setCountry(initCountry||'');},[initCountry]);
@@ -721,7 +774,7 @@ function TabSpelers({data,initCountry}){
     return ps;
   },[data.players,q,sort,role,country]);
 
-  if(detail)return html`<${PlayerDetail} player=${detail} onBack=${()=>setDetail(null)} />`;
+  if(detail)return html`<${PlayerDetail} player=${detail} onBack=${()=>{setDetail(null);window.scrollTo({top:listScrollY.current,behavior:'instant'});}} />`;
 
   const selectedName=country?countryOptions.find(([a2])=>a2===country)?.[1]:'';
 
@@ -734,17 +787,17 @@ function TabSpelers({data,initCountry}){
         ${ROLE_FILTERS.map(r=>html`<${Pill} key=${r.k} active=${role===r.k} onClick=${()=>setRole(r.k)} size="sm">${r.l}</${Pill}>`)}
       </div>
       <div style=${{display:'flex',gap:3,flexShrink:0,background:T.bg3,borderRadius:999,padding:3}}>
-        ${[{k:'M',l:'♂',c:T.blue},{k:'F',l:'♀',c:T.pink},{k:'all',l:'··',c:T.muted}].map(g=>html`<button key=${g.k} onClick=${()=>setGender(g.k)} style=${{
+        ${[{k:'M',l:'♂',c:T.blue},{k:'F',l:'♀',c:T.pink},{k:'all',l:'··',c:T.muted}].map(g=>html`<button key=${g.k} onClick=${()=>setGender(g.k)} aria-label=${g.k==='M'?'Mannen':g.k==='F'?'Vrouwen':'Alle'} style=${{
           background:gender===g.k?g.c:'transparent',color:gender===g.k?'#fff':T.muted,
-          border:'none',borderRadius:999,padding:'3px 9px',fontSize:12,fontWeight:700,
-          cursor:'pointer',transition:'all 0.15s ease',lineHeight:1,
+          border:'none',borderRadius:999,padding:'6px 10px',fontSize:12,fontWeight:700,
+          cursor:'pointer',transition:'all 0.15s ease',lineHeight:1,minHeight:36,
         }}>${g.l}</button>`)}
       </div>
       <div style=${{position:'relative',flexShrink:0}}>
-        <select value=${sort} onChange=${e=>setSort(e.target.value)} style=${{
+        <select value=${sort} onChange=${e=>setSort(e.target.value)} aria-label="Sorteren op" style=${{
           background:T.blue,color:'#fff',border:'none',borderRadius:999,
-          padding:'5px 24px 5px 11px',fontSize:10,fontWeight:700,
-          appearance:'none',cursor:'pointer',outline:'none',
+          padding:'8px 26px 8px 13px',fontSize:11,fontWeight:700,
+          appearance:'none',cursor:'pointer',outline:'none',minHeight:36,
         }}>
           ${SORTS.map(s=>html`<option key=${s.k} value=${s.k}>${s.l}</option>`)}
         </select>
@@ -761,9 +814,10 @@ function TabSpelers({data,initCountry}){
         <option value="">Alle landen</option>
         ${countryOptions.map(([a2,name])=>html`<option key=${a2} value=${a2}>${name}</option>`)}
       </select>
-      ${country&&html`<button onClick=${()=>setCountry('')} style=${{
-        position:'absolute',right:10,top:'50%',transform:'translateY(-50%)',
-        background:'none',border:'none',cursor:'pointer',color:T.blue,fontSize:16,padding:4,
+      ${country&&html`<button onClick=${()=>setCountry('')} aria-label="Landfilter verwijderen" style=${{
+        position:'absolute',right:4,top:'50%',transform:'translateY(-50%)',
+        background:'none',border:'none',cursor:'pointer',color:T.blue,fontSize:16,
+        width:44,height:44,display:'flex',alignItems:'center',justifyContent:'center',
       }}>×</button>`}
     </div>
     <div style=${{fontSize:11,color:T.dim,display:'flex',alignItems:'center',gap:4}}>
@@ -772,7 +826,7 @@ function TabSpelers({data,initCountry}){
       ${country&&fFlag(normA2(country))&&html`<img src=${fFlag(normA2(country))} style=${{height:11,borderRadius:1,verticalAlign:'middle'}} />`}
       ${selectedName&&html`<b style=${{color:T.blue}}>${selectedName}</b>`}
     </div>
-    ${list.slice(0,shown).map((p,i)=>html`<${PlayerCard} key=${p.id} player=${p} onClick=${()=>setDetail(p)} rank=${i+1} sort=${sort} />`)}
+    ${list.slice(0,shown).map((p,i)=>html`<${PlayerCard} key=${p.id} player=${p} onClick=${()=>{listScrollY.current=window.scrollY;setDetail(p);window.scrollTo({top:0,behavior:'instant'});}} rank=${i+1} sort=${sort} />`)}
     ${shown<list.length&&html`<button onClick=${()=>setShown(s=>s+PAGE)} style=${{
       width:'100%',padding:'11px',borderRadius:14,border:`1px solid ${T.border}`,
       background:T.bg3,color:T.blue,fontSize:13,fontWeight:700,cursor:'pointer',
@@ -807,28 +861,36 @@ function PlayerCard({player:p,onClick,rank,sort}){
     onMouseEnter=${()=>setHovered(true)}
     onMouseLeave=${()=>setHovered(false)}
     style=${{
-      background:hovered?'rgba(255,255,255,0.66)':'rgba(255,255,255,0.52)',
+      background:hovered?T.cardHov:T.card,
       backdropFilter:T.blurHeavy,
       WebkitBackdropFilter:T.blurHeavy,
-      borderRadius:18,padding:'11px 14px',
-      border:'1px solid rgba(255,255,255,0.78)',
-      boxShadow:hovered?T.shadowGlassHover:T.shadowGlass,
-      cursor:'pointer',display:'flex',alignItems:'center',gap:10,
+      borderRadius:18,padding:'14px 16px 14px 18px',
+      border:`1px solid ${T.cardBorder}`,
+      boxShadow:`inset 3px 0 0 ${lead.color},${hovered?T.shadowGlassHover:T.shadowGlass}`,
+      cursor:'pointer',display:'flex',alignItems:'center',gap:12,
       transition:'all 0.25s cubic-bezier(0.34,1.56,0.64,1)',
       transform:hovered?'translateY(-1px)':'none',
     }}>
-    <div style=${{width:22,textAlign:'center',flexShrink:0}}>
-      <span style=${{fontSize:11,fontWeight:800,color:lead.color,opacity:0.6}}>#${rank}</span>
+    <!-- Avatar met rank badge -->
+    <div style=${{position:'relative',flexShrink:0,width:48,height:48}}>
+      <${Avatar} player=${p} size=${48} />
+      <div style=${{
+        position:'absolute',bottom:-1,left:-1,
+        background:lead.color,
+        borderRadius:'0 5px 0 9px',
+        padding:'2px 5px',
+        fontSize:9,fontWeight:900,color:'#fff',lineHeight:1.4,
+        letterSpacing:'0.02em',
+      }}>#${rank}</div>
     </div>
-    <${Avatar} player=${p} size=${40} />
     <div style=${{flex:1,minWidth:0}}>
       <div style=${{display:'flex',alignItems:'center',gap:5}}>
-        <span style=${{fontWeight:700,fontSize:14,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${p.name}</span>
         ${p.nationality_alpha2&&html`<${Flag} a2=${p.nationality_alpha2} size=${13} />`}
+        <span style=${{fontWeight:700,fontSize:14,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${p.name}</span>
         ${p.gender==='F'&&html`<span style=${{background:'#ff2d5518',color:T.pink,borderRadius:6,padding:'1px 6px',fontSize:9,fontWeight:700,flexShrink:0}}>Vrouwen</span>`}
       </div>
       <div style=${{fontSize:11,color:T.muted,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${(p.teams_seen_for||[]).join(' · ')}${pos?` · ${pos}`:''}</div>
-      <div style=${{display:'flex',gap:6,marginTop:4,alignItems:'center',flexWrap:'wrap'}}>
+      <div style=${{display:'flex',gap:6,marginTop:5,alignItems:'center',flexWrap:'wrap'}}>
         ${apps.length>0&&html`<span style=${{fontSize:10,color:T.dim}}>${apps.join(' · ')}</span>`}
         ${p.avg_rating&&sort!=='avg_rating'&&html`<${RatingBadge} rating=${p.avg_rating} />`}
         ${(p.goals||0)>0&&sort!=='goals'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:700}}>${p.goals}G</span>`}
@@ -839,9 +901,9 @@ function PlayerCard({player:p,onClick,rank,sort}){
       </div>
     </div>
     <div style=${{textAlign:'right',flexShrink:0,minWidth:52}}>
-      <div style=${{fontSize:20,fontWeight:800,color:lead.color,lineHeight:1}}>${lead.val}</div>
+      <div style=${{fontSize:22,fontWeight:800,color:lead.color,lineHeight:1}}>${lead.val}</div>
       ${lead.sub&&html`<div style=${{fontSize:12,fontWeight:700,color:lead.color,opacity:0.7,lineHeight:1,marginTop:1}}>${lead.sub}</div>`}
-      <div style=${{fontSize:9,color:T.dim,marginTop:2,textTransform:'uppercase',letterSpacing:'0.06em'}}>${lead.lbl}</div>
+      <div style=${{fontSize:10,color:T.dim,marginTop:2,textTransform:'uppercase',letterSpacing:'0.06em'}}>${lead.lbl}</div>
     </div>
   </div>`;
 }
@@ -957,30 +1019,103 @@ function PlayerDetail({player:p,onBack}){
 }
 
 // ─── TAB: CLUBS ────────────────────────────────────────────────────────────
+
 function TabClubs({data}){
   const [detail,setDetail]=useState(null);
-  const teams=data.teams_visited||[];
+  const [q,setQ]=useState('');
+  const [sort,setSort]=useState('matches_count');
+  const [sortDir,setSortDir]=useState(-1);
+  const listScrollY=useRef(0);
 
-  if(detail) return html`<${ClubDetail} team=${detail} data=${data} onBack=${()=>setDetail(null)} />`;
+  const matches=useMemo(()=>data.matches||[],[data]);
+  const teams=useMemo(()=>data.teams_visited||[],[data]);
 
-  return html`<div>
-    <${SectionTitle} icon="stadium" right=${`${teams.length} clubs`}>Bezochte clubs</${SectionTitle}>
-    <div style=${{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
-      ${teams.map(t=>html`<${Card} key=${t.id} onClick=${()=>setDetail(t)} style=${{padding:14}}>
-        <div style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:8,textAlign:'center'}}>
-          <div style=${{width:52,height:52,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
-            <${TeamBadge} id=${t.id} name=${t.name} size=${44} />
+  const teamStats=useMemo(()=>{
+    const stats={};
+    teams.forEach(t=>{
+      const tm=matches.filter(m=>m.home_team?.id===t.id||m.away_team?.id===t.id);
+      let w=0,d=0,l=0;
+      tm.forEach(m=>{
+        const isHome=m.home_team?.id===t.id;
+        const ts=isHome?m.home_score:m.away_score;
+        const os=isHome?m.away_score:m.home_score;
+        if(ts==null||os==null)return;
+        if(ts>os)w++;else if(ts===os)d++;else l++;
+      });
+      const played=w+d+l;
+      stats[t.id]={w,d,l,played,winPct:played?w/played:0,ppw:played?(w*3+d)/played:0};
+    });
+    return stats;
+  },[teams,matches]);
+
+  const list=useMemo(()=>{
+    let ts=[...teams];
+    if(q)ts=ts.filter(t=>t.name.toLowerCase().includes(q.toLowerCase()));
+    ts.sort((a,b)=>{
+      const sa=teamStats[a.id]||{};const sb=teamStats[b.id]||{};
+      const va=sort==='matches_count'?a.matches_count:(sa[sort]??0);
+      const vb=sort==='matches_count'?b.matches_count:(sb[sort]??0);
+      return sortDir*(va-vb);
+    });
+    return ts;
+  },[teams,teamStats,q,sort,sortDir]);
+
+  function toggleSort(k){if(sort===k)setSortDir(d=>d*-1);else{setSort(k);setSortDir(-1);}}
+
+  if(detail)return html`<${ClubDetail} team=${detail} data=${data} onBack=${()=>{setDetail(null);window.scrollTo({top:listScrollY.current,behavior:'instant'});}} />`;
+
+  const COLS=[
+    {k:'matches_count',l:'Dls',w:30},{k:'w',l:'W',w:26},{k:'d',l:'G',w:26},{k:'l',l:'V',w:26},
+    {k:'winPct',l:'W%',w:38},{k:'ppw',l:'PPW',w:40},
+  ];
+
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:10}}>
+    <${SearchInput} value=${q} onChange=${setQ} placeholder="Club zoeken..." />
+
+    <${Card} style=${{padding:0,overflow:'hidden'}}>
+      <!-- Header -->
+      <div style=${{display:'flex',alignItems:'center',padding:'7px 12px',borderBottom:`1px solid ${T.border}`,background:T.bg3}}>
+        <div style=${{flex:1,minWidth:0,fontSize:10,fontWeight:700,color:T.dim,textTransform:'uppercase',letterSpacing:'0.06em'}}>Club</div>
+        ${COLS.map(c=>html`<button key=${c.k} onClick=${()=>toggleSort(c.k)} style=${{
+          width:c.w,flexShrink:0,background:'none',border:'none',cursor:'pointer',padding:'0 2px',
+          fontSize:10,fontWeight:700,color:sort===c.k?T.blue:T.dim,
+          textTransform:'uppercase',letterSpacing:'0.05em',
+          textAlign:'right',display:'flex',alignItems:'center',justifyContent:'flex-end',gap:1,
+        }}>
+          ${c.l}${sort===c.k?html`<span style=${{fontSize:8}}>${sortDir===-1?'↓':'↑'}</span>`:''}
+        </button>`)}
+      </div>
+
+      <!-- Rows -->
+      ${list.length===0&&html`<div style=${{textAlign:'center',color:T.muted,padding:24,fontSize:13}}>Geen clubs gevonden</div>`}
+      ${list.map((t,i)=>{
+        const s=teamStats[t.id]||{};
+        const winColor=!s.played?T.muted:s.winPct>=0.6?T.green:s.winPct>=0.4?T.yellow:T.red;
+        return html`<div key=${t.id}
+          onClick=${()=>{listScrollY.current=window.scrollY;setDetail(t);window.scrollTo({top:0,behavior:'instant'});}}
+          style=${{display:'flex',alignItems:'center',padding:'8px 12px',borderBottom:i<list.length-1?`1px solid ${T.border}`:'none',cursor:'pointer'}}
+          onTouchStart=${e=>e.currentTarget.style.background=T.bg3}
+          onTouchEnd=${e=>e.currentTarget.style.background=''}
+        >
+          <!-- Badge + naam + vlag -->
+          <div style=${{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:8}}>
+            <div style=${{width:28,height:28,flexShrink:0,background:T.bg3,borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center'}}>
+              <${TeamBadge} id=${t.id} name=${t.name} size=${22} />
+            </div>
+            <div style=${{minWidth:0,flex:1}}>
+              <div style=${{fontWeight:600,fontSize:13,color:T.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${t.name}</div>
+            </div>
           </div>
-          <div style=${{fontWeight:700,fontSize:14,lineHeight:1.2,color:T.text}}>${t.name}</div>
-          <div style=${{fontSize:22,fontWeight:800,color:T.blue}}>${t.matches_count}</div>
-          <div style=${{fontSize:10,color:T.dim}}>duels bezocht</div>
-          <div style=${{display:'flex',gap:8,fontSize:11,color:T.muted}}>
-            <span style=${{display:'flex',alignItems:'center',gap:3}}><${Icon} name="home" size=${12} color=${T.muted} sw=${2}/> ${t.as_home}</span>
-            <span style=${{display:'flex',alignItems:'center',gap:3}}><${Icon} name="plane" size=${12} color=${T.muted} sw=${2}/> ${t.as_away}</span>
-          </div>
-        </div>
-      </${Card}>`)}
-    </div>
+          <!-- Stat columns -->
+          <div style=${{width:30,flexShrink:0,textAlign:'right',fontSize:13,fontWeight:700,color:T.text}}>${t.matches_count}</div>
+          <div style=${{width:26,flexShrink:0,textAlign:'right',fontSize:12,fontWeight:600,color:T.green}}>${s.played?s.w:'—'}</div>
+          <div style=${{width:26,flexShrink:0,textAlign:'right',fontSize:12,fontWeight:600,color:T.yellow}}>${s.played?s.d:'—'}</div>
+          <div style=${{width:26,flexShrink:0,textAlign:'right',fontSize:12,fontWeight:600,color:T.red}}>${s.played?s.l:'—'}</div>
+          <div style=${{width:38,flexShrink:0,textAlign:'right',fontSize:13,fontWeight:700,color:winColor}}>${s.played?Math.round(s.winPct*100)+'%':'—'}</div>
+          <div style=${{width:40,flexShrink:0,textAlign:'right',fontSize:12,fontWeight:600,color:T.muted}}>${s.played?s.ppw.toFixed(1):'—'}</div>
+        </div>`;
+      })}
+    </${Card}>
   </div>`;
 }
 
@@ -1376,6 +1511,24 @@ function TabWedstrijden({data}){
       </${Pill}>`)}
     </div>
 
+    <!-- Seizoen filter -->
+    ${seasons.length>1&&html`<div style=${{position:'relative'}}>
+      <select value=${season} onChange=${e=>setSeason(e.target.value)} aria-label="Seizoen filteren" style=${{
+        width:'100%',padding:'9px 12px',borderRadius:12,border:`1px solid ${season!=='all'?T.blue:T.border}`,
+        background:season!=='all'?isDark?'rgba(10,132,255,0.15)':'#e8f4ff':T.bg2,
+        color:season!=='all'?T.blue:T.text,
+        fontSize:13,fontWeight:season!=='all'?600:400,appearance:'none',cursor:'pointer',outline:'none',
+      }}>
+        <option value="all">Alle seizoenen</option>
+        ${seasons.filter(s=>s!=='all').map(s=>html`<option key=${s} value=${s}>${s}</option>`)}
+      </select>
+      ${season!=='all'&&html`<button onClick=${()=>setSeason('all')} aria-label="Seizoenfilter verwijderen" style=${{
+        position:'absolute',right:4,top:'50%',transform:'translateY(-50%)',
+        background:'none',border:'none',cursor:'pointer',color:T.blue,fontSize:16,
+        width:44,height:44,display:'flex',alignItems:'center',justifyContent:'center',
+      }}>×</button>`}
+    </div>`}
+
     <div style=${{fontSize:12,color:T.muted}}>${filtered.length} wedstrijden</div>
 
     ${grouped.map(([key,ms])=>html`<div key=${key}>
@@ -1433,40 +1586,17 @@ function App(){
   const [savedIds,setSavedIds]=useState(new Set());
   const fileRef=useRef();
 
-  // Swipe state — moet vóór early returns staan (rules of hooks)
-  const swipeRef=useRef(null);
-  const [dragX,setDragX]=useState(0);
-  const [dragging,setDragging]=useState(false);
+  const scrollPos=useRef({});
+  const visitedTabs=useRef(new Set(['home']));
 
   const visibleTabs=TABS.filter(t=>IS_LOCAL||t.id!=='zoeken');
-  const tabIdx=visibleTabs.findIndex(t=>t.id===tab);
 
-  const goTo=useCallback((id)=>{if(id==='spelers')setCountryFilter('');setTab(id);},[]);
-
-  const onTouchStart=useCallback(e=>{
-    swipeRef.current={x:e.touches[0].clientX,y:e.touches[0].clientY,moved:false};
-    setDragging(false);setDragX(0);
-  },[]);
-
-  const onTouchMove=useCallback(e=>{
-    if(!swipeRef.current)return;
-    const dx=e.touches[0].clientX-swipeRef.current.x;
-    const dy=e.touches[0].clientY-swipeRef.current.y;
-    if(!swipeRef.current.moved&&Math.abs(dy)>Math.abs(dx))return;
-    if(Math.abs(dx)>6){swipeRef.current.moved=true;setDragging(true);}
-    if(swipeRef.current.moved){
-      const atEdge=(dx>0&&tabIdx===0)||(dx<0&&tabIdx===visibleTabs.length-1);
-      setDragX(atEdge?dx*0.2:dx);
-    }
-  },[tabIdx,visibleTabs.length]);
-
-  const onTouchEnd=useCallback(e=>{
-    if(!swipeRef.current?.moved){setDragX(0);setDragging(false);swipeRef.current=null;return;}
-    const dx=dragX;
-    setDragX(0);setDragging(false);swipeRef.current=null;
-    if(dx<-60&&tabIdx<visibleTabs.length-1) goTo(visibleTabs[tabIdx+1].id);
-    else if(dx>60&&tabIdx>0) goTo(visibleTabs[tabIdx-1].id);
-  },[dragX,tabIdx,visibleTabs,goTo]);
+  const goTo=useCallback((id)=>{
+    if(id===tab){window.scrollTo({top:0,behavior:'smooth'});return;}
+    scrollPos.current[tab]=window.scrollY;
+    if(id==='spelers')setCountryFilter('');
+    setTab(id);
+  },[tab,visibleTabs]);
 
   // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
   const reloadSavedIds=useCallback(()=>{
@@ -1474,10 +1604,21 @@ function App(){
   },[]);
 
   const handleCountryClick=useCallback((a2)=>{
+    scrollPos.current[tab]=window.scrollY;
+    visitedTabs.current.delete('spelers');
     setCountryFilter(a2);
     setTab('spelers');
-  },[]);
+  },[tab]);
   useEffect(()=>{reloadSavedIds();},[]);
+
+  useEffect(()=>{
+    if(visitedTabs.current.has(tab)){
+      window.scrollTo({top:scrollPos.current[tab]||0,behavior:'instant'});
+    }else{
+      window.scrollTo({top:0,behavior:'instant'});
+      visitedTabs.current.add(tab);
+    }
+  },[tab]);
 
   useEffect(()=>{
     apiFetch('/data/dashboard_data.json').then(d=>{
@@ -1574,30 +1715,35 @@ function App(){
   return html`<div style=${{display:'flex',flexDirection:'column',minHeight:'100dvh'}}>
     <!-- Header: Liquid Glass -->
     <div style=${{
-      background:'rgba(232,234,240,0.60)',
+      background:T.headerBg,
       backdropFilter:'blur(48px) saturate(220%) brightness(1.10)',
       WebkitBackdropFilter:'blur(48px) saturate(220%) brightness(1.10)',
-      padding:'12px 20px',
-      borderBottom:'1px solid rgba(255,255,255,0.45)',
+      padding:'10px 20px',
+      borderBottom:`1px solid ${T.glassBorder}`,
       boxShadow:'0 1px 0 rgba(0,0,0,0.04)',
       display:'flex',alignItems:'center',justifyContent:'space-between',
       position:'sticky',top:0,zIndex:10,
     }}>
-      <div style=${{fontWeight:900,fontSize:20,letterSpacing:'-0.02em',color:T.text}}>
-        <span style=${{color:T.green}}>Ground</span>Hop
+      <div>
+        <div style=${{fontWeight:900,fontSize:20,letterSpacing:'-0.02em',color:T.text,lineHeight:1.1}}>
+          <span style=${{color:T.green}}>Ground</span>Hop
+        </div>
+        ${tab!=='home'&&html`<div style=${{fontSize:11,color:T.muted,marginTop:1,fontWeight:500}}>
+          ${TABS.find(t=>t.id===tab)?.label||''}
+        </div>`}
       </div>
       <div style=${{display:'flex',gap:8,alignItems:'center'}}>
         <div style=${{
-          background:'rgba(0,122,255,0.10)',
-          border:'1px solid rgba(0,122,255,0.16)',
+          background:`${T.blue}1a`,
+          border:`1px solid ${T.blue}29`,
           borderRadius:999,padding:'4px 12px',fontSize:12,fontWeight:700,color:T.blue,
         }}>
           ${data.total_matches} duels
         </div>
-        ${IS_LOCAL&&html`<button onClick=${triggerSync} disabled=${syncing} title="Sync starten" style=${{
-          background:'rgba(255,255,255,0.45)',
+        ${IS_LOCAL&&html`<button onClick=${triggerSync} disabled=${syncing} aria-label="Sync starten" title="Sync starten" style=${{
+          background:T.bg3,
           backdropFilter:T.blur,WebkitBackdropFilter:T.blur,
-          border:'1px solid rgba(255,255,255,0.70)',
+          border:`1px solid ${T.glassBorder}`,
           boxShadow:T.shadowGlass,
           color:syncing?T.blue:T.muted,
           cursor:'pointer',borderRadius:10,padding:'7px 9px',
@@ -1613,37 +1759,28 @@ function App(){
     <!-- Sync Banner -->
     ${IS_LOCAL&&html`<${SyncBanner} />`}
 
-    <!-- Content — swipeable -->
-    <div
-      onTouchStart=${onTouchStart}
-      onTouchMove=${onTouchMove}
-      onTouchEnd=${onTouchEnd}
-      style=${{
-        flex:1,overflowY:dragging?'hidden':'auto',
-        padding:'16px 16px 120px',
-        transform:dragX?`translateX(${dragX*0.25}px)`:'none',
-        transition:dragging?'none':'transform 0.35s cubic-bezier(0.25,1,0.5,1)',
-        willChange:'transform',
-      }}>
-      ${content}
+    <!-- Content -->
+    <div style=${{flex:1}}>
+      <div key=${tab} style=${{padding:'16px 16px 120px'}}>
+        ${content}
+      </div>
     </div>
 
     <!-- Floating Liquid Glass nav pill — Fotmob-stijl -->
-    <nav style=${{
+    <nav aria-label="Hoofdnavigatie" style=${{
       position:'fixed',
       bottom:'calc(20px + env(safe-area-inset-bottom,0px))',
       left:'50%',transform:'translateX(-50%)',
       width:'calc(100% - 28px)',maxWidth:460,
       borderRadius:34,
-      /* Fotmob-stijl: weinig wit, veel blur — achtergrond schijnt sterk door */
-      background:'rgba(255,255,255,0.18)',
-      backdropFilter:'blur(60px) saturate(280%) brightness(1.18)',
-      WebkitBackdropFilter:'blur(60px) saturate(280%) brightness(1.18)',
-      border:'1px solid rgba(255,255,255,0.55)',
+      background:T.navBg,
+      backdropFilter:`blur(60px) saturate(280%) brightness(${isDark?'0.90':'1.18'})`,
+      WebkitBackdropFilter:`blur(60px) saturate(280%) brightness(${isDark?'0.90':'1.18'})`,
+      border:`1px solid ${T.glassBorder}`,
       boxShadow:[
-        'inset 0 1.5px 0 rgba(255,255,255,0.90)',
-        'inset 0 -0.5px 0 rgba(255,255,255,0.25)',
-        'inset 0 0 0 0.5px rgba(255,255,255,0.35)',
+        `inset 0 1.5px 0 rgba(255,255,255,${isDark?'0.10':'0.90'})`,
+        `inset 0 -0.5px 0 rgba(255,255,255,${isDark?'0.05':'0.25'})`,
+        `inset 0 0 0 0.5px rgba(255,255,255,${isDark?'0.08':'0.35'})`,
         '0 0 0 0.5px rgba(0,0,0,0.06)',
         '0 4px 16px rgba(0,0,0,0.12)',
         '0 16px 48px rgba(0,0,0,0.18)',
@@ -1657,21 +1794,19 @@ function App(){
       <!-- lens highlight -->
       <div style=${{
         position:'absolute',top:0,left:'5%',right:'5%',height:'45%',
-        background:'linear-gradient(180deg,rgba(255,255,255,0.55) 0%,rgba(255,255,255,0.12) 60%,rgba(255,255,255,0) 100%)',
+        background:`linear-gradient(180deg,rgba(255,255,255,${isDark?'0.08':'0.55'}) 0%,rgba(255,255,255,${isDark?'0.02':'0.12'}) 60%,rgba(255,255,255,0) 100%)`,
         pointerEvents:'none',borderRadius:'32px 32px 60% 60%',
       }}></div>
 
-      ${visibleTabs.map(t=>html`<button key=${t.id} onClick=${()=>goTo(t.id)} style=${{
+      ${visibleTabs.map(t=>html`<button key=${t.id} onClick=${()=>goTo(t.id)} aria-label=${t.label} aria-current=${tab===t.id?'page':undefined} style=${{
         flex:t.center?1.3:1,
-        border:tab===t.id?'1px solid rgba(255,255,255,0.80)':'1px solid transparent',
-        background:tab===t.id
-          ?'rgba(255,255,255,0.58)'
-          :'transparent',
+        border:tab===t.id?`1px solid rgba(255,255,255,${isDark?'0.18':'0.80'})`:'1px solid transparent',
+        background:tab===t.id?T.navActiveBg:'transparent',
         backdropFilter:tab===t.id?'blur(12px)':'none',
         WebkitBackdropFilter:tab===t.id?'blur(12px)':'none',
         boxShadow:tab===t.id?[
-          'inset 0 1.5px 0 rgba(255,255,255,1)',
-          'inset 0 0 8px rgba(255,255,255,0.50)',
+          `inset 0 1.5px 0 rgba(255,255,255,${isDark?'0.12':'1'})`,
+          `inset 0 0 8px rgba(255,255,255,${isDark?'0.06':'0.50'})`,
           '0 2px 10px rgba(0,0,0,0.12)',
         ].join(','):'none',
         cursor:'pointer',
@@ -1689,7 +1824,7 @@ function App(){
           sw=${tab===t.id?2:1.5}
         />
         <span style=${{
-          fontSize:t.center?9.5:9,
+          fontSize:t.center?10:10,
           fontWeight:tab===t.id?700:500,
           color:tab===t.id?T.blue:T.muted,
           transition:'color 0.2s ease',
