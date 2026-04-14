@@ -1114,6 +1114,15 @@ def menu_exporteer_dashboard():
         if not lineups_raw:
             manual_players: dict[int, dict] = {}  # pid → {name, team, goals, assists, minutes, starter}
 
+            # Seed met lineup veld indien aanwezig (starters + bank)
+            manual_lineup = match.get("lineup", {})
+            for side in ("home", "away"):
+                team_name = match.get(f"{side}_team", {}).get("name", "")
+                for pe in manual_lineup.get(side, []):
+                    pid = pe.get("player_id")
+                    if pid:
+                        manual_players.setdefault(pid, {"name": pe.get("player", ""), "team": team_name, "goals": 0, "assists": 0})
+
             # Bouw minuten/starter op basis van wisseldata
             subbed_out: dict[int, int] = {}   # pid → minuut uit het veld
             subbed_in:  dict[int, int] = {}   # pid → minuut het veld op
@@ -1130,7 +1139,16 @@ def menu_exporteer_dashboard():
                     return subbed_out[pid]
                 return 90
 
+            # Bankspelers uit lineup: nooit ingevallen → bench, niet starter
+            bench_ids = set()
+            for side in ("home", "away"):
+                for pe in manual_lineup.get(side, []):
+                    if not pe.get("starter", True) and pe.get("player_id") not in subbed_in:
+                        bench_ids.add(pe.get("player_id"))
+
             def is_starter(pid):
+                if pid in bench_ids:
+                    return None  # bench, geen minuten
                 return pid not in subbed_in
 
             for g in m_out.get("goals", []):
@@ -1162,8 +1180,8 @@ def menu_exporteer_dashboard():
                 yellow = sum(1 for c in m_out.get("cards", []) if c.get("player_id") == pid and c.get("type") == "yellow")
                 red = sum(1 for c in m_out.get("cards", []) if c.get("player_id") == pid and c.get("type") in ("red", "yellowRed"))
 
-                p_minutes = get_minutes(pid)
-                p_starter = is_starter(pid)
+                p_starter = is_starter(pid)  # True=starter, False=sub, None=bench
+                p_minutes = 0 if p_starter is None else get_minutes(pid)
 
                 match_detail = {
                     "match_id": event_id,
@@ -1176,7 +1194,7 @@ def menu_exporteer_dashboard():
                     "red": red,
                     "minutes": p_minutes,
                     "rating": None,
-                    "starter": p_starter,
+                    "starter": False if p_starter is None else p_starter,
                     "xg": None,
                     "age_years": age_years,
                     "age_days": age_days,
@@ -1236,7 +1254,9 @@ def menu_exporteer_dashboard():
                 ps["yellow_cards"] += yellow
                 ps["red_cards"] += red
                 ps["minutes_played"] += p_minutes
-                if p_starter:
+                if p_starter is None:
+                    ps["bench_appearances"] += 1
+                elif p_starter:
                     ps["starter_appearances"] += 1
                 else:
                     ps["sub_appearances"] += 1
