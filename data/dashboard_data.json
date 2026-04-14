@@ -1,9 +1,9 @@
 {
-  "generated_at": "2026-04-14T20:29:24.476581",
-  "total_matches": 177,
-  "total_goals_witnessed": 641,
+  "generated_at": "2026-04-14T21:09:41.216470",
+  "total_matches": 179,
+  "total_goals_witnessed": 649,
   "date_range": {
-    "first": "2018-09-06",
+    "first": "2008-06-01",
     "last": "2026-04-11"
   },
   "matches": [
@@ -43235,6 +43235,414 @@
           "total_saves": 4.0,
           "goal_kicks": 15.0
         }
+      }
+    },
+    {
+      "id": 99002060212,
+      "date": "2012-06-02",
+      "startTimestamp": 1338660000,
+      "home_team": {
+        "name": "Netherlands",
+        "id": 4705,
+        "slug": "netherlands"
+      },
+      "away_team": {
+        "name": "Northern Ireland",
+        "id": 4786,
+        "slug": "northern-ireland"
+      },
+      "home_score": 6,
+      "away_score": 0,
+      "half_time": {
+        "home": 4,
+        "away": 0
+      },
+      "tournament": "International Friendlies",
+      "tournament_id": 0,
+      "season": "International Friendlies 2012",
+      "season_id": 0,
+      "round": 1,
+      "venue": {
+        "name": "Amsterdam ArenA",
+        "city": "Amsterdam",
+        "id": null
+      },
+      "attendance": 50000,
+      "referee": {
+        "name": "Robert Schörgenhofer",
+        "id": null
+      },
+      "source_team": "Netherlands",
+      "goals": [
+        {
+          "player": "Robin van Persie",
+          "player_id": 1,
+          "team": "Netherlands",
+          "minute": 11,
+          "added_time": null,
+          "assist": "Wesley Sneijder",
+          "assist_id": 1934,
+          "type": "regular"
+        },
+        {
+          "player": "Wesley Sneijder",
+          "player_id": 1934,
+          "team": "Netherlands",
+          "minute": 15,
+          "added_time": null,
+          "assist": null,
+          "assist_id": null,
+          "type": "regular"
+        },
+        {
+          "player": "Robin van Persie",
+          "player_id": 1,
+          "team": "Netherlands",
+          "minute": 29,
+          "added_time": null,
+          "assist": null,
+          "assist_id": null,
+          "type": "penalty"
+        },
+        {
+          "player": "Ibrahim Afellay",
+          "player_id": 2525,
+          "team": "Netherlands",
+          "minute": 37,
+          "added_time": null,
+          "assist": "Robin van Persie",
+          "assist_id": 1,
+          "type": "regular"
+        },
+        {
+          "player": "Ibrahim Afellay",
+          "player_id": 2525,
+          "team": "Netherlands",
+          "minute": 51,
+          "added_time": null,
+          "assist": "Robin van Persie",
+          "assist_id": 1,
+          "type": "regular"
+        },
+        {
+          "player": "Ron Vlaar",
+          "player_id": 9965,
+          "team": "Netherlands",
+          "minute": 78,
+          "added_time": null,
+          "assist": "Ibrahim Afellay",
+          "assist_id": 2525,
+          "type": "regular"
+        }
+      ],
+      "cards": [
+        {
+          "player": "Michael Duff",
+          "player_id": 9884,
+          "team": "Northern Ireland",
+          "minute": 14,
+          "added_time": null,
+          "type": "yellow",
+          "reason": ""
+        },
+        {
+          "player": "Lee Hodson",
+          "player_id": 51599,
+          "team": "Northern Ireland",
+          "minute": 16,
+          "added_time": null,
+          "type": "yellow",
+          "reason": ""
+        }
+      ],
+      "substitutions": [
+        {
+          "player_in": "Rafael van der Vaart",
+          "player_in_id": 1951,
+          "player_out": "Mark van Bommel",
+          "player_out_id": 2495,
+          "team": "Netherlands",
+          "minute": 57,
+          "added_time": null
+        },
+        {
+          "player_in": "Klaas-Jan Huntelaar",
+          "player_in_id": 2614,
+          "player_out": "Robin van Persie",
+          "player_out_id": 1,
+          "team": "Netherlands",
+          "minute": 57,
+          "added_time": null
+        },
+        {
+          "player_in": "Dirk Kuyt",
+          "player_in_id": 2221,
+          "player_out": "Wesley Sneijder",
+          "player_out_id": 1934,
+          "team": "Netherlands",
+          "minute": 70,
+          "added_time": null
+        },
+        {
+          "player_in": "Stijn Schaars",
+          "player_in_id": 5097,
+          "player_out": "Jetro Willems",
+          "player_out_id": 138828,
+          "team": "Netherlands",
+          "minute": 77,
+          "added_time": null
+        },
+        {
+          "player_in": "Luciano Narsingh",
+          "player_in_id": 43414,
+          "player_out": "Arjen Robben",
+          "player_out_id": 30037,
+          "team": "Netherlands",
+          "minute": 82,
+          "added_time": null
+        },
+        {
+          "player_in": "Josh Carson",
+          "player_in_id": 97596,
+          "player_out": "Danny Lafferty",
+          "player_out_id": 1910207,
+          "team": "Northern Ireland",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Roy Carroll",
+          "player_in_id": 756,
+          "player_out": "Lee Camp",
+          "player_out_id": 10001,
+          "team": "Northern Ireland",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Ryan McGivern",
+          "player_in_id": 40815,
+          "player_out": "Grant McCann",
+          "player_out_id": 55881,
+          "team": "Northern Ireland",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Niall McGinn",
+          "player_in_id": 47367,
+          "player_out": "Andy Little",
+          "player_out_id": 93148,
+          "team": "Northern Ireland",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Rory McArdle",
+          "player_in_id": 16598,
+          "player_out": "Michael Duff",
+          "player_out_id": 9884,
+          "team": "Northern Ireland",
+          "minute": 62,
+          "added_time": null
+        },
+        {
+          "player_in": "David Healy",
+          "player_in_id": 10206,
+          "player_out": "Shane Ferguson",
+          "player_out_id": 55581,
+          "team": "Northern Ireland",
+          "minute": 81,
+          "added_time": null
+        }
+      ],
+      "team_stats": {
+        "home": {},
+        "away": {}
+      }
+    },
+    {
+      "id": 99001060179,
+      "date": "2008-06-01",
+      "startTimestamp": 0,
+      "home_team": {
+        "name": "Netherlands",
+        "id": 4705,
+        "slug": "netherlands"
+      },
+      "away_team": {
+        "name": "Wales",
+        "id": 4702,
+        "slug": "wales"
+      },
+      "home_score": 2,
+      "away_score": 0,
+      "half_time": {
+        "home": 1,
+        "away": 0
+      },
+      "tournament": "International Friendlies",
+      "tournament_id": 0,
+      "season": "International Friendlies 2008",
+      "season_id": 0,
+      "round": 5,
+      "venue": {
+        "name": "De Kuip",
+        "city": "Rotterdam",
+        "id": null
+      },
+      "attendance": 48500,
+      "referee": {
+        "name": "Dr. Felix Brych",
+        "id": null
+      },
+      "source_team": "Netherlands",
+      "goals": [
+        {
+          "player": "Arjen Robben",
+          "player_id": 30037,
+          "team": "Netherlands",
+          "minute": 35,
+          "added_time": null,
+          "assist": null,
+          "assist_id": null,
+          "type": "regular"
+        },
+        {
+          "player": "Wesley Sneijder",
+          "player_id": 1934,
+          "team": "Netherlands",
+          "minute": 54,
+          "added_time": null,
+          "assist": null,
+          "assist_id": null,
+          "type": "regular"
+        }
+      ],
+      "cards": [
+        {
+          "player": "Chris Gunter",
+          "player_id": 17536,
+          "team": "Wales",
+          "minute": 33,
+          "added_time": null,
+          "type": "yellow",
+          "reason": ""
+        }
+      ],
+      "substitutions": [
+        {
+          "player_in": "Giovanni van Bronckhorst",
+          "player_in_id": 12800,
+          "player_out": "Tim de Cler",
+          "player_out_id": 1422535,
+          "team": "Netherlands",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Demy de Zeeuw",
+          "player_in_id": 10172,
+          "player_out": "Nigel de Jong",
+          "player_out_id": 1879,
+          "team": "Netherlands",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Orlando Engelaar",
+          "player_in_id": 5936,
+          "player_out": "Dirk Kuyt",
+          "player_out_id": 2221,
+          "team": "Netherlands",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "John Heitinga",
+          "player_in_id": 1890,
+          "player_out": "Mario Melchiot",
+          "player_out_id": 591,
+          "team": "Netherlands",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Rafael van der Vaart",
+          "player_in_id": 1951,
+          "player_out": "Ibrahim Afellay",
+          "player_out_id": 2525,
+          "team": "Netherlands",
+          "minute": 67,
+          "added_time": null
+        },
+        {
+          "player_in": "Joris Mathijsen",
+          "player_in_id": 1422536,
+          "player_out": "Jan Vennegoor of Hesselink",
+          "player_out_id": 1422537,
+          "team": "Netherlands",
+          "minute": 80,
+          "added_time": null
+        },
+        {
+          "player_in": "Carl Robinson",
+          "player_in_id": 9707,
+          "player_out": "Jack Collison",
+          "player_out_id": 32141,
+          "team": "Wales",
+          "minute": 46,
+          "added_time": null
+        },
+        {
+          "player_in": "Freddy Eastwood",
+          "player_in_id": 16606,
+          "player_out": "Craig Bellamy",
+          "player_out_id": 786,
+          "team": "Wales",
+          "minute": 57,
+          "added_time": null
+        },
+        {
+          "player_in": "David Edwards",
+          "player_in_id": 20140,
+          "player_out": "Ched Evans",
+          "player_out_id": 31761,
+          "team": "Wales",
+          "minute": 57,
+          "added_time": null
+        },
+        {
+          "player_in": "Jason Koumas",
+          "player_in_id": 1016,
+          "player_out": "Sam Vokes",
+          "player_out_id": 19633,
+          "team": "Wales",
+          "minute": 73,
+          "added_time": null
+        },
+        {
+          "player_in": "Sam Ricketts",
+          "player_in_id": 11095,
+          "player_out": "Andrew Crofts",
+          "player_out_id": 13360,
+          "team": "Wales",
+          "minute": 78,
+          "added_time": null
+        },
+        {
+          "player_in": "Joe Ledley",
+          "player_in_id": 9921,
+          "player_out": "Neal Eardley",
+          "player_out_id": 20399,
+          "team": "Wales",
+          "minute": 89,
+          "added_time": null
+        }
+      ],
+      "team_stats": {
+        "home": {},
+        "away": {}
       }
     }
   ],
@@ -342321,6 +342729,16 @@
       "as_away": 2
     },
     {
+      "id": 4705,
+      "name": "Netherlands",
+      "slug": "netherlands",
+      "gender": "M",
+      "logo_url": "https://api.sofascore.app/api/v1/team/4705/image",
+      "matches_count": 4,
+      "as_home": 4,
+      "as_away": 0
+    },
+    {
       "id": 24264,
       "name": "Girona FC",
       "slug": "girona-fc",
@@ -342549,16 +342967,6 @@
       "matches_count": 2,
       "as_home": 0,
       "as_away": 2
-    },
-    {
-      "id": 4705,
-      "name": "Netherlands",
-      "slug": "netherlands",
-      "gender": "M",
-      "logo_url": "https://api.sofascore.app/api/v1/team/4705/image",
-      "matches_count": 2,
-      "as_home": 2,
-      "as_away": 0
     },
     {
       "id": 46160,
@@ -343209,6 +343617,26 @@
       "matches_count": 1,
       "as_home": 0,
       "as_away": 1
+    },
+    {
+      "id": 4702,
+      "name": "Wales",
+      "slug": "wales",
+      "gender": "M",
+      "logo_url": "https://api.sofascore.app/api/v1/team/4702/image",
+      "matches_count": 1,
+      "as_home": 0,
+      "as_away": 1
+    },
+    {
+      "id": 4786,
+      "name": "Northern Ireland",
+      "slug": "northern-ireland",
+      "gender": "M",
+      "logo_url": "https://api.sofascore.app/api/v1/team/4786/image",
+      "matches_count": 1,
+      "as_home": 0,
+      "as_away": 1
     }
   ],
   "tournaments": [
@@ -343429,6 +343857,14 @@
     },
     {
       "name": "Johan Cruijff Schaal 2023",
+      "matches_count": 1
+    },
+    {
+      "name": "International Friendlies 2012",
+      "matches_count": 1
+    },
+    {
+      "name": "International Friendlies 2008",
       "matches_count": 1
     },
     {
