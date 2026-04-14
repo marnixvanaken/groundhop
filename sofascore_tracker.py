@@ -1110,6 +1110,119 @@ def menu_exporteer_dashboard():
 
                     ps["matches_detail"].append(match_detail)
 
+        # Spelers uit goals/cards/subs als er geen lineup-cache is (handmatige entries)
+        if not lineups_raw:
+            manual_players: dict[int, dict] = {}  # pid → {name, team}
+            for g in m_out.get("goals", []):
+                if g.get("player_id"):
+                    manual_players[g["player_id"]] = {"name": g["player"], "team": g["team"], "goals": 0, "assists": 0}
+                if g.get("assist_id"):
+                    manual_players.setdefault(g["assist_id"], {"name": g["assist"], "team": g["team"], "goals": 0, "assists": 0})
+            for g in m_out.get("goals", []):
+                if g.get("player_id") and g["player_id"] in manual_players:
+                    manual_players[g["player_id"]]["goals"] += 1
+                if g.get("assist_id") and g["assist_id"] in manual_players:
+                    manual_players[g["assist_id"]]["assists"] += 1
+            for c in m_out.get("cards", []):
+                if c.get("player_id"):
+                    manual_players.setdefault(c["player_id"], {"name": c["player"], "team": c["team"], "goals": 0, "assists": 0})
+            for s in m_out.get("substitutions", []):
+                if s.get("player_in_id"):
+                    manual_players.setdefault(s["player_in_id"], {"name": s["player_in"], "team": s["team"], "goals": 0, "assists": 0})
+                if s.get("player_out_id"):
+                    manual_players.setdefault(s["player_out_id"], {"name": s["player_out"], "team": s["team"], "goals": 0, "assists": 0})
+
+            for pid, info in manual_players.items():
+                profile = load_json(PLAYER_CACHE_DIR / f"{pid}.json") or {}
+                dob_ts = profile.get("dateOfBirthTimestamp")
+                age_years, age_days = calc_age_on_date(dob_ts, match_ts) if dob_ts and match_ts else (0, 0)
+                nationality = profile.get("country", {})
+                nat_name = nationality.get("name", "") if isinstance(nationality, dict) else ""
+                nat_a2 = nationality.get("alpha2", "") if isinstance(nationality, dict) else ""
+                yellow = sum(1 for c in m_out.get("cards", []) if c.get("player_id") == pid and c.get("type") == "yellow")
+                red = sum(1 for c in m_out.get("cards", []) if c.get("player_id") == pid and c.get("type") in ("red", "yellowRed"))
+
+                match_detail = {
+                    "match_id": event_id,
+                    "date": match.get("date", ""),
+                    "match_label": format_match_label(match),
+                    "team": info["team"],
+                    "goals": info["goals"],
+                    "assists": info["assists"],
+                    "yellow": yellow,
+                    "red": red,
+                    "minutes": 0,
+                    "rating": None,
+                    "starter": True,
+                    "xg": None,
+                    "age_years": age_years,
+                    "age_days": age_days,
+                }
+
+                if pid not in all_player_stats:
+                    all_player_stats[pid] = {
+                        "id": pid,
+                        "name": info["name"] or profile.get("name", ""),
+                        "short_name": profile.get("shortName", ""),
+                        "photo_url": f"https://api.sofascore.app/api/v1/player/{pid}/image",
+                        "date_of_birth": ts_to_date(dob_ts) if dob_ts else None,
+                        "nationality": nat_name,
+                        "nationality_alpha2": nat_a2.lower(),
+                        "height_cm": profile.get("height"),
+                        "weight_kg": profile.get("weight"),
+                        "market_value": (profile.get("proposedMarketValueRaw") or {}).get("value") or profile.get("proposedMarketValue"),
+                        "gender": "M",
+                        "preferred_foot": profile.get("preferredFoot", ""),
+                        "position": profile.get("position", ""),
+                        "teams_seen_for": [],
+                        "matches_seen": 0,
+                        "goals": 0,
+                        "assists": 0,
+                        "yellow_cards": 0,
+                        "red_cards": 0,
+                        "minutes_played": 0,
+                        "sub_appearances": 0,
+                        "starter_appearances": 0,
+                        "bench_appearances": 0,
+                        "rating_sum": 0.0,
+                        "rating_count": 0,
+                        "avg_rating": None,
+                        "total_shots": 0,
+                        "shots_on_target": 0,
+                        "total_passes": 0,
+                        "passes_accurate": 0,
+                        "pass_accuracy_pct": None,
+                        "key_passes": 0,
+                        "tackles": 0,
+                        "interceptions": 0,
+                        "duels_won": 0,
+                        "duels_lost": 0,
+                        "fouls_committed": 0,
+                        "fouls_drawn": 0,
+                        "xg_total": 0.0,
+                        "was_captain_count": 0,
+                        "youngest_age_seen": None,
+                        "oldest_age_seen": None,
+                        "matches_detail": [],
+                    }
+
+                ps = all_player_stats[pid]
+                ps["matches_seen"] += 1
+                ps["goals"] += info["goals"]
+                ps["assists"] += info["assists"]
+                ps["yellow_cards"] += yellow
+                ps["red_cards"] += red
+                ps["starter_appearances"] += 1
+                if info["team"] and info["team"] not in ps["teams_seen_for"]:
+                    ps["teams_seen_for"].append(info["team"])
+                if age_years > 0 or age_days > 0:
+                    age_entry = {"age_years": age_years, "age_days": age_days, "match_date": match.get("date", ""), "match": format_match_label(match)}
+                    if ps["youngest_age_seen"] is None or (age_years, age_days) < (ps["youngest_age_seen"]["age_years"], ps["youngest_age_seen"]["age_days"]):
+                        ps["youngest_age_seen"] = age_entry
+                    if ps["oldest_age_seen"] is None or (age_years, age_days) > (ps["oldest_age_seen"]["age_years"], ps["oldest_age_seen"]["age_days"]):
+                        ps["oldest_age_seen"] = age_entry
+                ps["matches_detail"].append(match_detail)
+
         # Scheidsrechter aggregatie
         ref = m_out.get("referee", {})
         if ref and ref.get("id"):
