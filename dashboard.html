@@ -7,7 +7,7 @@
 <meta name="theme-color" content="#1c1c1e" media="(prefers-color-scheme: dark)">
 <title>GroundHop</title>
 <link rel="icon" type="image/svg+xml" href="favicon.svg">
-<link rel="apple-touch-icon" href="favicon.svg">
+<link rel="apple-touch-icon" sizes="180x180" href="apple-touch-icon.png">
 <meta name="apple-mobile-web-app-title" content="GroundHop">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap">
@@ -34,6 +34,9 @@ button:focus-visible,select:focus-visible,input:focus-visible{outline:2px solid 
   body{background:radial-gradient(ellipse 80% 60% at 15% 0%,rgba(0,100,255,0.12) 0%,transparent 60%),radial-gradient(ellipse 60% 50% at 85% 100%,rgba(48,209,88,0.10) 0%,transparent 60%),radial-gradient(ellipse 50% 40% at 60% 45%,rgba(191,90,242,0.08) 0%,transparent 65%),#1c1c1e;}
   html{color:#f5f5f7;}
 }
+.mobile-only{display:block;}
+.desktop-only{display:none;}
+@media(min-width:768px){.mobile-only{display:none;}.desktop-only{display:block;}}
 </style>
 </head>
 <body>
@@ -177,19 +180,20 @@ function Icon({name,size=24,color='currentColor',sw=1.5}){
 // ─── CSS-only charts ───────────────────────────────────────────────────────
 function BarChart({data,valueKey='value',labelKey='name',color,height=120,horizontal}){
   const max=Math.max(...data.map(d=>d[valueKey]||0),1);
-  if(horizontal) return html`<div style=${{display:'flex',flexDirection:'column',gap:6}}>
+  if(horizontal) return html`<div style=${{display:'flex',flexDirection:'column',gap:5}}>
     ${data.map((d,i)=>html`<div key=${i} style=${{display:'flex',alignItems:'center',gap:8}}>
-      <div style=${{width:80,fontSize:11,color:T.muted,textAlign:'right',flexShrink:0,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${d[labelKey]}</div>
-      <div style=${{flex:1,height:20,background:T.bg3,borderRadius:4,overflow:'hidden'}}>
-        <div style=${{width:`${(d[valueKey]||0)/max*100}%`,height:'100%',background:color||T.blue,borderRadius:4,transition:'width 0.5s ease'}}></div>
+      <div style=${{width:110,fontSize:11,color:T.muted,textAlign:'right',flexShrink:0,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${d[labelKey]}</div>
+      <div style=${{flex:1,height:14,background:T.bg3,borderRadius:3,overflow:'hidden'}}>
+        <div style=${{width:`${(d[valueKey]||0)/max*100}%`,height:'100%',background:d.color||color||T.blue,borderRadius:3,transition:'width 0.5s ease'}}></div>
       </div>
-      <div style=${{width:32,fontSize:12,fontWeight:700,color:color||T.blue}}>${d[valueKey]}</div>
+      <div style=${{width:28,fontSize:11,fontWeight:700,color:d.color||color||T.blue,textAlign:'right'}}>${d[valueKey]}</div>
     </div>`)}
   </div>`;
+  const barMax=height-34;
   return html`<div class="scroll-x"><div style=${{display:'flex',alignItems:'flex-end',gap:3,height,padding:'0 4px',minWidth:data.length*32}}>
     ${data.map((d,i)=>html`<div key=${i} style=${{flex:1,minWidth:28,display:'flex',flexDirection:'column',alignItems:'center',gap:3,height:'100%',justifyContent:'flex-end'}}>
       <div style=${{fontSize:9,color:T.dim,fontWeight:600}}>${d[valueKey]||0}</div>
-      <div style=${{width:'100%',background:`linear-gradient(180deg,${color||T.blue},${color||T.blue}88)`,borderRadius:'4px 4px 0 0',height:`${Math.max((d[valueKey]||0)/max*100,4)}%`,minHeight:4}}></div>
+      <div style=${{width:'100%',background:`linear-gradient(180deg,${color||T.blue},${color||T.blue}88)`,borderRadius:'4px 4px 0 0',height:`${Math.max(Math.round((d[valueKey]||0)/max*barMax),3)}px`}}></div>
       <div style=${{fontSize:9,color:T.dim,textAlign:'center',lineHeight:1.2}}>${d[labelKey]}</div>
     </div>`)}
   </div></div>`;
@@ -414,9 +418,12 @@ function SyncBanner(){
 
 // ─── WORLD MAP ─────────────────────────────────────────────────────────────
 const NUM2A2={4:'af',8:'al',12:'dz',20:'ad',24:'ao',28:'ag',32:'ar',36:'au',40:'at',31:'az',44:'bs',48:'bh',50:'bd',52:'bb',56:'be',64:'bt',68:'bo',70:'ba',72:'bw',76:'br',84:'bz',96:'bn',100:'bg',104:'mm',108:'bi',112:'by',116:'kh',120:'cm',124:'ca',132:'cv',140:'cf',144:'lk',148:'td',152:'cl',156:'cn',158:'tw',170:'co',174:'km',178:'cg',180:'cd',188:'cr',191:'hr',192:'cu',196:'cy',203:'cz',204:'bj',208:'dk',214:'do',218:'ec',222:'sv',226:'gq',231:'et',233:'ee',242:'fj',246:'fi',250:'fr',262:'dj',266:'ga',268:'ge',270:'gm',275:'ps',276:'de',288:'gh',300:'gr',308:'gd',320:'gt',324:'gn',328:'gy',332:'ht',340:'hn',348:'hu',352:'is',356:'in',360:'id',364:'ir',368:'iq',372:'ie',376:'il',380:'it',384:'ci',388:'jm',392:'jp',398:'kz',400:'jo',404:'ke',408:'kp',410:'kr',414:'kw',417:'kg',418:'la',422:'lb',426:'ls',428:'lv',430:'lr',434:'ly',440:'lt',442:'lu',450:'mg',454:'mw',458:'my',466:'ml',470:'mt',478:'mr',480:'mu',484:'mx',492:'mc',496:'mn',498:'md',499:'me',500:'ms',504:'ma',508:'mz',512:'om',516:'na',524:'np',528:'nl',531:'cw',540:'nc',548:'vu',554:'nz',558:'ni',562:'ne',566:'ng',578:'no',586:'pk',591:'pa',598:'pg',600:'py',604:'pe',608:'ph',616:'pl',620:'pt',624:'gw',626:'tl',634:'qa',642:'ro',643:'ru',646:'rw',662:'lc',682:'sa',686:'sn',688:'rs',694:'sl',702:'sg',703:'sk',704:'vn',705:'si',706:'so',710:'za',716:'zw',724:'es',728:'ss',729:'sd',732:'eh',740:'sr',748:'sz',752:'se',756:'ch',760:'sy',762:'tj',764:'th',768:'tg',780:'tt',784:'ae',788:'tn',792:'tr',795:'tm',800:'ug',804:'ua',807:'mk',818:'eg',826:'gb',834:'tz',840:'us',854:'bf',858:'uy',860:'uz',862:'ve',887:'ye',894:'zm',383:'xk',51:'am',90:'sb',232:'er',238:'fk',304:'gl',630:'pr',10:'aq',260:'tf'};
-const SS2ISO={en:'gb',sx:'gb',wa:'gb',nx:'gb',wl:'gb',an:'cw'};
-const A2_NAMES={af:'Afghanistan',al:'Albanië',dz:'Algerije',ad:'Andorra',ao:'Angola',ag:'Antigua & Barbuda',ar:'Argentinië',au:'Australië',at:'Oostenrijk',az:'Azerbeidzjan',bs:"Bahama's",bh:'Bahrein',bd:'Bangladesh',bb:'Barbados',by:'Belarus',be:'België',bz:'Belize',bt:'Bhutan',bo:'Bolivia',ba:'Bosnië-Herzegovina',bw:'Botswana',br:'Brazilië',bn:'Brunei',bg:'Bulgarije',bf:'Burkina Faso',bi:'Burundi',kh:'Cambodja',cm:'Kameroen',ca:'Canada',cv:'Kaapverdië',cf:'Centraal-Afrikaanse Republiek',cl:'Chili',cn:'China',co:'Colombia',km:'Comoren',cg:'Congo-Brazzaville',cd:'Congo-Kinshasa',cr:'Costa Rica',hr:'Kroatië',cu:'Cuba',cy:'Cyprus',cz:'Tsjechië',dk:'Denemarken',dj:'Djibouti',do:'Dominicaanse Republiek',tl:'Oost-Timor',ec:'Ecuador',eg:'Egypte',sv:'El Salvador',gq:'Equatoriaal-Guinea',er:'Eritrea',et:'Ethiopië',ee:'Estland',fj:'Fiji',fi:'Finland',fr:'Frankrijk',ga:'Gabon',gm:'Gambia',ge:'Georgië',de:'Duitsland',gh:'Ghana',gd:'Grenada',gr:'Griekenland',gt:'Guatemala',gn:'Guinee',gw:'Guinee-Bissau',gy:'Guyana',ht:'Haïti',hn:'Honduras',hu:'Hongarije',is:'IJsland',in:'India',id:'Indonesië',ir:'Iran',iq:'Irak',ie:'Ierland',il:'Israël',it:'Italië',ci:"Ivoorkust",jm:'Jamaica',jp:'Japan',jo:'Jordanië',kz:'Kazachstan',ke:'Kenia',kp:'Noord-Korea',kr:'Zuid-Korea',kw:'Koeweit',kg:'Kirgizstan',la:'Laos',lb:'Libanon',ls:'Lesotho',lr:'Liberia',ly:'Libië',lt:'Litouwen',lu:'Luxemburg',mg:'Madagaskar',mw:'Malawi',my:'Maleisië',ml:'Mali',mt:'Malta',mr:'Mauritanië',mu:'Mauritius',mx:'Mexico',md:'Moldavië',mc:'Monaco',mn:'Mongolië',me:'Montenegro',ms:'Montserrat',ma:'Marokko',mz:'Mozambique',mm:'Myanmar',na:'Namibië',np:'Nepal',nl:'Nederland',nz:'Nieuw-Zeeland',ni:'Nicaragua',ne:'Niger',ng:'Nigeria',mk:'Noord-Macedonië',no:'Noorwegen',om:'Oman',pk:'Pakistan',ps:'Palestina',pa:'Panama',pg:'Papoea-Nieuw-Guinea',py:'Paraguay',pe:'Peru',ph:'Filipijnen',pl:'Polen',pt:'Portugal',qa:'Qatar',ro:'Roemenië',ru:'Rusland',rw:'Rwanda',lc:'Saint Lucia',sa:'Saoedi-Arabië',sn:'Senegal',rs:'Servië',sl:'Sierra Leone',sg:'Singapore',sk:'Slowakije',si:'Slovenië',so:'Somalië',za:'Zuid-Afrika',ss:'Zuid-Soedan',es:'Spanje',lk:'Sri Lanka',sd:'Soedan',sr:'Suriname',sz:'Eswatini',se:'Zweden',ch:'Zwitserland',sy:'Syrië',tw:'Taiwan',tj:'Tadzjikistan',tz:'Tanzania',th:'Thailand',tg:'Togo',tt:'Trinidad & Tobago',tn:'Tunesië',tr:'Turkije',tm:'Turkmenistan',ug:'Oeganda',ua:'Oekraïne',ae:'VAE',gb:'Verenigd Koninkrijk',us:'Verenigde Staten',uy:'Uruguay',uz:'Oezbekistan',vu:'Vanuatu',ve:'Venezuela',vn:'Vietnam',eh:'Westelijke Sahara',ye:'Jemen',zm:'Zambia',zw:'Zimbabwe',cw:'Curaçao',nc:'Nieuw-Caledonië',xk:'Kosovo',am:'Armenië',sb:'Salomonseilanden',er:'Eritrea',dm:'Dominica',li:'Liechtenstein',mv:'Malediven',nr:'Nauru',aw:'Aruba',fm:'Micronesië',mh:'Marshalleilanden',pw:'Palau',kn:'Saint Kitts & Nevis',vc:'Saint Vincent & Grenadines',sm:'San Marino',st:'Sao Tomé & Príncipe',sc:'Seychellen',to:'Tonga',tv:'Tuvalu',ws:'Samoa',bm:'Bermuda',gp:'Guadeloupe',gl:'Groenland',fk:'Falklandeilanden',pr:'Puerto Rico',aq:'Antarctica',tf:'Frans Zuidpoolgebied',bj:'Benin',bf:'Burkina Faso',cv:'Kaapverdië',dj:'Djibouti',gq:'Equatoriaal-Guinea',gw:'Guinee-Bissau',km:'Comoren',mg:'Madagaskar',mz:'Mozambique',rw:'Rwanda',so:'Somalië',st:'Sao Tomé',tz:'Tanzania',bi:'Burundi',cf:'Centraal-Afrikaanse Republiek',td:'Tsjaad',er:'Eritrea',ls:'Lesotho',mw:'Malawi',ne:'Niger',sz:'Eswatini',ug:'Oeganda',zm:'Zambia',zw:'Zimbabwe'};
+const SS2ISO={wl:'wa',an:'cw'};
+const A2_NAMES={af:'Afghanistan',al:'Albanië',dz:'Algerije',ad:'Andorra',ao:'Angola',ag:'Antigua & Barbuda',ar:'Argentinië',au:'Australië',at:'Oostenrijk',az:'Azerbeidzjan',bs:"Bahama's",bh:'Bahrein',bd:'Bangladesh',bb:'Barbados',by:'Belarus',be:'België',bz:'Belize',bt:'Bhutan',bo:'Bolivia',ba:'Bosnië-Herzegovina',bw:'Botswana',br:'Brazilië',bn:'Brunei',bg:'Bulgarije',bf:'Burkina Faso',bi:'Burundi',kh:'Cambodja',cm:'Kameroen',ca:'Canada',cv:'Kaapverdië',cf:'Centraal-Afrikaanse Republiek',cl:'Chili',cn:'China',co:'Colombia',km:'Comoren',cg:'Congo-Brazzaville',cd:'Congo-Kinshasa',cr:'Costa Rica',hr:'Kroatië',cu:'Cuba',cy:'Cyprus',cz:'Tsjechië',dk:'Denemarken',dj:'Djibouti',do:'Dominicaanse Republiek',tl:'Oost-Timor',ec:'Ecuador',eg:'Egypte',sv:'El Salvador',gq:'Equatoriaal-Guinea',er:'Eritrea',et:'Ethiopië',ee:'Estland',fj:'Fiji',fi:'Finland',fr:'Frankrijk',ga:'Gabon',gm:'Gambia',ge:'Georgië',de:'Duitsland',gh:'Ghana',gd:'Grenada',gr:'Griekenland',gt:'Guatemala',gn:'Guinee',gw:'Guinee-Bissau',gy:'Guyana',ht:'Haïti',hn:'Honduras',hu:'Hongarije',is:'IJsland',in:'India',id:'Indonesië',ir:'Iran',iq:'Irak',ie:'Ierland',il:'Israël',it:'Italië',ci:"Ivoorkust",jm:'Jamaica',jp:'Japan',jo:'Jordanië',kz:'Kazachstan',ke:'Kenia',kp:'Noord-Korea',kr:'Zuid-Korea',kw:'Koeweit',kg:'Kirgizstan',la:'Laos',lb:'Libanon',ls:'Lesotho',lr:'Liberia',ly:'Libië',lt:'Litouwen',lu:'Luxemburg',mg:'Madagaskar',mw:'Malawi',my:'Maleisië',ml:'Mali',mt:'Malta',mr:'Mauritanië',mu:'Mauritius',mx:'Mexico',md:'Moldavië',mc:'Monaco',mn:'Mongolië',me:'Montenegro',ms:'Montserrat',ma:'Marokko',mz:'Mozambique',mm:'Myanmar',na:'Namibië',np:'Nepal',nl:'Nederland',nz:'Nieuw-Zeeland',ni:'Nicaragua',ne:'Niger',ng:'Nigeria',mk:'Noord-Macedonië',no:'Noorwegen',om:'Oman',pk:'Pakistan',ps:'Palestina',pa:'Panama',pg:'Papoea-Nieuw-Guinea',py:'Paraguay',pe:'Peru',ph:'Filipijnen',pl:'Polen',pt:'Portugal',qa:'Qatar',ro:'Roemenië',ru:'Rusland',rw:'Rwanda',lc:'Saint Lucia',sa:'Saoedi-Arabië',sn:'Senegal',rs:'Servië',sl:'Sierra Leone',sg:'Singapore',sk:'Slowakije',si:'Slovenië',so:'Somalië',za:'Zuid-Afrika',ss:'Zuid-Soedan',es:'Spanje',lk:'Sri Lanka',sd:'Soedan',sr:'Suriname',sz:'Eswatini',se:'Zweden',ch:'Zwitserland',sy:'Syrië',tw:'Taiwan',tj:'Tadzjikistan',tz:'Tanzania',th:'Thailand',tg:'Togo',tt:'Trinidad & Tobago',tn:'Tunesië',tr:'Turkije',tm:'Turkmenistan',ug:'Oeganda',ua:'Oekraïne',ae:'VAE',gb:'Verenigd Koninkrijk',en:'Engeland',sx:'Schotland',wa:'Wales',nx:'Noord-Ierland',us:'Verenigde Staten',uy:'Uruguay',uz:'Oezbekistan',vu:'Vanuatu',ve:'Venezuela',vn:'Vietnam',eh:'Westelijke Sahara',ye:'Jemen',zm:'Zambia',zw:'Zimbabwe',cw:'Curaçao',nc:'Nieuw-Caledonië',xk:'Kosovo',am:'Armenië',sb:'Salomonseilanden',dm:'Dominica',li:'Liechtenstein',lv:'Letland',mo:'Macau',mv:'Malediven',nr:'Nauru',aw:'Aruba',fm:'Micronesië',mh:'Marshalleilanden',pw:'Palau',kn:'Saint Kitts & Nevis',vc:'Saint Vincent & Grenadines',sm:'San Marino',st:'Sao Tomé & Príncipe',sc:'Seychellen',to:'Tonga',tv:'Tuvalu',ws:'Samoa',bm:'Bermuda',gp:'Guadeloupe',gl:'Groenland',fk:'Falklandeilanden',pr:'Puerto Rico',aq:'Antarctica',tf:'Frans Zuidpoolgebied',ky:'Kaaimaneilanden',vi:'Amerikaans Maagdeneilanden',as:'Amerikaans-Samoa',ck:'Cookeilanden',pf:'Frans-Polynesië',td:'Tsjaad'};
 function normA2(c){if(!c)return null;const l=c.toLowerCase();return SS2ISO[l]||l;}
+const FLAG_EMOJI_FIX={en:'🏴󠁧󠁢󠁥󠁮󠁧󠁿',sx:'🏴󠁧󠁢󠁳󠁣󠁴󠁿',wa:'🏴󠁧󠁢󠁷󠁬󠁳󠁿',wl:'🏴󠁧󠁢󠁷󠁬󠁳󠁿',nx:'🇬🇧'};
+function flagEmoji(a2){if(!a2||a2.length!==2)return'';const c=a2.toLowerCase();if(FLAG_EMOJI_FIX[c]!==undefined)return FLAG_EMOJI_FIX[c];const o=0x1F1E6;try{return String.fromCodePoint(o+(c.charCodeAt(0)-97),o+(c.charCodeAt(1)-97));}catch(e){return'';}}
+
 function _mp(lon,lat){
   const W=720,H=380;
   lat=Math.max(-79,Math.min(79,lat));
@@ -452,12 +459,18 @@ function WorldMap({players,onCountryClick}){
 
   const seenMap=useMemo(()=>{
     const m={};
+    const UK_NATIONS=new Set(['en','sx','wa','nx']);
     players.forEach(p=>{
       if((p.starter_appearances||0)+(p.sub_appearances||0)===0)return;
       const a2=normA2(p.nationality_alpha2);
       if(!a2)return;
-      if(!m[a2])m[a2]={count:0,name:p.nationality||a2.toUpperCase()};
+      if(!m[a2])m[a2]={count:0,name:A2_NAMES[a2]||p.nationality||a2.toUpperCase()};
       m[a2].count++;
+      // ook gb markeren zodat VK gekleurd blijft op de SVG-kaart
+      if(UK_NATIONS.has(a2)){
+        if(!m['gb'])m['gb']={count:0,name:'Verenigd Koninkrijk'};
+        m['gb'].count++;
+      }
     });
     return m;
   },[players]);
@@ -592,48 +605,213 @@ function WorldMap({players,onCountryClick}){
   </div>`;
 }
 
-// ─── TAB: HOME ─────────────────────────────────────────────────────────────
-function TabHome({data,onCountryClick}){
-  const {total_matches=0,total_goals_witnessed=0,players=[],records={},seasons=[],tournaments=[],teams_visited=[],date_range={}}=data;
-  const firstYear=date_range.first?date_range.first.slice(0,4):'—';
-  const lastYear=date_range.last?date_range.last.slice(0,4):'—';
-  const jaren=firstYear!=='—'&&lastYear!=='—'?parseInt(lastYear)-parseInt(firstYear)+1:'—';
+// ─── CONFEDERATION DATA ────────────────────────────────────────────────────
+const CONF_DATA=[
+  {key:'UEFA',    label:'Europa',         color:T.blue,   total:58, codes:['al','ad','am','az','by','be','ba','bg','cy','dk','de','en','ee','fi','fr','ge','gr','hu','is','ie','il','it','kz','xk','hr','lv','li','lt','lu','mt','md','mc','me','nl','nx','mk','no','ua','at','pl','pt','ro','ru','sm','sx','rs','si','sk','es','cz','tr','wa','se','ch']},
+  {key:'CAF',     label:'Afrika',         color:T.yellow, total:54, codes:['dz','ao','bj','bw','bf','bi','cf','km','cg','cd','dj','eg','gq','er','sz','et','ga','gm','gh','gn','gw','ci','cv','cm','ke','ls','lr','ly','mg','mw','ml','ma','mr','mu','mz','na','ne','ng','ug','rw','st','sn','sl','sd','so','tz','tg','td','tn','zm','zw','za','ss']},
+  {key:'AFC',     label:'Azië',           color:T.purple, total:47, codes:['af','au','bh','bd','bt','bn','cn','ph','in','id','iq','ir','jp','ye','jo','kg','kw','la','lb','mo','mv','my','mn','mm','np','kp','uz','om','tl','pk','ps','qa','sa','sg','lk','sy','tj','tw','th','tm','ae','vn','kr']},
+  {key:'CONCACAF',label:'N./M.-Amerika',  color:T.orange, total:41, codes:['ag','aw','bs','bb','bz','bm','ca','cr','cu','cw','dm','do','sv','gd','gt','gy','ht','hn','jm','ky','vi','mx','ms','ni','pa','pr','kn','lc','vc','sr','tt','us']},
+  {key:'CONMEBOL',label:'Zuid-Amerika',   color:T.green,  total:10, codes:['ar','bo','br','cl','co','ec','py','pe','uy','ve']},
+  {key:'OFC',     label:'Oceanië',        color:T.teal,   total:11, codes:['as','ck','fj','pf','nc','nz','pg','sb','ws','to','vu']},
+];
+
+// ─── CONTINENT VIEW ────────────────────────────────────────────────────────
+function ContinentView({players,onCountryClick}){
+  const seenSet=useMemo(()=>{
+    const s=new Set();
+    players.forEach(p=>{
+      if((p.starter_appearances||0)+(p.sub_appearances||0)===0)return;
+      const a2=normA2(p.nationality_alpha2);
+      if(a2)s.add(a2);
+    });
+    return s;
+  },[players]);
+  return html`<div style=${{display:'flex',flexDirection:'column',gap:14}}>
+    ${CONF_DATA.map(({key,label,color,total,codes})=>{
+      const seenCount=codes.filter(c=>seenSet.has(c)).length;
+      const pct=seenCount/total*100;
+      return html`<div key=${key}>
+        <div style=${{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:5}}>
+          <div style=${{display:'flex',alignItems:'center',gap:6}}>
+            <div style=${{width:8,height:8,borderRadius:'50%',background:color,flexShrink:0}}></div>
+            <span style=${{fontSize:13,fontWeight:700,color:T.text}}>${key}</span>
+            <span style=${{fontSize:11,color:T.muted}}>${label}</span>
+          </div>
+          <span style=${{fontSize:12,fontWeight:700,color}}>${seenCount}<span style=${{fontWeight:400,color:T.dim}}>/${total}</span></span>
+        </div>
+        <div style=${{height:5,background:T.bg3,borderRadius:3,overflow:'hidden',marginBottom:6}}>
+          <div style=${{width:`${pct}%`,height:'100%',background:color,borderRadius:3,transition:'width 0.6s ease'}}></div>
+        </div>
+        <div style=${{display:'grid',gridTemplateColumns:'repeat(10,1fr)',gap:3,marginTop:2}}>
+          ${codes.map(c=>{
+            const seen=seenSet.has(c);
+            const flag=fFlag(c);
+            if(!flag)return null;
+            return html`<img
+              key=${c}
+              src=${flag}
+              alt=${A2_NAMES[c]||c}
+              title=${A2_NAMES[c]||c}
+              onClick=${onCountryClick?()=>onCountryClick(c):null}
+              loading="lazy"
+              style=${{
+                width:'100%',aspectRatio:'4/3',objectFit:'cover',
+                borderRadius:2,border:`1px solid ${T.border}`,
+                opacity:seen?1:0.18,
+                filter:seen?'none':'grayscale(1)',
+                cursor:onCountryClick?'pointer':'default',
+                transition:'opacity 0.15s',
+              }}
+            />`;
+          })}
+        </div>
+      </div>`;
+    })}
+  </div>`;
+}
+
+// ─── GEZIEN XI ─────────────────────────────────────────────────────────────
+const XI_TYPES=[
+  {k:'seen',     l:'Meest gezien',   color:T.blue},
+  {k:'minutes',  l:'Meeste minuten', color:T.purple},
+  {k:'oldest',   l:'Oudste',         color:T.orange},
+  {k:'youngest', l:'Jongste',        color:T.green},
+  {k:'market',   l:'Marktwaarde',    color:T.yellow},
+];
+function xiSort(type,a,b){
+  if(type==='oldest')  return((b.oldest_age_seen?.age_years||0)*365+(b.oldest_age_seen?.age_days||0))-((a.oldest_age_seen?.age_years||0)*365+(a.oldest_age_seen?.age_days||0));
+  if(type==='youngest'){const av=(a.youngest_age_seen?.age_years??999)*365+(a.youngest_age_seen?.age_days||0),bv=(b.youngest_age_seen?.age_years??999)*365+(b.youngest_age_seen?.age_days||0);return av-bv;}
+  if(type==='market')  return(b.market_value||0)-(a.market_value||0);
+  if(type==='seen')    return(b.matches_seen||0)-(a.matches_seen||0);
+  if(type==='minutes') return(b.minutes_played||0)-(a.minutes_played||0);
+  return 0;
+}
+function xiBadge(type,p){
+  if(type==='oldest')  {const s=p.oldest_age_seen;  return s?fAge(s.age_years,s.age_days):'—';}
+  if(type==='youngest'){const s=p.youngest_age_seen; return s?fAge(s.age_years,s.age_days):'—';}
+  if(type==='market')  return fMarket(p.market_value);
+  if(type==='seen')    return`${p.matches_seen}x`;
+  if(type==='minutes') return`${p.minutes_played}'`;
+  return'—';
+}
+const POS_COLOR={G:T.teal,D:T.blue,M:T.green,F:T.orange};
+function XICard({player,type,color,onPlayerClick}){
+  if(!player)return html`<div style=${{width:70}}></div>`;
+  const posColor=POS_COLOR[player.position]||T.muted;
+  const initials=(player.short_name||player.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('');
+  const [imgOk,setImgOk]=useState(true);
+  return html`<div
+    onClick=${()=>onPlayerClick&&onPlayerClick(player)}
+    style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:3,width:70,flexShrink:0,cursor:onPlayerClick?'pointer':'default'}}
+  >
+    <div style=${{width:46,height:46,borderRadius:'50%',background:posColor+'22',border:`2px solid ${posColor}55`,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+      ${imgOk
+        ?html`<img src=${pImg(player.id)} style=${{width:'100%',height:'100%',objectFit:'cover'}} onError=${()=>setImgOk(false)} loading="lazy" />`
+        :html`<span style=${{fontSize:14,fontWeight:800,color:posColor}}>${initials}</span>`}
+    </div>
+    <div style=${{fontSize:9,fontWeight:600,color:T.text,textAlign:'center',lineHeight:1.2,maxWidth:68,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${player.short_name||player.name}</div>
+    <div style=${{fontSize:9,color,fontWeight:700,textAlign:'center'}}>${xiBadge(type,player)}</div>
+  </div>`;
+}
+function GezienXI({players,records,onPlayerClick}){
+  const [type,setType]=useState('seen');
+  const conf=XI_TYPES.find(t=>t.k===type)||XI_TYPES[0];
+  const xi=useMemo(()=>{
+    const played=players.filter(p=>(p.starter_appearances||0)+(p.sub_appearances||0)>0);
+    const pick=(pos,n)=>[...played.filter(p=>p.position===pos)].sort((a,b)=>xiSort(type,a,b)).slice(0,n);
+    return{F:pick('F',3),M:pick('M',3),D:pick('D',4),G:pick('G',1)};
+  },[players,type]);
   const ageSpan=useMemo(()=>{
     let best=null,bestDiff=0;
     players.forEach(p=>{
       const y=p.youngest_age_seen,o=p.oldest_age_seen;
       if(!y||!o)return;
       const diff=(o.age_years*365+o.age_days)-(y.age_years*365+y.age_days);
-      if(diff>bestDiff){bestDiff=diff;best={name:p.name,years:Math.floor(diff/365),days:diff%365,from:fAge(y.age_years,y.age_days),to:fAge(o.age_years,o.age_days)};}
+      if(diff>bestDiff){bestDiff=diff;best={name:p.name,years:Math.floor(diff/365),days:diff%365};}
     });
     return best;
   },[players]);
-  const donutData=tournaments.slice(0,6).map(t=>({name:t.name.replace('Champions League','CL').replace('Eredivisie','Eredivisie'),value:t.matches_count}));
-  const seasonBar=[...seasons].sort((a,b)=>a.name.localeCompare(b.name)).map(s=>({name:s.name.slice(2,4)+'/'+s.name.slice(7,9)||s.name.slice(0,4),value:s.matches_count}));
+  const row=arr=>html`<div style=${{display:'flex',justifyContent:'center',gap:6}}>${arr.map((p,i)=>html`<${XICard} key=${p?.id??i} player=${p} type=${type} color=${conf.color} onPlayerClick=${onPlayerClick} />`)}</div>`;
+  return html`<${Card}>
+    <${SectionTitle} icon="users">XI</${SectionTitle}>
+    <div style=${{display:'flex',gap:6,marginBottom:12,flexWrap:'wrap'}}>
+      ${records.youngest_player&&html`<div style=${{flex:1,minWidth:100,background:T.bg3,borderRadius:10,padding:'6px 10px'}}>
+        <div style=${{fontSize:9,color:T.dim,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:1}}>Jongste ooit</div>
+        <div style=${{fontSize:11,fontWeight:700,color:T.green,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${records.youngest_player.name}</div>
+        <div style=${{fontSize:10,color:T.muted}}>${fAge(records.youngest_player.age_years,records.youngest_player.age_days)}</div>
+      </div>`}
+      ${records.oldest_player&&html`<div style=${{flex:1,minWidth:100,background:T.bg3,borderRadius:10,padding:'6px 10px'}}>
+        <div style=${{fontSize:9,color:T.dim,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:1}}>Oudste ooit</div>
+        <div style=${{fontSize:11,fontWeight:700,color:T.orange,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${records.oldest_player.name}</div>
+        <div style=${{fontSize:10,color:T.muted}}>${fAge(records.oldest_player.age_years,records.oldest_player.age_days)}</div>
+      </div>`}
+      ${ageSpan&&html`<div style=${{flex:1,minWidth:100,background:T.bg3,borderRadius:10,padding:'6px 10px'}}>
+        <div style=${{fontSize:9,color:T.dim,textTransform:'uppercase',letterSpacing:'0.04em',marginBottom:1}}>Langste spanne</div>
+        <div style=${{fontSize:11,fontWeight:700,color:T.purple,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${ageSpan.name}</div>
+        <div style=${{fontSize:10,color:T.muted}}>${ageSpan.years}j ${ageSpan.days}d</div>
+      </div>`}
+    </div>
+    <div class="scroll-x" style=${{display:'flex',gap:6,marginBottom:14,paddingBottom:2}}>
+      ${XI_TYPES.map(t=>html`<${Pill} key=${t.k} active=${type===t.k} color=${t.color} onClick=${()=>setType(t.k)} size="sm">${t.l}</${Pill}>`)}
+    </div>
+    <div style=${{display:'flex',flexDirection:'column',gap:10,padding:'4px 0'}}>
+      ${row(xi.F)}
+      ${row(xi.M)}
+      ${row(xi.D)}
+      ${row(xi.G)}
+    </div>
+  </${Card}>`;
+}
+
+// ─── TAB: HOME ─────────────────────────────────────────────────────────────
+function TabHome({data,onCountryClick,onPlayerClick}){
+  const {total_matches=0,total_goals_witnessed=0,players=[],records={},tournaments=[],teams_visited=[],date_range={}}=data;
+  const firstYear=date_range.first?date_range.first.slice(0,4):'—';
+  const lastYear=date_range.last?date_range.last.slice(0,4):'—';
+
+  const countriesSeen=useMemo(()=>new Set(
+    players.filter(p=>(p.starter_appearances||0)+(p.sub_appearances||0)>0).map(p=>normA2(p.nationality_alpha2)).filter(Boolean)
+  ).size,[players]);
+
+  const seasonBar=useMemo(()=>{
+    const map={};
+    (data.matches||[]).forEach(m=>{
+      if(!m.date)return;
+      const yr=+m.date.slice(0,4),mo=+m.date.slice(5,7);
+      const k=mo>=7?`${String(yr).slice(2)}/${String(yr+1).slice(2)}`:`${String(yr-1).slice(2)}/${String(yr).slice(2)}`;
+      map[k]=(map[k]||0)+1;
+    });
+    return Object.entries(map).sort(([a],[b])=>a.localeCompare(b)).map(([name,value])=>({name,value}));
+  },[data.matches]);
+
+  const COMP_COLORS={'UEFA Champions League':'#1A4FBE','UEFA Europa League':'#F05A28','UEFA Europa Conference League':'#00A94F'};
+  const compBar=tournaments.slice(0,8).map(t=>({name:t.name.replace('VriendenLoterij ','').replace('Eurojackpot ','').replace('UEFA Europa Conference League','UECL').replace('UEFA Champions League','UCL').replace('UEFA Europa League','UEL').replace('Club Friendly Games','Vriendschappelijk'),value:t.matches_count,color:COMP_COLORS[t.name]||T.blue}));
   const recentMatches=(data.matches||[]).slice(0,5);
 
   return html`<div style=${{display:'flex',flexDirection:'column',gap:16}}>
 
     <!-- Hero stat band -->
     <${Card} glow=${true} style=${{background:'rgba(0,122,255,0.05)',border:'1px solid rgba(0,122,255,0.18)'}}>
-      <div style=${{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:4}}>
+      <div style=${{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:4}}>
         <${StatBox} label="Wedstrijden" value=${total_matches} color=${T.blue} />
         <${StatBox} label="Spelers" value=${players.length} color=${T.green} />
         <${StatBox} label="Goals" value=${total_goals_witnessed} color=${T.yellow} />
-        <${StatBox} label="Jaar actief" value=${jaren} color=${T.purple} sub=${`${firstYear}–${lastYear}`} />
+        <${StatBox} label="Clubs" value=${teams_visited.length} color=${T.orange} />
+        <${StatBox} label="Landen" value=${countriesSeen} color=${T.teal} />
+        <${StatBox} label="Seizoenen" value=${seasonBar.length} color=${T.purple} sub=${firstYear!=='—'?`${firstYear}–${lastYear}`:null} />
       </div>
     </${Card}>
+
+    <!-- Gezien XI -->
+    <${GezienXI} players=${players} records=${records} onPlayerClick=${onPlayerClick} />
 
     <!-- Records -->
     <${Card}>
       <${SectionTitle} icon="trophy">Records</${SectionTitle}>
       <div style=${{display:'flex',flexDirection:'column',gap:10}}>
-        ${records.youngest_player&&html`<${RecordItem} icon="person" label="Jongste speler" value=${`${records.youngest_player.name} — ${fAge(records.youngest_player.age_years,records.youngest_player.age_days)}`} sub=${records.youngest_player.match} />`}
-        ${records.oldest_player&&html`<${RecordItem} icon="person" label="Oudste speler" value=${`${records.oldest_player.name} — ${fAge(records.oldest_player.age_years,records.oldest_player.age_days)}`} sub=${records.oldest_player.match} />`}
-        ${records.most_goals_single_match&&html`<${RecordItem} icon="target" label="Meeste goals in 1 duel" value=${`${records.most_goals_single_match.count} goals — ${records.most_goals_single_match.match}`} />`}
-        ${records.biggest_win&&html`<${RecordItem} icon="trophy" label="Grootste overwinning" value=${records.biggest_win.match} sub=${fDate(records.biggest_win.date)} />`}
-        ${records.highest_attendance&&html`<${RecordItem} icon="users" label="Meeste toeschouwers" value=${`${fNum(records.highest_attendance.count)} — ${records.highest_attendance.venue}`} sub=${records.highest_attendance.match} />`}
-        ${ageSpan&&html`<${RecordItem} icon="ruler" label="Langste leeftijdsspanne" value=${`${ageSpan.name} — ${ageSpan.years}j ${ageSpan.days}d`} sub=${`Gezien op ${ageSpan.from} t/m ${ageSpan.to}`} />`}
+        ${records.most_goals_single_match&&html`<${RecordItem} icon="target" label="Meeste goals in 1 duel" number=${`${records.most_goals_single_match.count} goals`} match=${records.most_goals_single_match.match} date=${records.most_goals_single_match.date} />`}
+        ${records.biggest_win&&html`<${RecordItem} icon="trophy" label="Grootste overwinning" number=${`+${records.biggest_win.goal_diff??''}`} match=${records.biggest_win.match} date=${records.biggest_win.date} />`}
+        ${records.highest_attendance&&html`<${RecordItem} icon="users" label="Meeste toeschouwers" number=${fNum(records.highest_attendance.count)} match=${`${records.highest_attendance.venue} · ${records.highest_attendance.match}`} date=${records.highest_attendance.date} />`}
       </div>
     </${Card}>
 
@@ -645,10 +823,10 @@ function TabHome({data,onCountryClick}){
       </div>
     </${Card}>`}
 
-    <!-- Competities donut -->
-    ${donutData.length>0&&html`<${Card}>
+    <!-- Competities horizontal bar -->
+    ${compBar.length>0&&html`<${Card}>
       <${SectionTitle} icon="trophy">Competities</${SectionTitle}>
-      <${DonutChart} data=${donutData} size=${100} />
+      <${BarChart} data=${compBar} color=${T.blue} horizontal=${true} />
     </${Card}>`}
 
     <!-- Seizoenen bar -->
@@ -657,52 +835,51 @@ function TabHome({data,onCountryClick}){
       <${BarChart} data=${seasonBar} color=${T.blue} height=${110} />
     </${Card}>`}
 
-    <!-- Top 5 meest geziene teams -->
-    ${teams_visited.length>0&&html`<${Card}>
-      <${SectionTitle} icon="repeat">Meest gevolgd</${SectionTitle}>
-      <div class="scroll-x" style=${{display:'flex',gap:12,paddingBottom:4}}>
-        ${teams_visited.slice(0,10).map(t=>html`<div key=${t.id} style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:6,minWidth:60,flexShrink:0}}>
-          <div style=${{width:48,height:48,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
-            <${TeamBadge} id=${t.id} name=${t.name} size=${40} />
-          </div>
-          <div style=${{fontSize:9,color:T.muted,textAlign:'center',lineHeight:1.2,maxWidth:60,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${t.name}</div>
-          <div style=${{fontSize:10,fontWeight:700,color:T.blue}}>${t.matches_count}x</div>
-        </div>`)}
-      </div>
-    </${Card}>`}
-
-    <!-- Wereldkaart -->
+    <!-- Landen: confederaties (mobile) + kaart (desktop) -->
     <${Card}>
       <${SectionTitle} icon="globe">Landen gezien spelen</${SectionTitle}>
-      <${WorldMap} players=${players} onCountryClick=${onCountryClick} />
+      <div class="mobile-only"><${ContinentView} players=${players} onCountryClick=${onCountryClick} /></div>
+      <div class="desktop-only"><${WorldMap} players=${players} onCountryClick=${onCountryClick} /></div>
     </${Card}>
   </div>`;
 }
 
-function RecordItem({icon,label,value,sub}){
+function RecordItem({icon,label,number,match,date}){
   return html`<div style=${{display:'flex',gap:10,alignItems:'flex-start',padding:'6px 0',borderBottom:`1px solid ${T.border}`}}>
     <div style=${{flexShrink:0,marginTop:2,width:22,display:'flex',justifyContent:'center'}}>
       <${Icon} name=${icon} size=${17} color=${T.muted} />
     </div>
     <div style=${{minWidth:0}}>
       <div style=${{fontSize:11,color:T.dim,textTransform:'uppercase',letterSpacing:'0.04em'}}>${label}</div>
-      <div style=${{fontSize:13,fontWeight:600,color:T.text,marginTop:1}}>${value}</div>
-      ${sub&&html`<div style=${{fontSize:11,color:T.muted}}>${sub}</div>`}
+      ${number&&html`<div style=${{fontSize:18,fontWeight:800,color:T.text,lineHeight:1.1,marginTop:2}}>${number}</div>`}
+      ${match&&html`<div style=${{fontSize:12,color:T.muted,marginTop:2}}>${match}</div>`}
+      ${date&&html`<div style=${{fontSize:11,color:T.dim}}>${fDate(date)}</div>`}
     </div>
   </div>`;
 }
 
+const MINI_UEFA={
+  'UEFA Champions League':{border:'#1A4FBE',tint:'rgba(26,79,190,0.07)',tintDark:'rgba(26,79,190,0.10)'},
+  'UEFA Europa League':   {border:'#F05A28',tint:'rgba(240,90,40,0.07)', tintDark:'rgba(240,90,40,0.10)'},
+  'UEFA Conference League':{border:'#00A94F',tint:'rgba(0,169,79,0.07)', tintDark:'rgba(0,169,79,0.10)'},
+};
 function MiniMatchRow({match:m}){
-  const diff=(m.home_score??0)-(m.away_score??0);
-  const color=diff>0?T.green:diff<0?T.red:T.yellow;
-  return html`<div style=${{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:`1px solid ${T.border}`}}>
-    <div style=${{fontSize:11,color:T.dim,width:60,flexShrink:0}}>${m.date?.slice(5).replace('-','/')}</div>
-    <div style=${{flex:1,minWidth:0}}>
-      <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${m.home_team?.name} ${m.home_score??'?'}–${m.away_score??'?'} ${m.away_team?.name}</div>
-      <div style=${{fontSize:11,color:T.dim}}>${m.tournament}</div>
-    </div>
-    <div style=${{width:28,height:28,borderRadius:6,background:color+'22',display:'flex',alignItems:'center',justifyContent:'center'}}>
-      <span style=${{fontSize:13,fontWeight:700,color}}>${diff>0?'W':diff<0?'V':'G'}</span>
+  const uc=MINI_UEFA[m.tournament]||null;
+  return html`<div style=${{
+    display:'flex',alignItems:'center',gap:10,padding:'10px 0',
+    borderBottom:`1px solid ${T.border}`,
+    ...(uc?{background:isDark?uc.tintDark:uc.tint,borderLeft:`3px solid ${uc.border}`,paddingLeft:13,paddingRight:16,marginLeft:-16,marginRight:-16}:{}),
+  }}>
+    <div style=${{fontSize:11,color:T.dim,width:36,flexShrink:0,textAlign:'center'}}>${m.date?.slice(8)}/${m.date?.slice(5,7)}</div>
+    <div style=${{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0}}>
+      <${TeamBadge} id=${m.home_team?.id} name=${m.home_team?.name} size=${22} />
+      <div style=${{flex:1,minWidth:0}}>
+        <div style=${{fontSize:13,fontWeight:600,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+          ${m.home_team?.name}<span style=${{color:T.blue,fontWeight:800,margin:'0 4px'}}>${m.home_score??'?'}–${m.away_score??'?'}</span>${m.away_team?.name}
+        </div>
+        <div style=${{fontSize:11,color:uc?uc.border:T.dim,marginTop:1,fontWeight:uc?600:400,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${m.tournament}${m.venue?.city?` · ${m.venue.city}`:''}</div>
+      </div>
+      <${TeamBadge} id=${m.away_team?.id} name=${m.away_team?.name} size=${22} />
     </div>
   </div>`;
 }
@@ -711,8 +888,8 @@ function MiniMatchRow({match:m}){
 const SORTS=[
   {k:'matches_seen',l:'Gezien'},{k:'goals',l:'Doelpunten'},{k:'assists',l:'Assists'},
   {k:'xg_total',l:'xG'},{k:'avg_rating',l:'Cijfer'},{k:'minutes_played',l:'Minuten'},
-  {k:'yellow_cards',l:'Geel'},{k:'age_asc',l:'Jongste'},{k:'age_desc',l:'Oudste'},
-  {k:'clubs',l:'Clubs'},{k:'height_desc',l:'Grootste'},{k:'height_asc',l:'Kleinste'},
+  {k:'yellow_cards',l:'Geel'},{k:'red_cards',l:'Rood'},{k:'age_asc',l:'Jongste'},{k:'age_desc',l:'Oudste'},
+  {k:'age_span',l:'Spanne'},{k:'clubs',l:'Clubs'},{k:'height_desc',l:'Grootste'},{k:'height_asc',l:'Kleinste'},
   {k:'max_transfer_fee',l:'Transfersom'},{k:'national_team_caps',l:'Interlands'},
 ];
 
@@ -726,36 +903,31 @@ const ROLE_FILTERS=[
 ];
 
 const PAGE=25;
-function TabSpelers({data,initCountry}){
+function TabSpelers({data,initCountry,initPlayer,onRegisterBack,onClearBack}){
   const [q,setQ]=useState('');
   const [sort,setSort]=useState('matches_seen');
   const [role,setRole]=useState('played');
   const [country,setCountry]=useState(initCountry||'');
-  const [gender,setGender]=useState('all');
-  const [detail,setDetail]=useState(null);
+  const [detail,setDetail]=useState(initPlayer||null);
   const [shown,setShown]=useState(PAGE);
   const listScrollY=useRef(0);
+  useEffect(()=>{
+    if(detail)onRegisterBack&&onRegisterBack(()=>{setDetail(null);window.scrollTo({top:listScrollY.current,behavior:'instant'});});
+    else onClearBack&&onClearBack();
+  },[detail]);
+  useEffect(()=>()=>{onClearBack&&onClearBack();},[]);
 
   // Sync when initCountry changes (e.g. navigated from map)
   useEffect(()=>{setCountry(initCountry||'');},[initCountry]);
   // Reset paginering bij filter/sort wijziging
-  useEffect(()=>{setShown(PAGE);},[q,sort,role,country,gender]);
+  useEffect(()=>{setShown(PAGE);},[q,sort,role,country]);
 
   const countryOptions=useMemo(()=>{
-    const seen=new Map();
-    (data.players||[]).forEach(p=>{
-      if((p.starter_appearances||0)+(p.sub_appearances||0)===0)return;
-      const a2=normA2(p.nationality_alpha2);
-      if(!a2||seen.has(a2))return;
-      seen.set(a2,p.nationality||a2.toUpperCase());
-    });
-    return[...seen.entries()].sort((a,b)=>a[1].localeCompare(b[1]));
-  },[data.players]);
+    return Object.entries(A2_NAMES).sort((a,b)=>a[1].localeCompare(b[1],'nl'));
+  },[]);
 
   const list=useMemo(()=>{
     let ps=[...(data.players||[])];
-    if(gender==='M') ps=ps.filter(p=>!p.gender||p.gender==='M');
-    if(gender==='F') ps=ps.filter(p=>p.gender==='F');
     if(q)ps=ps.filter(p=>p.name.toLowerCase().includes(q.toLowerCase()));
     if(country)ps=ps.filter(p=>normA2(p.nationality_alpha2)===country);
     if(role==='played')        ps=ps.filter(p=>(p.starter_appearances||0)>0||(p.sub_appearances||0)>0);
@@ -766,6 +938,7 @@ function TabSpelers({data,initCountry}){
     ps.sort((a,b)=>{
       if(sort==='age_asc'){const ya=a.youngest_age_seen,yb=b.youngest_age_seen;if(!ya&&!yb)return 0;if(!ya)return 1;if(!yb)return-1;return ya.age_years!==yb.age_years?ya.age_years-yb.age_years:ya.age_days-yb.age_days;}
       if(sort==='age_desc'){const oa=a.oldest_age_seen,ob=b.oldest_age_seen;if(!oa&&!ob)return 0;if(!oa)return 1;if(!ob)return-1;return ob.age_years!==oa.age_years?ob.age_years-oa.age_years:ob.age_days-oa.age_days;}
+      if(sort==='age_span'){const spanOf=p=>{const y=p.youngest_age_seen,o=p.oldest_age_seen;if(!y||!o)return-1;return(o.age_years*365+o.age_days)-(y.age_years*365+y.age_days);};return spanOf(b)-spanOf(a);}
       if(sort==='clubs')return(b.teams_seen_for||[]).length-(a.teams_seen_for||[]).length;
       if(sort==='height_desc'){const ha=a.height_cm||0,hb=b.height_cm||0;return hb-ha;}
       if(sort==='height_asc'){const ha=a.height_cm||999,hb=b.height_cm||999;return ha-hb;}
@@ -786,13 +959,6 @@ function TabSpelers({data,initCountry}){
       <div class="scroll-x" style=${{display:'flex',gap:5,flex:1,minWidth:0}}>
         ${ROLE_FILTERS.map(r=>html`<${Pill} key=${r.k} active=${role===r.k} onClick=${()=>setRole(r.k)} size="sm">${r.l}</${Pill}>`)}
       </div>
-      <div style=${{display:'flex',gap:3,flexShrink:0,background:T.bg3,borderRadius:999,padding:3}}>
-        ${[{k:'M',l:'♂',c:T.blue},{k:'F',l:'♀',c:T.pink},{k:'all',l:'··',c:T.muted}].map(g=>html`<button key=${g.k} onClick=${()=>setGender(g.k)} aria-label=${g.k==='M'?'Mannen':g.k==='F'?'Vrouwen':'Alle'} style=${{
-          background:gender===g.k?g.c:'transparent',color:gender===g.k?'#fff':T.muted,
-          border:'none',borderRadius:999,padding:'6px 10px',fontSize:12,fontWeight:700,
-          cursor:'pointer',transition:'all 0.15s ease',lineHeight:1,minHeight:36,
-        }}>${g.l}</button>`)}
-      </div>
       <div style=${{position:'relative',flexShrink:0}}>
         <select value=${sort} onChange=${e=>setSort(e.target.value)} aria-label="Sorteren op" style=${{
           background:T.blue,color:'#fff',border:'none',borderRadius:999,
@@ -812,7 +978,7 @@ function TabSpelers({data,initCountry}){
         fontSize:13,fontWeight:country?600:400,appearance:'none',cursor:'pointer',outline:'none',
       }}>
         <option value="">Alle landen</option>
-        ${countryOptions.map(([a2,name])=>html`<option key=${a2} value=${a2}>${name}</option>`)}
+        ${countryOptions.map(([a2,name])=>html`<option key=${a2} value=${a2}>${flagEmoji(a2)} ${name}</option>`)}
       </select>
       ${country&&html`<button onClick=${()=>setCountry('')} aria-label="Landfilter verwijderen" style=${{
         position:'absolute',right:4,top:'50%',transform:'translateY(-50%)',
@@ -844,8 +1010,10 @@ function PlayerCard({player:p,onClick,rank,sort}){
     if(sort==='avg_rating') return{val:fRating(p.avg_rating),lbl:'cijfer',color:rBg(p.avg_rating)};
     if(sort==='minutes_played') return{val:fNum(p.minutes_played),lbl:'min',color:T.teal};
     if(sort==='yellow_cards') return{val:p.yellow_cards||0,lbl:'geel',color:T.yellow};
+    if(sort==='red_cards') return{val:p.red_cards||0,lbl:'rood',color:T.red};
     if(sort==='age_asc'){const a=p.youngest_age_seen;return{val:a?`${a.age_years}j`:'—',sub:a?`${a.age_days}d`:null,lbl:'jongste',color:T.purple};}
     if(sort==='age_desc'){const a=p.oldest_age_seen;return{val:a?`${a.age_years}j`:'—',sub:a?`${a.age_days}d`:null,lbl:'oudste',color:T.orange};}
+    if(sort==='age_span'){const y=p.youngest_age_seen,o=p.oldest_age_seen;if(y&&o){const d=(o.age_years*365+o.age_days)-(y.age_years*365+y.age_days);return{val:`${Math.floor(d/365)}j`,sub:`${d%365}d`,lbl:'spanne',color:T.teal};}return{val:'—',lbl:'spanne',color:T.teal};}
     if(sort==='clubs') return{val:(p.teams_seen_for||[]).length,lbl:'clubs',color:T.purple};
     if(sort==='height_desc'||sort==='height_asc') return{val:p.height_cm||'—',lbl:'cm',color:T.muted};
     if(sort==='max_transfer_fee') return{val:fMarket(p.max_transfer_fee),lbl:'transfer',color:T.green};
@@ -1018,12 +1186,17 @@ function PlayerDetail({player:p,onBack}){
 
 // ─── TAB: CLUBS ────────────────────────────────────────────────────────────
 
-function TabClubs({data}){
+function TabClubs({data,onRegisterBack,onClearBack}){
   const [detail,setDetail]=useState(null);
   const [q,setQ]=useState('');
   const [sort,setSort]=useState('matches_count');
   const [sortDir,setSortDir]=useState(-1);
   const listScrollY=useRef(0);
+  useEffect(()=>{
+    if(detail)onRegisterBack&&onRegisterBack(()=>{setDetail(null);window.scrollTo({top:listScrollY.current,behavior:'instant'});});
+    else onClearBack&&onClearBack();
+  },[detail]);
+  useEffect(()=>()=>{onClearBack&&onClearBack();},[]);
 
   const matches=useMemo(()=>data.matches||[],[data]);
   const teams=useMemo(()=>data.teams_visited||[],[data]);
@@ -1451,26 +1624,53 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
 }
 
 // ─── TAB: WEDSTRIJDEN ──────────────────────────────────────────────────────
+const MATCH_SPECIALS=[
+  {k:'injury', l:'+90', title:'Blessuretijdgoal', color:'#ff9500'},
+  {k:'red',    l:'Rood',title:'Rode kaart',       color:'#ff3b30'},
+  {k:'pen',    l:'Pen', title:'Strafschop',        color:'#5856d6'},
+  {k:'own',    l:'OD',  title:'Eigen doelpunt',    color:'#34c759'},
+];
+const mHasInjury=m=>{
+  const injGs=(m.goals||[]).filter(g=>g.minute>=90&&(g.added_time||0)>0);
+  if(!injGs.length)return false;
+  const normGs=(m.goals||[]).filter(g=>!(g.minute>=90&&(g.added_time||0)>0));
+  let nh=0,na=0;
+  normGs.forEach(g=>{const isHome=g.team===m.home_team?.name;if(g.type==='ownGoal'){if(isHome)na++;else nh++;}else{if(isHome)nh++;else na++;}});
+  const cat=d=>d>0?1:d<0?-1:0;
+  return cat((m.home_score??0)-(m.away_score??0))!==cat(nh-na);
+};
+const mHasRed   =m=>(m.cards||[]).some(c=>c.type==='red'||c.type==='yellowRed');
+const mHasPen   =m=>(m.goals||[]).some(g=>g.type==='penalty');
+const mHasOwn   =m=>(m.goals||[]).some(g=>g.type==='ownGoal');
+const mFlags    =m=>{const f=[];if(mHasInjury(m))f.push('injury');if(mHasRed(m))f.push('red');if(mHasPen(m))f.push('pen');if(mHasOwn(m))f.push('own');return f;};
+
+const UEFA_COLORS={
+  'UEFA Champions League':{border:'#1A4FBE',tint:'rgba(26,79,190,0.07)',tintDark:'rgba(26,79,190,0.10)',label:'UCL'},
+  'UEFA Europa League':   {border:'#F05A28',tint:'rgba(240,90,40,0.07)', tintDark:'rgba(240,90,40,0.10)', label:'UEL'},
+  'UEFA Conference League':{border:'#00A94F',tint:'rgba(0,169,79,0.07)',  tintDark:'rgba(0,169,79,0.10)',  label:'UECL'},
+};
+const uefaColor=m=>UEFA_COLORS[m.tournament]||null;
+
 function TabWedstrijden({data}){
   const [q,setQ]=useState('');
   const [comp,setComp]=useState('all');
-  const [season,setSeason]=useState('all');
+  const [specials,setSpecials]=useState([]);
 
   const matches=useMemo(()=>[...(data.matches||[])].sort((a,b)=>b.startTimestamp-a.startTimestamp),[data]);
 
   const comps=useMemo(()=>{
     const s=new Set(matches.map(m=>m.tournament).filter(Boolean));
-    return['all',...[...s].sort()];
+    return[...s].sort();
   },[matches]);
 
-  const seasons=useMemo(()=>{
-    const s=new Set(matches.map(m=>m.season).filter(Boolean));
-    return['all',...[...s].sort().reverse()];
-  },[matches]);
+  const toggleSpecial=k=>setSpecials(prev=>prev.includes(k)?prev.filter(x=>x!==k):[...prev,k]);
 
   const filtered=useMemo(()=>matches.filter(m=>{
     if(comp!=='all'&&m.tournament!==comp)return false;
-    if(season!=='all'&&m.season!==season)return false;
+    if(specials.includes('injury')&&!mHasInjury(m))return false;
+    if(specials.includes('red')&&!mHasRed(m))return false;
+    if(specials.includes('pen')&&!mHasPen(m))return false;
+    if(specials.includes('own')&&!mHasOwn(m))return false;
     if(q){
       const ql=q.toLowerCase();
       if(!(
@@ -1482,7 +1682,7 @@ function TabWedstrijden({data}){
       ))return false;
     }
     return true;
-  }),[matches,q,comp,season]);
+  }),[matches,q,comp,specials]);
 
   // Groepeer op jaar-maand
   const grouped=useMemo(()=>{
@@ -1496,36 +1696,41 @@ function TabWedstrijden({data}){
   },[filtered]);
 
   const fMonth=key=>{if(!key)return'';const[y,mo]=key.split('-');return`${MND[parseInt(mo)-1]} ${y}`;};
-  const diff=m=>(m.home_score??0)-(m.away_score??0);
-  const wdl=m=>{const d=diff(m);return d>0?{l:'W',c:T.green}:d<0?{l:'V',c:T.red}:{l:'G',c:T.yellow};};
 
   return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
     <${SearchInput} value=${q} onChange=${setQ} placeholder="Zoek wedstrijd, club, stad..." />
 
-    <!-- Competitie filter -->
-    <div class="scroll-x" style=${{display:'flex',gap:6,padding:'2px 0'}}>
-      ${comps.map(c=>html`<${Pill} key=${c} active=${comp===c} onClick=${()=>setComp(c)} size="sm">
-        ${c==='all'?'Alle competities':c}
-      </${Pill}>`)}
-    </div>
-
-    <!-- Seizoen filter -->
-    ${seasons.length>1&&html`<div style=${{position:'relative'}}>
-      <select value=${season} onChange=${e=>setSeason(e.target.value)} aria-label="Seizoen filteren" style=${{
-        width:'100%',padding:'9px 12px',borderRadius:12,border:`1px solid ${season!=='all'?T.blue:T.border}`,
-        background:season!=='all'?isDark?'rgba(10,132,255,0.15)':'#e8f4ff':T.bg2,
-        color:season!=='all'?T.blue:T.text,
-        fontSize:13,fontWeight:season!=='all'?600:400,appearance:'none',cursor:'pointer',outline:'none',
+    <!-- Competitie dropdown -->
+    <div style=${{position:'relative'}}>
+      <select value=${comp} onChange=${e=>setComp(e.target.value)} aria-label="Competitie filteren" style=${{
+        width:'100%',padding:'9px 12px',borderRadius:12,border:`1px solid ${comp!=='all'?T.blue:T.border}`,
+        background:comp!=='all'?isDark?'rgba(10,132,255,0.15)':'#e8f4ff':T.bg2,
+        color:comp!=='all'?T.blue:T.text,
+        fontSize:13,fontWeight:comp!=='all'?600:400,appearance:'none',cursor:'pointer',outline:'none',
       }}>
-        <option value="all">Alle seizoenen</option>
-        ${seasons.filter(s=>s!=='all').map(s=>html`<option key=${s} value=${s}>${s}</option>`)}
+        <option value="all">Alle competities</option>
+        ${comps.map(c=>html`<option key=${c} value=${c}>${c}</option>`)}
       </select>
-      ${season!=='all'&&html`<button onClick=${()=>setSeason('all')} aria-label="Seizoenfilter verwijderen" style=${{
+      ${comp!=='all'&&html`<button onClick=${()=>setComp('all')} aria-label="Competitiefilter verwijderen" style=${{
         position:'absolute',right:4,top:'50%',transform:'translateY(-50%)',
         background:'none',border:'none',cursor:'pointer',color:T.blue,fontSize:16,
         width:44,height:44,display:'flex',alignItems:'center',justifyContent:'center',
       }}>×</button>`}
-    </div>`}
+    </div>
+
+    <!-- Bijzonderheden chips -->
+    <div style=${{display:'flex',gap:6,flexWrap:'wrap'}}>
+      ${MATCH_SPECIALS.map(s=>{
+        const active=specials.includes(s.k);
+        return html`<button key=${s.k} onClick=${()=>toggleSpecial(s.k)} title=${s.title} aria-label=${s.title} style=${{
+          background:active?s.color:'transparent',
+          color:active?'#fff':T.muted,
+          border:`1.5px solid ${active?s.color:T.border}`,
+          borderRadius:999,padding:'5px 12px',fontSize:12,fontWeight:700,
+          cursor:'pointer',transition:'all 0.15s ease',
+        }}>${s.l}</button>`;
+      })}
+    </div>
 
     <div style=${{fontSize:12,color:T.muted}}>${filtered.length} wedstrijden</div>
 
@@ -1536,10 +1741,20 @@ function TabWedstrijden({data}){
       <${Card}>
         ${ms.map((m,i)=>{
           const htId=m.home_team?.id, atId=m.away_team?.id;
+          const flags=mFlags(m);
+          const uc=uefaColor(m);
           return html`<div key=${m.id} style=${{
             display:'flex',alignItems:'center',gap:10,
             padding:'10px 0',
             borderBottom:i<ms.length-1?`1px solid ${T.border}`:'none',
+            ...(uc?{
+              background:isDark?uc.tintDark:uc.tint,
+              borderLeft:`3px solid ${uc.border}`,
+              paddingLeft:13,
+              paddingRight:16,
+              marginLeft:-16,
+              marginRight:-16,
+            }:{}),
           }}>
             <div style=${{fontSize:11,color:T.dim,width:36,flexShrink:0,textAlign:'center'}}>
               ${m.date?.slice(8)}/${m.date?.slice(5,7)}
@@ -1552,9 +1767,12 @@ function TabWedstrijden({data}){
                   <span style=${{color:T.blue,fontWeight:800,margin:'0 4px'}}>${m.home_score??'?'}–${m.away_score??'?'}</span>
                   ${m.away_team?.name}
                 </div>
-                <div style=${{fontSize:11,color:T.dim,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                <div style=${{fontSize:11,color:uc?uc.border:T.dim,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',fontWeight:uc?600:400}}>
                   ${m.tournament}${m.venue?.city?` · ${m.venue.city}`:''}
                 </div>
+                ${flags.length>0&&html`<div style=${{display:'flex',gap:4,flexWrap:'wrap',marginTop:4}}>
+                  ${flags.map(fk=>{const sp=MATCH_SPECIALS.find(s=>s.k===fk);return html`<span key=${fk} title=${sp.title} style=${{background:sp.color+'22',color:sp.color,borderRadius:4,padding:'1px 6px',fontSize:10,fontWeight:700}}>${sp.l}</span>`;}) }
+                </div>`}
               </div>
               <${TeamBadge} id=${atId} name=${m.away_team?.name} size=${22} />
             </div>
@@ -1579,6 +1797,7 @@ function App(){
   const [data,setData]=useState(null);
   const [tab,setTab]=useState('home');
   const [countryFilter,setCountryFilter]=useState('');
+  const [detailPlayer,setDetailPlayer]=useState(null);
   const [loading,setLoading]=useState(true);
   const [syncing,setSyncing]=useState(false);
   const [savedIds,setSavedIds]=useState(new Set());
@@ -1586,15 +1805,29 @@ function App(){
 
   const scrollPos=useRef({});
   const visitedTabs=useRef(new Set(['home']));
+  const navStack=useRef(['home']);
+  const backRef=useRef(null);
+  const detailFromTab=useRef(null);
+  const goBackRef=useRef(null);
+  const [swipeDrag,setSwipeDrag]=useState({active:false,x:0,y:0,dx:0,progress:0,completing:false});
 
   const visibleTabs=TABS.filter(t=>IS_LOCAL||t.id!=='zoeken');
 
   const goTo=useCallback((id)=>{
     if(id===tab){window.scrollTo({top:0,behavior:'smooth'});return;}
     scrollPos.current[tab]=window.scrollY;
-    if(id==='spelers')setCountryFilter('');
+    if(id==='spelers'){setCountryFilter('');setDetailPlayer(null);}
+    navStack.current.push(id);
     setTab(id);
   },[tab,visibleTabs]);
+  const handlePlayerClick=useCallback((player)=>{
+    setDetailPlayer(player);
+    scrollPos.current[tab]=window.scrollY;
+    visitedTabs.current.delete('spelers');
+    detailFromTab.current=tab;
+    navStack.current.push('spelers');
+    setTab('spelers');
+  },[tab]);
 
   // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
   const reloadSavedIds=useCallback(()=>{
@@ -1605,8 +1838,32 @@ function App(){
     scrollPos.current[tab]=window.scrollY;
     visitedTabs.current.delete('spelers');
     setCountryFilter(a2);
+    navStack.current.push('spelers');
     setTab('spelers');
   },[tab]);
+  const registerBack=useCallback(fn=>{backRef.current=fn;},[]);
+  const clearBack=useCallback(()=>{backRef.current=null;},[]);
+  const goBack=useCallback(()=>{
+    if(backRef.current){
+      const origin=detailFromTab.current;
+      backRef.current();
+      detailFromTab.current=null;
+      if(origin&&origin!==tab){
+        if(navStack.current.length>1)navStack.current.pop();
+        setDetailPlayer(null);
+        setTab(origin);
+      }
+      return;
+    }
+    if(navStack.current.length>1){
+      navStack.current.pop();
+      const prev=navStack.current[navStack.current.length-1];
+      setDetailPlayer(null);
+      setTab(prev);
+    }
+  },[tab]);
+  goBackRef.current=goBack;
+
   useEffect(()=>{reloadSavedIds();},[]);
 
   useEffect(()=>{
@@ -1623,6 +1880,41 @@ function App(){
       if(d&&d.total_matches!=null){setData(d);setLoading(false);}
       else{setLoading(false);}
     }).catch(()=>setLoading(false));
+  },[]);
+
+  useEffect(()=>{
+    const EDGE=22,THRESHOLD=62;
+    let sx=0,sy=0,edge=false;
+    function onStart(e){
+      const t=e.touches[0];
+      if(t.clientX>EDGE){edge=false;return;}
+      edge=true;sx=t.clientX;sy=t.clientY;
+      setSwipeDrag({active:true,x:t.clientX,y:t.clientY,dx:0,progress:0,completing:false});
+    }
+    function onMove(e){
+      if(!edge)return;
+      const t=e.touches[0];
+      const dx=t.clientX-sx,dy=Math.abs(t.clientY-sy);
+      if(dx<0||dy>dx+20){edge=false;setSwipeDrag({active:false,x:0,y:0,dx:0,progress:0,completing:false});return;}
+      const progress=Math.min(dx/THRESHOLD,1.15);
+      setSwipeDrag({active:true,x:t.clientX,y:t.clientY,dx,progress,completing:false});
+      if(dx>16)e.preventDefault();
+    }
+    function onEnd(e){
+      if(!edge)return;
+      edge=false;
+      const dx=e.changedTouches[0].clientX-sx;
+      if(dx>=THRESHOLD){
+        setSwipeDrag(s=>({...s,completing:true,dx:window.innerWidth*1.4}));
+        setTimeout(()=>{goBackRef.current&&goBackRef.current();setSwipeDrag({active:false,x:0,y:0,dx:0,progress:0,completing:false});},200);
+      }else{
+        setSwipeDrag({active:false,x:0,y:0,dx:0,progress:0,completing:false});
+      }
+    }
+    window.addEventListener('touchstart',onStart,{passive:true});
+    window.addEventListener('touchmove',onMove,{passive:false});
+    window.addEventListener('touchend',onEnd,{passive:true});
+    return()=>{window.removeEventListener('touchstart',onStart);window.removeEventListener('touchmove',onMove);window.removeEventListener('touchend',onEnd);};
   },[]);
 
   function handleFile(file){
@@ -1703,9 +1995,9 @@ function App(){
   </div>`;
 
   let content;
-  if(tab==='home')        content=html`<${TabHome}        data=${data} onCountryClick=${handleCountryClick} />`;
-  if(tab==='spelers')     content=html`<${TabSpelers}     data=${data} initCountry=${countryFilter} />`;
-  if(tab==='clubs')       content=html`<${TabClubs}       data=${data} />`;
+  if(tab==='home')        content=html`<${TabHome}        data=${data} onCountryClick=${handleCountryClick} onPlayerClick=${handlePlayerClick} />`;
+  if(tab==='spelers')     content=html`<${TabSpelers}     data=${data} initCountry=${countryFilter} initPlayer=${detailPlayer} onRegisterBack=${registerBack} onClearBack=${clearBack} />`;
+  if(tab==='clubs')       content=html`<${TabClubs}       data=${data} onRegisterBack=${registerBack} onClearBack=${clearBack} />`;
   if(tab==='wedstrijden') content=html`<${TabWedstrijden} data=${data} />`;
   if(tab==='stadions')    content=html`<${TabStadions}    data=${data} />`;
   if(tab==='zoeken')      content=html`<${TabZoeken}      onMatchesAdded=${handleMatchesAdded} savedIds=${savedIds} onSaved=${reloadSavedIds} />`;
@@ -1759,7 +2051,11 @@ function App(){
 
     <!-- Content -->
     <div style=${{flex:1}}>
-      <div key=${tab} style=${{padding:'16px 16px 120px'}}>
+      <div key=${tab} style=${{
+        padding:'16px 16px calc(130px + env(safe-area-inset-bottom,0px))',
+        transform:`translateX(${swipeDrag.completing?42:swipeDrag.active?Math.min(swipeDrag.dx*0.11,16):0}px)`,
+        transition:swipeDrag.completing?'transform 0.2s ease-out':swipeDrag.active?'none':'transform 0.38s cubic-bezier(0.25,1,0.5,1)',
+      }}>
         ${content}
       </div>
     </div>
@@ -1767,7 +2063,7 @@ function App(){
     <!-- Floating Liquid Glass nav pill — Fotmob-stijl -->
     <nav aria-label="Hoofdnavigatie" style=${{
       position:'fixed',
-      bottom:'calc(20px + env(safe-area-inset-bottom,0px))',
+      bottom:'calc(8px + env(safe-area-inset-bottom,0px))',
       left:'50%',transform:'translateX(-50%)',
       width:'calc(100% - 28px)',maxWidth:460,
       borderRadius:34,
@@ -1830,6 +2126,30 @@ function App(){
         }}>${t.label}</span>
       </button>`)}
     </nav>
+
+    ${swipeDrag.active&&html`<div style=${{
+      position:'fixed',
+      left:(swipeDrag.completing?window.innerWidth+30:Math.max(-20,swipeDrag.dx*0.55-24))+'px',
+      top:(swipeDrag.y-24)+'px',
+      zIndex:9999,
+      width:48,height:48,
+      borderRadius:'50%',
+      background:swipeDrag.progress>=1?'rgba(0,122,255,0.92)':'rgba(18,18,22,0.58)',
+      backdropFilter:'blur(28px) saturate(200%)',
+      WebkitBackdropFilter:'blur(28px) saturate(200%)',
+      border:swipeDrag.progress>=1?'1.5px solid rgba(0,122,255,0.70)':'1.5px solid rgba(255,255,255,0.22)',
+      boxShadow:swipeDrag.progress>=1?'0 4px 24px rgba(0,122,255,0.55)':'0 2px 16px rgba(0,0,0,0.40)',
+      display:'flex',alignItems:'center',justifyContent:'center',
+      opacity:swipeDrag.completing?0:Math.min(swipeDrag.progress*1.8,1),
+      transform:`scale(${swipeDrag.completing?1.15:0.35+swipeDrag.progress*0.65})`,
+      transition:swipeDrag.completing?'left 0.2s cubic-bezier(0.4,0,1,1),opacity 0.18s,transform 0.18s':'none',
+      pointerEvents:'none',
+      willChange:'transform,opacity',
+    }}>
+      <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+        <path d="M14 5L8 11L14 17" stroke="white" strokeWidth=${2+swipeDrag.progress*0.6} strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>`}
   </div>`;
 }
 
