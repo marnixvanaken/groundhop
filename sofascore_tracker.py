@@ -1112,10 +1112,30 @@ def menu_exporteer_dashboard():
 
         # Spelers uit goals/cards/subs als er geen lineup-cache is (handmatige entries)
         if not lineups_raw:
-            manual_players: dict[int, dict] = {}  # pid → {name, team}
+            manual_players: dict[int, dict] = {}  # pid → {name, team, goals, assists, minutes, starter}
+
+            # Bouw minuten/starter op basis van wisseldata
+            subbed_out: dict[int, int] = {}   # pid → minuut uit het veld
+            subbed_in:  dict[int, int] = {}   # pid → minuut het veld op
+            for s in m_out.get("substitutions", []):
+                if s.get("player_out_id") and s.get("minute"):
+                    subbed_out[s["player_out_id"]] = s["minute"]
+                if s.get("player_in_id") and s.get("minute"):
+                    subbed_in[s["player_in_id"]] = s["minute"]
+
+            def get_minutes(pid):
+                if pid in subbed_in:
+                    return 90 - subbed_in[pid]
+                if pid in subbed_out:
+                    return subbed_out[pid]
+                return 90
+
+            def is_starter(pid):
+                return pid not in subbed_in
+
             for g in m_out.get("goals", []):
                 if g.get("player_id"):
-                    manual_players[g["player_id"]] = {"name": g["player"], "team": g["team"], "goals": 0, "assists": 0}
+                    manual_players.setdefault(g["player_id"], {"name": g["player"], "team": g["team"], "goals": 0, "assists": 0})
                 if g.get("assist_id"):
                     manual_players.setdefault(g["assist_id"], {"name": g["assist"], "team": g["team"], "goals": 0, "assists": 0})
             for g in m_out.get("goals", []):
@@ -1142,6 +1162,9 @@ def menu_exporteer_dashboard():
                 yellow = sum(1 for c in m_out.get("cards", []) if c.get("player_id") == pid and c.get("type") == "yellow")
                 red = sum(1 for c in m_out.get("cards", []) if c.get("player_id") == pid and c.get("type") in ("red", "yellowRed"))
 
+                p_minutes = get_minutes(pid)
+                p_starter = is_starter(pid)
+
                 match_detail = {
                     "match_id": event_id,
                     "date": match.get("date", ""),
@@ -1151,9 +1174,9 @@ def menu_exporteer_dashboard():
                     "assists": info["assists"],
                     "yellow": yellow,
                     "red": red,
-                    "minutes": 0,
+                    "minutes": p_minutes,
                     "rating": None,
-                    "starter": True,
+                    "starter": p_starter,
                     "xg": None,
                     "age_years": age_years,
                     "age_days": age_days,
@@ -1212,7 +1235,11 @@ def menu_exporteer_dashboard():
                 ps["assists"] += info["assists"]
                 ps["yellow_cards"] += yellow
                 ps["red_cards"] += red
-                ps["starter_appearances"] += 1
+                ps["minutes_played"] += p_minutes
+                if p_starter:
+                    ps["starter_appearances"] += 1
+                else:
+                    ps["sub_appearances"] += 1
                 if info["team"] and info["team"] not in ps["teams_seen_for"]:
                     ps["teams_seen_for"].append(info["team"])
                 if age_years > 0 or age_days > 0:
