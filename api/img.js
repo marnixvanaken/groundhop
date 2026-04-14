@@ -1,4 +1,6 @@
 const https = require('https');
+const fs = require('fs');
+const path = require('path');
 
 export default function handler(req, res) {
   const { type, id } = req.query;
@@ -6,19 +8,23 @@ export default function handler(req, res) {
     return res.status(400).send('Missing or invalid params');
   }
 
-  const url = `https://api.sofascore.app/api/v1/${type}/${id}/image`;
+  // Eerst lokale cache checken
+  const cached = path.join(process.cwd(), 'img', type, String(id));
+  if (fs.existsSync(cached)) {
+    const buf = fs.readFileSync(cached);
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=86400');
+    return res.status(200).send(buf);
+  }
 
+  // Fallback: proxy naar Sofascore
+  const url = `https://api.sofascore.app/api/v1/${type}/${id}/image`;
   const proxyReq = https.get(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
       'Referer': 'https://www.sofascore.com/',
       'Origin': 'https://www.sofascore.com',
       'Accept': 'image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8',
-      'Accept-Language': 'nl-NL,nl;q=0.9,en-US;q=0.8,en;q=0.7',
-      'Accept-Encoding': 'gzip, deflate, br',
-      'sec-ch-ua': '"Chromium";v="124", "Google Chrome";v="124", "Not-A.Brand";v="99"',
-      'sec-ch-ua-mobile': '?0',
-      'sec-ch-ua-platform': '"Windows"',
       'sec-fetch-dest': 'image',
       'sec-fetch-mode': 'no-cors',
       'sec-fetch-site': 'same-site',
