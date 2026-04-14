@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/img/:type/:id", "destination": "/api/img?type=:type&id=:id" },
+    { "source": "/", "destination": "/dashboard.html" }
+  ]
+}
