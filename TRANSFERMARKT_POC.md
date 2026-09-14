@@ -65,20 +65,19 @@ werkt ongewijzigd voor Transfermarkt-data.
 
 ## Aandachtspunten voor een echte migratie
 
-**1. ID-namespaces botsen nu al.** De handmatig toegevoegde wedstrijden
-gebruiken Transfermarkt-ID's (Van Persie = 1, Sneijder = 1934) in dezelfde
-keyspace als Sofascore-ID's. Twee records dragen daardoor data uit beide
-bronnen:
+**1. ID-mapping is de grootste kostenpost.** Een eerdere versie van dit
+document beweerde dat de handmatige entries Transfermarkt-ID's gebruiken en
+botsen met Sofascore-ID's. Dat klopt niet: Transfermarkt-ID 1 is Silvio Adzic,
+een Duitse rechtsbuiten die in 2017 stopte — niet Robin van Persie. De ID's in
+`selected_matches.json` zijn dus Sofascore-ID's, en `2614` (Huntelaar) en
+`138828` (Willems) droegen consistente data omdat het dezelfde speler is. Er is
+geen botsing.
 
-| ID | Naam | Symptoom |
-|---|---|---|
-| `2614` | Klaas-Jan Huntelaar | `teams_seen_for` = AFC Ajax + Netherlands, rating 8.4 |
-| `138828` | Jetro Willems | NEC + Heracles + Netherlands, marktwaarde 275.000 |
-
-Ook `51599` (Lee Hodson) draagt een Sofascore-marktwaarde op een TM-ID. Of dit
-toevallig correcte merges zijn of vermenging van twee verschillende spelers is
-alleen lokaal te controleren — beide bronnen zijn vanuit de CI-omgeving
-geblokkeerd. Daarom schrijft de PoC een `id_source`-veld mee.
+Het echte probleem is dat er *geen* overlap is: je 3016 spelers, 179
+wedstrijden en 109 clubs hangen aan Sofascore-ID's waarvoor geen mappingtabel
+naar Transfermarkt bestaat. Herkoppelen gaat via naam + geboortedatum, en wat
+niet matcht verlies je. Daarom schrijft de PoC een `id_source`-veld mee, zodat
+de twee namespaces gescheiden blijven.
 
 **2. Spelersfoto's zijn niet deterministisch.** Sofascore geeft
 `/player/{id}/image`; Transfermarkt zet een cache-busting timestamp in de URL
@@ -117,8 +116,21 @@ plaats van 21 competities. De parser markeert een competitienaam die op
 `N. ` begint nu expliciet als `GEMIST`, en controleert dat elke basisopstelling
 precies 11 spelers telt.
 
-Nog niet gevalideerd: de spelerprofielparser (marktwaarde, transfers,
-interlands) draaide alleen tegen een fixture, en de match-parser is op één
-wedstrijd getest. Een oude wedstrijd zonder publiekscijfer, een bekerduel met
-verlenging of strafschoppen, en een wedstrijd met een rode kaart zijn de
-volgende testgevallen.
+De eerste echte run van de spelerparser legde bloot dat marktwaarde en
+transfers **niet op de profielpagina staan**, maar op eigen subpagina's:
+
+| Gegeven | Pagina |
+|---|---|
+| bio, positie, interlands | `/profil/spieler/{id}` |
+| transferhistorie + bedragen | `/transfers/spieler/{id}` |
+| marktwaarde + historie | `/marktwertverlauf/spieler/{id}` |
+
+Ook staat het interlandcijfer als één veld (`Interlands/doelp.: 3 / 1`), met
+een lege `data-header__content` — de waarde moet uit de labeltekst komen. De
+parser haalt de drie pagina's nu apart op en leest de data-header via
+label/waarde-splitsing.
+
+Nog niet gevalideerd: de spelerparser tegen een echte huidige speler (de eerste
+test trof een gestopte speler zonder marktwaarde), en randgevallen bij
+wedstrijden — verlenging, strafschoppen, rode kaart, en een oude wedstrijd
+zonder publiekscijfer.

@@ -591,83 +591,160 @@ def parse_lineup(html: str, d: Diag) -> dict:
 
 # ─── Spelerprofiel ───────────────────────────────────────────────────────────
 
-def parse_player(html: str, player_id: int) -> tuple[dict, Diag]:
-    """Haalt marktwaarde, transfers en interlandcijfers uit een spelerprofiel."""
+_MAANDEN = {"jan": 1, "feb": 2, "mrt": 3, "maa": 3, "apr": 4, "mei": 5, "jun": 6,
+            "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12}
+
+
+def _datum_nl(tekst: str) -> str:
+    """'23 sep. 1980 (45)' → '1980-09-23'. Geeft '' als er geen datum in staat."""
+    m = re.search(r"(\d{1,2})\s*([a-z]{3})[a-z.]*\s*(\d{4})", tekst or "", re.I)
+    if not m:
+        return ""
+    maand = _MAANDEN.get(m.group(2).lower()[:3])
+    return f"{int(m.group(3)):04d}-{maand:02d}-{int(m.group(1)):02d}" if maand else ""
+
+
+def _header_velden(s) -> dict:
+    """
+    Zet de data-header om naar {label: waarde}. De waarde uit
+    span.data-header__content is soms '-' terwijl de tekst hem wel bevat
+    ("Interlands/doelp.: 1 / 0"), dus splitsen we op de eerste dubbele punt.
+    """
+    velden = {}
+    for item in s.select("li.data-header__label, span.data-header__label"):
+        volledig = item.get_text(" ", strip=True)
+        if ":" not in volledig:
+            continue
+        label, waarde = volledig.split(":", 1)
+        label, waarde = label.strip().lower(), waarde.strip()
+        if waarde and waarde != "-":
+            velden[label] = waarde
+    return velden
+
+
+def parse_player(html: str, player_id: int, transfers_html: str | None = None,
+                 mv_html: str | None = None) -> tuple[dict, Diag]:
+    """
+    Haalt profiel, marktwaarde, transfers en interlandcijfers op.
+
+    Marktwaarde en transfers staan NIET op de profielpagina maar op eigen
+    subpagina's (/marktwertverlauf/ en /transfers/); geef die HTML mee.
+    """
     s = soep(html)
     d = Diag()
-    tekst = s.get_text(" ", strip=True)
 
     naam_el = s.select_one("h1.data-header__headline-wrapper") or s.select_one("h1")
     naam = re.sub(r"^#\d+\s*", "", naam_el.get_text(" ", strip=True)) if naam_el else ""
     d.ok("name", naam) if naam else d.gemist("name", "h1.data-header__headline-wrapper")
 
-    mv_el = s.select_one("a.data-header__market-value-wrapper")
-    market_value = parse_bedrag(mv_el.get_text(" ", strip=True)) if mv_el else None
+    velden = _header_velden(s)
+
+    def zoek_label(*sleutels):
+        for k, v in velden.items():
+            if any(sl in k for sl in sleutels):
+                return v
+        return ""
+
+    # ── Biografie (vult date_of_birth / nationality / position / height_cm) ──
+    geboren = _datum_nl(zoek_label("geb.", "geboren", "birth"))
+    d.ok("date_of_birth", geboren) if geboren else d.leeg("date_of_birth")
+    nationaliteit = zoek_label("nationaliteit", "nationality", "staatsbürger")
+    d.ok("nationality", nationaliteit) if nationaliteit else d.leeg("nationality")
+    positie = zoek_label("positie", "position")
+    d.ok("position", positie) if positie else d.leeg("position")
+    lengte_ruw = zoek_label("lengte", "größe", "height")
+    m = re.search(r"(\d)[,.](\d{2})", lengte_ruw or "")
+    lengte = int(m.group(1)) * 100 + int(m.group(2)) if m else None
+    d.ok("height_cm", lengte) if lengte else d.leeg("height_cm", lengte_ruw or "")
+
+    # ── Interlands: staat als "Interlands/doelp.: 1 / 0" in één veld ─────────
+    caps = goals_nt = None
+    interland = zoek_label("interland", "länderspiele", "caps")
+    if interland:
+        m = re.search(r"(\d+)\s*/\s*(\d+)", interland)
+        if m:
+            caps, goals_nt = int(m.group(1)), int(m.group(2))
+        else:
+            caps = _eerste_getal(interland)
+    d.ok("national_team_caps", caps) if caps is not None else d.leeg("national_team_caps")
+    d.ok("national_team_goals", goals_nt) if goals_nt is not None \
+        else d.leeg("national_team_goals")
+
+    # ── Huidige marktwaarde ──────────────────────────────────────────────────
+    market_value = None
+    for sel in ("a.data-header__market-value-wrapper",
+                ".tm-player-market-value-development__current-value",
+                "div.tm-player-market-value-development__current-value"):
+        el = s.select_one(sel)
+        if el and el.get_text(strip=True):
+            market_value = parse_bedrag(el.get_text(" ", strip=True))
+            break
+    if market_value is None and mv_html:
+        ms = soep(mv_html)
+        el = ms.select_one(".tm-player-market-value-development__current-value")
+        if el:
+            market_value = parse_bedrag(el.get_text(" ", strip=True))
     if market_value is not None:
         d.ok("market_value", f"€ {market_value:,}")
+    elif "einde carrière" in " ".join(velden) or zoek_label("einde carrière", "karriereende"):
+        d.leeg("market_value", "speler is gestopt — TM toont geen waarde")
     else:
-        d.gemist("market_value", "a.data-header__market-value-wrapper")
+        d.gemist("market_value", "marktwaarde-element niet gevonden")
 
-    # Marktwaardehistorie zit in een Highcharts-JS-blok op de profielpagina.
+    # ── Marktwaardehistorie (grafiekdata in een script op de subpagina) ──────
     historie = []
-    for script in s.find_all("script"):
-        inhoud = script.string or ""
-        if "marketValueDevelopment" in inhoud or "'data':[{'y'" in inhoud.replace('"', "'"):
-            for m in re.finditer(r"'y'\s*:\s*(\d+).*?'datum_mw'\s*:\s*'([^']+)'", inhoud):
-                historie.append({"value": int(m.group(1)), "date": m.group(2)})
-            if historie:
-                break
+    for bron in (mv_html, html):
+        if not bron:
+            continue
+        for m in re.finditer(r"[\"']y[\"']\s*:\s*(\d+)\s*,.*?[\"']datum_mw[\"']\s*:\s*[\"']([^\"']+)[\"']",
+                             bron):
+            historie.append({"value": int(m.group(1)), "date": m.group(2)})
+        if historie:
+            break
     if historie:
         d.ok("market_value_history", f"{len(historie)} datapunten")
     else:
-        d.leeg("market_value_history", "Highcharts-blok niet gevonden (JS-afhankelijk)")
+        d.leeg("market_value_history", "geen grafiekdata in HTML")
 
-    # Interlands: staat als label/waarde in de data-header.
-    caps = goals_nt = None
-    for item in s.select("li.data-header__label"):
-        label = item.get_text(" ", strip=True).lower()
-        waarde_el = item.select_one("span.data-header__content")
-        waarde = waarde_el.get_text(strip=True) if waarde_el else ""
-        if "interland" in label or "länderspiele" in label or "caps" in label:
-            caps = _eerste_getal(waarde)
-        elif "doelpunt" in label or "tore" in label or "goals" in label:
-            goals_nt = _eerste_getal(waarde)
-    if caps is None:
-        m = re.search(r"(?:interlands|länderspiele|caps)\s*:?\s*(\d+)", tekst, re.I)
-        caps = int(m.group(1)) if m else None
-    d.ok("national_team_caps", caps) if caps is not None else d.leeg("national_team_caps")
-    d.ok("national_team_goals", goals_nt) if goals_nt is not None else d.leeg("national_team_goals")
-
-    # Transfers staan in de transferhistorie-grid op de profielpagina.
+    # ── Transfers (eigen subpagina) ──────────────────────────────────────────
     transfers = []
-    for rij in s.select("div.tm-player-transfer-history-grid"):
-        if "grid__header" in " ".join(rij.get("class", [])):
-            continue
-        def cel(suffix):
-            el = rij.select_one(f"div.tm-player-transfer-history-grid__{suffix}")
-            return el.get_text(" ", strip=True) if el else ""
-        fee = cel("fee")
-        if not (cel("old-club") or cel("new-club")):
-            continue
-        transfers.append({
-            "season": cel("season"),
-            "date": cel("date"),
-            "from": cel("old-club"),
-            "to": cel("new-club"),
-            "fee_raw": fee,
-            "fee": parse_bedrag(fee),
-        })
+    if transfers_html:
+        ts = soep(transfers_html)
+        for rij in ts.select("div.grid.tm-player-transfer-history-grid"):
+            klassen = " ".join(rij.get("class", []))
+            if "heading" in klassen or "header" in klassen:
+                continue
+
+            def cel(suffix, _rij=rij):
+                el = _rij.select_one(f".tm-player-transfer-history-grid__{suffix}")
+                return el.get_text(" ", strip=True) if el else ""
+
+            van, naar = cel("old-club"), cel("new-club")
+            if not (van or naar):
+                continue
+            fee = cel("fee")
+            transfers.append({
+                "season": cel("season"), "date": cel("date"),
+                "from": van, "to": naar,
+                "fee_raw": fee, "fee": parse_bedrag(fee),
+            })
     if transfers:
         bedragen = [t["fee"] for t in transfers if t["fee"]]
-        d.ok("transfers", f"{len(transfers)} stuks, hoogste € {max(bedragen):,}" if bedragen
-             else f"{len(transfers)} stuks, geen bedragen")
+        d.ok("transfers", f"{len(transfers)} stuks, hoogste € {max(bedragen):,}"
+             if bedragen else f"{len(transfers)} stuks, geen bedragen")
+    elif transfers_html:
+        d.gemist("transfers", "div.grid.tm-player-transfer-history-grid")
     else:
-        d.gemist("transfers", "div.tm-player-transfer-history-grid")
+        d.leeg("transfers", "subpagina niet opgehaald")
 
     record = {
         "id": player_id,
         "id_source": "transfermarkt",
         "name": naam,
+        "date_of_birth": geboren,
+        "nationality": nationaliteit,
+        "position": positie,
+        "height_cm": lengte,
         "market_value": market_value,
         "market_value_history": historie,
         "national_team_caps": caps,
@@ -754,7 +831,8 @@ def inspect(html: str, lineup_html: str | None = None):
         print(_knip(str(c), 700) if c else "  !! geen bekende opstellingscontainer")
 
 
-def inspect_player(html: str):
+def inspect_player(html: str, transfers_html: str | None = None,
+                   mv_html: str | None = None):
     """Zelfde principe als inspect(), maar voor de velden op een spelerprofiel."""
     s = soep(html)
 
@@ -801,14 +879,63 @@ def inspect_player(html: str):
     for m in list(re.finditer(r"interland|länderspiele|caps|nationale? ploeg", tekst, re.I))[:4]:
         print(f"  …{_knip(tekst[max(0, m.start() - 60):m.start() + 90], 160)}…")
 
-    kop("7. Scripts met marktwaardegrafiek")
+    kop("7. Scripts met marktwaardegrafiek (profielpagina)")
     for sc in s.find_all("script"):
         inhoud = sc.string or ""
         if re.search(r"marketValueDevelopment|highcharts|datum_mw", inhoud, re.I):
             print(f"  script ({len(inhoud)} tekens): {_knip(inhoud, 500)}")
             break
     else:
-        print("  !! geen grafiekscript gevonden (waarde-historie is dan JS-geladen)")
+        print("  !! geen grafiekscript (staat op de /marktwertverlauf/-subpagina)")
+
+    # ── Subpagina's: hier staan transfers en marktwaarde echt ────────────────
+    if transfers_html:
+        ts = soep(transfers_html)
+        kop("8. SUBPAGINA transfers: classes met 'transfer'")
+        klassen = {}
+        for el in ts.find_all(class_=re.compile(r"transfer", re.I)):
+            for c in el.get("class", []):
+                if "transfer" in c.lower():
+                    klassen[c] = klassen.get(c, 0) + 1
+        for c, n in sorted(klassen.items(), key=lambda x: -x[1])[:14]:
+            print(f"  {n:>3}x  .{c}")
+        if not klassen:
+            print("  !! geen classes met 'transfer' — mogelijk een tabel")
+            for t in ts.select("table.items")[:1]:
+                print(f"  table.items gevonden, {len(t.select('tr'))} rijen")
+
+        kop("9. SUBPAGINA transfers: eerste datarij ruw")
+        rijen = ts.select("div.grid.tm-player-transfer-history-grid") \
+            or ts.select("table.items tr")
+        doel = next((r for r in rijen
+                     if "heading" not in " ".join(r.get("class", []))
+                     and r.get_text(strip=True)), None)
+        print(_knip(str(doel), 900) if doel else "  !! geen datarij gevonden")
+    else:
+        kop("8-9. SUBPAGINA transfers — niet opgehaald")
+
+    if mv_html:
+        ms = soep(mv_html)
+        kop("10. SUBPAGINA marktwaarde: huidige waarde")
+        for sel in (".tm-player-market-value-development__current-value",
+                    ".data-header__market-value-wrapper",
+                    "[class*='current-value']"):
+            el = ms.select_one(sel)
+            if el:
+                print(f"  {sel} -> {_knip(el.get_text(' ', strip=True), 80)!r}")
+
+        kop("11. SUBPAGINA marktwaarde: grafiekdata in script")
+        for sc in ms.find_all("script"):
+            inhoud = sc.string or ""
+            if re.search(r"datum_mw|marketValue|highcharts", inhoud, re.I):
+                treffer = re.search(r".{0,120}datum_mw.{0,200}", inhoud)
+                print(f"  script ({len(inhoud)} tekens)")
+                print(f"  fragment: {_knip(treffer.group(0) if treffer else inhoud, 400)}")
+                break
+        else:
+            print("  !! geen grafiekdata — historie is dan niet scrapebaar uit HTML")
+    else:
+        kop("10-11. SUBPAGINA marktwaarde — niet opgehaald")
 
 
 # ─── Wat Transfermarkt structureel NIET heeft ────────────────────────────────
@@ -863,6 +990,8 @@ def main():
     g.add_argument("--player", help="speler-ID of volledige URL")
     p.add_argument("--html", help="parse een lokaal opgeslagen HTML-bestand (geen netwerk)")
     p.add_argument("--lineup-html", help="lokaal opgeslagen opstellingspagina")
+    p.add_argument("--transfers-html", help="lokaal opgeslagen transferpagina")
+    p.add_argument("--mv-html", help="lokaal opgeslagen marktwaardepagina")
     p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     p.add_argument("--json", help="schrijf het resultaat als JSON naar dit pad")
     p.add_argument("--no-lineup", action="store_true", help="sla de opstellingspagina over")
@@ -913,11 +1042,30 @@ def main():
                 else f"{BASE}/speler/profil/spieler/{pid}"
             html = fetch(url, dump, f"player_{pid}")
 
+        # Marktwaarde en transfers staan op eigen subpagina's, niet op het profiel.
+        transfers_html = mv_html = None
+        if args.transfers_html:
+            transfers_html = Path(args.transfers_html).read_text(encoding="utf-8")
+        if args.mv_html:
+            mv_html = Path(args.mv_html).read_text(encoding="utf-8")
+        if not args.html:
+            for naam, pad, doel in (
+                    ("transfers", f"{BASE}/speler/transfers/spieler/{pid}", "transfers"),
+                    ("marktwaarde", f"{BASE}/speler/marktwertverlauf/spieler/{pid}", "mv")):
+                try:
+                    inhoud = fetch(pad, dump, f"player_{pid}_{doel}")
+                    if doel == "transfers":
+                        transfers_html = inhoud
+                    else:
+                        mv_html = inhoud
+                except SystemExit as e:
+                    print(f"  ! subpagina {naam} overgeslagen: {e}")
+
         if args.inspect:
-            inspect_player(html)
+            inspect_player(html, transfers_html, mv_html)
             return
 
-        record, d = parse_player(html, pid)
+        record, d = parse_player(html, pid, transfers_html, mv_html)
         d.rapport(f"SPELER {pid} — {record['name']}")
 
     if args.json:
