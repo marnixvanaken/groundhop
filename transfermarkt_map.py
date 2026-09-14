@@ -47,7 +47,8 @@ import time
 import unicodedata
 from pathlib import Path
 
-from transfermarkt_poc import BASE, HEADERS, _IMPERSONATE, _http, _knip, soep
+from transfermarkt_poc import (BASE, HEADERS, _IMPERSONATE, _datum_nl, _http,
+                               _knip, soep)
 
 SELECTED = Path("data/selected_matches.json")
 CLUB_MAP = Path("data/tm_club_map.json")
@@ -154,14 +155,56 @@ def _rij_van(link):
     return link.parent
 
 
+def _datum_uit_rij(rijtekst: str) -> str:
+    """
+    Leest een datum uit een speelschemarij.
+
+    /spielplandatum/ schrijft 'zo 03-08-25', /spielplan/ schrijft
+    'za 9 aug. 2025'. Beide vormen worden geprobeerd, zodat de parser niet
+    afhangt van welke van de twee pagina's gebruikt wordt.
+    """
+    m = re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{2,4})", rijtekst)
+    if m:
+        jaar = int(m.group(3))
+        jaar += 2000 if jaar < 100 else 0
+        return f"{jaar:04d}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+    return _datum_nl(rijtekst)
+
+
+def _thuis_of_uit(rij) -> str | None:
+    """
+    Leest de T/U-kolom: speelde de club thuis of uit?
+
+    Dat maakt de controle sterker dan alleen kijken of een van beide clubnamen
+    voorkomt — we weten dan welke kant de tegenstander hoort te zijn.
+    """
+    for span in rij.find_all("span", title=True):
+        titel = span["title"].lower()
+        if "thuis" in titel or "heim" in titel or "home" in titel:
+            return "thuis"
+        if "uit" in titel or "ausw" in titel or "away" in titel:
+            return "uit"
+    for td in rij.find_all("td"):
+        tekst = td.get_text(strip=True)
+        if tekst in ("T", "H"):
+            return "thuis"
+        if tekst in ("U", "A"):
+            return "uit"
+    return None
+
+
 def speelschema(club_id: int, saison: int, toon: bool = False) -> list[dict]:
     """
     Haalt het speelschema van een club voor één seizoen op.
 
-    Zoekt links naar /spielbericht/ en leest datum en tegenstander uit de
-    omliggende rij. Legt bewust geen class-namen vast.
+    Gebruikt /spielplandatum/: die pagina schrijft datums numeriek, terwijl
+    /spielplan/ een tekstuele maand gebruikt. Gemeten op PSV 2025/26 gaf
+    /spielplandatum/ 40 van 40 leesbare rijen, /spielplan/ nul.
+
+    Zoekt links naar /spielbericht/ en leest datum, tegenstander en thuis/uit
+    uit de omliggende rij. Legt bewust geen class-namen vast.
     """
-    url = f"{BASE}/club/spielplan/verein/{club_id}/saison_id/{saison}"
+    url = f"{BASE}/club/spielplandatum/verein/{club_id}/saison_id/{saison}"
     try:
         resp = _http.get(url, headers=HEADERS, timeout=30, **_IMPERSONATE)
     except Exception as e:
@@ -181,15 +224,11 @@ def speelschema(club_id: int, saison: int, toon: bool = False) -> list[dict]:
         if rij is None:
             continue
         rijtekst = rij.get_text(" ", strip=True)
-
-        # Datum: dd-mm-jjjj of dd-mm-jj, beide komen voor op TM.
-        m = re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{2,4})", rijtekst)
-        if not m:
+        datum = _datum_uit_rij(rijtekst)
+        if not datum:
             continue
-        jaar = int(m.group(3))
-        jaar += 2000 if jaar < 100 else 0
-        datum = f"{jaar:04d}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
 
+        # Op deze pagina is alleen de tegenstander gelinkt; de club zelf niet.
         clubs = []
         for cl in rij.find_all("a", href=VEREIN_RE):
             naam = cl.get_text(strip=True) or cl.get("title", "")
@@ -201,18 +240,23 @@ def speelschema(club_id: int, saison: int, toon: bool = False) -> list[dict]:
         wedstrijden.append({
             "match_id": mid, "date": datum,
             "clubs": clubs,
+            "kant": _thuis_of_uit(rij),
             "rij": _knip(rijtekst, 140),
         })
 
     if toon:
         print(f"\n  Speelschema club {club_id}, seizoen {saison}: "
               f"{len(wedstrijden)} wedstrijden")
-        for w in wedstrijden[:12]:
+        for w in wedstrijden[:15]:
             namen = " / ".join(c["name"] for c in w["clubs"]) or "(geen clublinks)"
-            print(f"   {w['date']}  id={w['match_id']:<9} {namen}")
+            kant = {"thuis": "T", "uit": "U"}.get(w["kant"], "?")
+            print(f"   {w['date']}  {kant}  id={w['match_id']:<9} {namen}")
+        if len(wedstrijden) > 15:
+            print(f"   ... en nog {len(wedstrijden) - 15}")
         if not wedstrijden:
             print("    !! niets gevonden — parser of URL klopt niet")
             print(f"    URL: {url}")
+            print("    draai --probe-fixtures om te zien waar het misgaat")
     return wedstrijden
 
 
@@ -269,7 +313,7 @@ def probe_speelschema(club_id: int, saison: int, dump: Path | None = None):
         for a in links[:40]:
             rij = _rij_van(a)
             rijtekst = rij.get_text(" ", strip=True) if rij else ""
-            if re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{2,4})", rijtekst):
+            if _datum_uit_rij(rijtekst):
                 met_datum += 1
             elif len(zonder_datum) < 3:
                 zonder_datum.append((rij.name if rij else "?", _knip(rijtekst, 130)))
@@ -356,12 +400,25 @@ def koppel_alles():
         if len(kandidaten) == 1:
             w = kandidaten[0]
             namen = [c["name"] for c in w["clubs"]]
-            klopt = any(lijkt_op(n, m["home_team"]["name"]) for n in namen) or \
-                    any(lijkt_op(n, m["away_team"]["name"]) for n in namen)
+            # Transfermarkt linkt alleen de tegenstander en zegt via T/U aan
+            # welke kant onze club stond. Daaruit volgt wie de tegenstander
+            # in onze eigen data hoort te zijn.
+            if w["kant"] == "thuis":
+                verwacht = m["away_team"]["name"]
+            elif w["kant"] == "uit":
+                verwacht = m["home_team"]["name"]
+            else:
+                verwacht = None
+            if verwacht:
+                klopt = any(lijkt_op(n, verwacht) for n in namen)
+            else:
+                klopt = any(lijkt_op(n, m["home_team"]["name"])
+                            or lijkt_op(n, m["away_team"]["name"]) for n in namen)
             mapping[str(m["id"])] = {
                 "tm_match_id": w["match_id"], "date": m["date"],
                 "sofascore_label": f"{m['home_team']['name']} - {m['away_team']['name']}",
                 "tm_clubs": namen,
+                "tm_kant": w["kant"],
                 "naam_bevestigd": klopt,
             }
             if not klopt:
