@@ -42,8 +42,14 @@ MIN_DELAY, MAX_DELAY = 2.0, 4.0
 
 # Velden die het dashboard gebruikt en die we per wedstrijd willen tellen, om
 # na afloop te kunnen zeggen wat de overstap concreet heeft opgeleverd.
-TELVELDEN = ["date", "tournament", "round", "venue", "attendance", "referee",
-             "goals", "cards", "substitutions", "lineup"]
+# `round` is bij Transfermarkt vaak leeg bij bekerduels: daar staat een fase
+# ("Groepsfase", "Achtste finale") in plaats van een nummer, en die komt in
+# `round_name` terecht. Beide velden tellen mee, anders leest het rapport een
+# betere weergave als verlies. Het dashboard toont `round` overigens alleen bij
+# zoekresultaten uit de live Sofascore-API (dashboard.html:1604), nooit vanuit
+# een opgeslagen wedstrijd.
+TELVELDEN = ["date", "tournament", "round", "round_name", "venue", "attendance",
+             "referee", "goals", "cards", "substitutions", "lineup"]
 
 
 def wacht():

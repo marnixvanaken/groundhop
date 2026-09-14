@@ -161,6 +161,22 @@ controleert daarom nu ook op plausibiliteit (competitienaam die op `N. `
 begint, basisopstelling die niet op 11 uitkomt) in plaats van alleen op
 aanwezigheid.
 
+## `round`: geen verlies, maar een andere weergave
+
+Het vergelijkingsrapport liet `round` op 1/5 staan tegen 5/5 bij Sofascore. Dat
+is nagemeten en het is geen regressie:
+
+- Transfermarkt zet bij bekerduels een **fase** neer ("Groepsfase", "Achtste
+  finale") in plaats van een nummer. De parser schrijft die in `round_name` en
+  laat `round` leeg. Beide velden tellen nu mee in het rapport.
+- Sofascore's nummers zijn bij Europese duels **onsamenhangend**: over de
+  UEFA-wedstrijden in `selected_matches.json` staan waarden als `636`, `50`,
+  `17` en `16` naast 1 t/m 8. Dat zijn interne ronde-ID's, geen speelronden.
+- Het dashboard rendert `round` **alleen bij zoekresultaten** uit de live
+  Sofascore-API (`dashboard.html:1604`, `R${e.roundInfo?.round}`), nooit vanuit
+  een opgeslagen wedstrijd. Een leeg `round` op een opgeslagen record is dus
+  nergens zichtbaar.
+
 ## Wat nog getest moet worden
 
 Randgevallen uit de eigen dataset: verlenging, strafschoppen, een rode kaart,
