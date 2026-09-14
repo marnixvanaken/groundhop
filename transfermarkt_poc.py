@@ -286,7 +286,13 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
             half_time = {"home": int(m.group(1)), "away": int(m.group(2))}
             d.ok("half_time", f"{half_time['home']}-{half_time['away']}")
     if half_time["home"] is None:
-        d.gemist("half_time", "div.sb-halbzeit")
+        # Onderscheid "blok ontbreekt" van "blok stond er maar las anders" —
+        # bij verlenging/strafschoppen wijkt de notatie af, en dan wil je in het
+        # rapport meteen zien wát er stond in plaats van opnieuw te moeten meten.
+        if rust:
+            d.gemist("half_time", f"sb-halbzeit las {rust.get_text(' ', strip=True)!r}")
+        else:
+            d.gemist("half_time", "div.sb-halbzeit ontbreekt")
 
     # ── Competitie, speelronde, datum ────────────────────────────────────────
     # sb-datum is een <p> binnen div.sb-spieldaten, dus selecteer op class
@@ -361,12 +367,18 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
     ronde = int(m.group(1)) if m else None
     ronde_naam = ""
     if ronde is None:
-        m = re.search(r"(groepsfase|competitiefase|league phase|gruppenphase|"
-                      r"(?:achtste|kwart|halve)\s*finale|tussenronde|play-?offs?|"
-                      r"voorronde|kwalificatie|1/\d+[- ]?finale|finale)",
-                      blok_tekst, re.I)
-        if m:
-            ronde_naam = m.group(1).strip()
+        # Het datumblok heeft altijd de vorm  FASE | DATUM | TIJD  — bij een
+        # competitiewedstrijd is de fase een speeldag-link, bij een bekerduel
+        # platte tekst. Een lijst met fasenamen bijhouden is dweilen: Europese
+        # duels kennen "3e kwalificatieronde", "Play-offronde", "1e
+        # Groepswedstrijd" en tientallen varianten per competitie. Lees hem
+        # daarom op positie, en verwerp alleen wat overduidelijk geen fase is.
+        eerste = blok_tekst.split("|")[0].strip() if "|" in blok_tekst else ""
+        if (eerste
+                and len(eerste) <= 60
+                and not re.search(r"\d{1,2}[-.]\d{1,2}[-.]\d{2,4}", eerste)
+                and not re.fullmatch(r"[\d:.\s]+(uur|Uhr)?", eerste, re.I)):
+            ronde_naam = eerste
 
     # Datum: de "wat gebeurde er vandaag"-link draagt een ISO-datum. Betrouwbaarder
     # dan de zichtbare tekst, die een tweecijferig jaartal gebruikt ("zo, 13-09-26").
