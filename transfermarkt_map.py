@@ -99,6 +99,66 @@ def lijkt_op(a: str, b: str) -> bool:
     return ja in jb or jb in ja
 
 
+def _kwal_sig(naam: str) -> frozenset:
+    """
+    Canonieke 'kwalificatie' van een clubnaam: jeugd, vrouwen, beloften.
+
+    Dit is de belangrijkste veiligheidsklep. Zonder deze controle valt
+    'Jong PSV Eindhoven' samen met 'PSV', en wordt een jeugdwedstrijd aan de
+    seniorenwedstrijd van diezelfde dag gekoppeld — dat gebeurde met
+    Lens U19 - PSV U19, die aan RC Lens - PSV werd gehangen.
+
+    'Onder 19', 'U19' en 'UEFA U19' leveren allemaal {'u19'} op.
+    """
+    woorden = _kernwoorden(naam)
+    sig = set()
+    for i, t in enumerate(woorden):
+        if t in ("jong", "youth", "jeugd", "beloften"):
+            sig.add("jong")
+        elif t in ("vrouwen", "women", "dames", "feminin", "feminines", "dytiko"):
+            sig.add("vrouwen")
+        elif t == "ii":
+            sig.add("ii")
+        elif re.fullmatch(r"u\d{2}", t):
+            sig.add(t)
+        elif t in ("onder", "under") and i + 1 < len(woorden) and woorden[i + 1].isdigit():
+            sig.add(f"u{woorden[i + 1]}")
+    return frozenset(sig)
+
+
+def kies_club(naam: str, kandidaten: list[dict]) -> tuple[dict | None, list[dict]]:
+    """
+    Kiest de beste club, of niets bij twijfel.
+
+    Geeft bewust GEEN terugval op 'de eerste kandidaat'. Dat deed de vorige
+    versie, waardoor Netherlands, Standard Liège, Jong PSV en PSV U19 alle vier
+    op PSV uitkwamen: de zoekpagina bevat zijbalklinks naar clubs, en 'PSV' won
+    de sortering op naamlengte.
+    """
+    q, qk = set(_kernwoorden(naam)), _kwal_sig(naam)
+    scored = []
+    for k in kandidaten:
+        c, ck = set(_kernwoorden(k["name"])), _kwal_sig(k["name"])
+        if qk != ck:          # jeugd/vrouwen nooit op het seniorenteam laten vallen
+            continue
+        if q == c:
+            score = 0
+        elif q <= c:
+            score = len(c - q)
+        elif c <= q:
+            score = len(q - c)
+        else:
+            continue
+        scored.append((score, k))
+
+    if not scored:
+        return None, kandidaten[:6]
+    scored.sort(key=lambda x: x[0])
+    if len(scored) > 1 and scored[0][0] == scored[1][0]:
+        return None, [k for _, k in scored[:6]]      # even goed: laat de mens kiezen
+    return scored[0][1], []
+
+
 # ─── Club zoeken ─────────────────────────────────────────────────────────────
 
 def zoek_club(naam: str, toon: bool = False) -> list[dict]:
@@ -333,29 +393,64 @@ def probe_speelschema(club_id: int, saison: int, dump: Path | None = None):
 # ─── Volledige koppeling ─────────────────────────────────────────────────────
 
 def los_clubs_op(namen: list[str]) -> dict:
-    """Zoekt per clubnaam de Transfermarkt-ID. Hergebruikt een eerdere run."""
+    """
+    Zoekt per clubnaam de Transfermarkt-ID. Hergebruikt een eerdere run, zodat
+    handmatige correcties in data/tm_club_map.json blijven staan.
+
+    Clubs die niet eenduidig op te lossen zijn, worden als onopgelost
+    weggeschreven en apart gerapporteerd — nooit geraden.
+    """
     bekend = json.loads(CLUB_MAP.read_text("utf-8")) if CLUB_MAP.exists() else {}
-    nieuw = 0
+
+    # Een eerdere versie koos bij twijfel blind de eerste kandidaat, waardoor
+    # Netherlands en Standard Liège als PSV in de cache belandden. Controleer
+    # daarom of elke gecachte keuze nu nog gekozen zou worden.
+    verdacht = [n for n, info in bekend.items()
+                if info and kies_club(n, [info])[0] is None]
+    for n in verdacht:
+        print(f"  ! gecachte koppeling {n!r} → {bekend[n]['name']!r} afgekeurd, opnieuw zoeken")
+        bekend[n] = None
+
+    nieuw, open_staand = 0, []
     for naam in namen:
-        if naam in bekend:
+        if bekend.get(naam) is not None:
             continue
         print(f"  zoeken: {naam}")
         kandidaten = zoek_club(naam)
-        beste = next((k for k in kandidaten if lijkt_op(k["name"], naam)), None) \
-            or (kandidaten[0] if kandidaten else None)
+        beste, twijfel = kies_club(naam, kandidaten)
         if beste:
             bekend[naam] = beste
             print(f"    → {beste['id']} {beste['name']}")
         else:
             bekend[naam] = None
-            print("    → niet gevonden")
+            open_staand.append((naam, twijfel))
+            print("    → ONOPGELOST")
+            for k in twijfel[:4]:
+                print(f"        kandidaat: {k['id']:>7}  {k['name']}")
         nieuw += 1
         wacht()
+
     if nieuw:
         CLUB_MAP.parent.mkdir(exist_ok=True)
         CLUB_MAP.write_text(json.dumps(bekend, ensure_ascii=False, indent=2), "utf-8")
-        print(f"\n  ✓ {CLUB_MAP} bijgewerkt ({nieuw} nieuw)")
+        print(f"\n  ✓ {CLUB_MAP} bijgewerkt ({nieuw} verwerkt)")
+
+    if open_staand:
+        print(f"\n  ▼ {len(open_staand)} clubs onopgelost — zet ze handmatig:")
+        for naam, twijfel in open_staand:
+            print(f"    python3 transfermarkt_map.py --set-club {naam!r} <ID>")
+            for k in twijfel[:3]:
+                print(f"        {k['id']:>7}  {k['name']}")
     return bekend
+
+
+def zet_club(naam: str, club_id: int):
+    """Legt een clubkoppeling handmatig vast in data/tm_club_map.json."""
+    bekend = json.loads(CLUB_MAP.read_text("utf-8")) if CLUB_MAP.exists() else {}
+    bekend[naam] = {"id": club_id, "name": f"(handmatig) {naam}", "slug": "club"}
+    CLUB_MAP.parent.mkdir(exist_ok=True)
+    CLUB_MAP.write_text(json.dumps(bekend, ensure_ascii=False, indent=2), "utf-8")
+    print(f"  ✓ {naam!r} → {club_id} vastgelegd in {CLUB_MAP}")
 
 
 def koppel_alles():
@@ -386,7 +481,10 @@ def koppel_alles():
         ws = speelschema(info["id"], saison)
         print(f" — {len(ws)} wedstrijden")
         if not ws:
-            mislukt.append((club, saison, "leeg speelschema"))
+            # Een leeg speelschema betekent vrijwel altijd een verkeerd club-ID,
+            # niet een club die dat seizoen niet speelde.
+            mislukt.append((club, saison,
+                            f"leeg — club-ID {info['id']} ({info['name']}) klopt wrsch. niet"))
         for w in ws:
             index.setdefault((club, w["date"]), []).append(w)
         wacht()
@@ -414,14 +512,18 @@ def koppel_alles():
             else:
                 klopt = any(lijkt_op(n, m["home_team"]["name"])
                             or lijkt_op(n, m["away_team"]["name"]) for n in namen)
-            mapping[str(m["id"])] = {
-                "tm_match_id": w["match_id"], "date": m["date"],
-                "sofascore_label": f"{m['home_team']['name']} - {m['away_team']['name']}",
-                "tm_clubs": namen,
-                "tm_kant": w["kant"],
-                "naam_bevestigd": klopt,
-            }
-            if not klopt:
+            if klopt:
+                mapping[str(m["id"])] = {
+                    "tm_match_id": w["match_id"], "date": m["date"],
+                    "sofascore_label": f"{m['home_team']['name']} - {m['away_team']['name']}",
+                    "tm_clubs": namen,
+                    "tm_kant": w["kant"],
+                    "naam_bevestigd": True,
+                }
+            else:
+                # Niet wegschrijven. Een datumtreffer met een afwijkende naam is
+                # precies hoe Lens U19 - PSV U19 aan de seniorenwedstrijd RC Lens
+                # - PSV werd gekoppeld: zelfde dag, ander toernooi.
                 twijfel.append((m, w))
         elif len(kandidaten) > 1:
             # Zelfde club, zelfde dag: kies op tegenstandersnaam.
@@ -442,14 +544,14 @@ def koppel_alles():
             ongekoppeld.append(m)
 
     n = len(matches)
-    bevestigd = sum(1 for v in mapping.values() if v["naam_bevestigd"])
-    print(f"  gekoppeld          : {len(mapping)} / {n} ({100 * len(mapping) // n}%)")
-    print(f"  waarvan bevestigd  : {bevestigd} (clubnaam komt overeen)")
-    print(f"  naam wijkt af      : {len(twijfel)} — controleer deze")
-    print(f"  niet gekoppeld     : {len(ongekoppeld)}")
+    print(f"  bruikbaar gekoppeld : {len(mapping)} / {n} ({100 * len(mapping) // n}%)")
+    print(f"  afgekeurd (naam)    : {len(twijfel)} — datum klopt, club niet")
+    print(f"  niet gekoppeld      : {len(ongekoppeld)}")
 
     if twijfel:
-        print(f"\n  ▼ Datum matcht, maar clubnaam niet — handmatig nakijken:")
+        print(f"\n  ▼ AFGEKEURD en niet weggeschreven — datum matcht, clubnaam niet.")
+        print(f"     Meestal een jeugd- of vrouwenwedstrijd op dezelfde dag als")
+        print(f"     de seniorenwedstrijd. Los de club op met --set-club.")
         for m, w in twijfel[:10]:
             print(f"    {m['date']}  jij: {m['home_team']['name']} - {m['away_team']['name']}")
             print(f"                TM : {' / '.join(c['name'] for c in w['clubs'])}"
@@ -466,6 +568,8 @@ def koppel_alles():
         print(f"\n  ▼ Speelschema's die niet opgehaald konden worden:")
         for club, saison, reden in mislukt[:15]:
             print(f"    {club} {saison} — {reden}")
+        print(f"\n     Los op met: python3 transfermarkt_map.py --set-club '<naam>' <ID>")
+        print(f"     Zoek het juiste ID met: --search '<naam>'")
 
     MATCH_MAP.parent.mkdir(exist_ok=True)
     MATCH_MAP.write_text(json.dumps(mapping, ensure_ascii=False, indent=2), "utf-8")
@@ -481,11 +585,15 @@ def main():
     g.add_argument("--map", action="store_true", help="volledige koppeling")
     g.add_argument("--probe-fixtures", type=int, metavar="CLUB_ID",
                    help="test welke URL het speelschema levert")
+    g.add_argument("--set-club", nargs=2, metavar=("NAAM", "ID"),
+                   help="leg een clubkoppeling handmatig vast")
     p.add_argument("--season", type=int, help="seizoen (startjaar)")
     p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     args = p.parse_args()
 
-    if args.search:
+    if args.set_club:
+        zet_club(args.set_club[0], int(args.set_club[1]))
+    elif args.search:
         zoek_club(args.search, toon=True)
     elif args.probe_fixtures:
         if args.season is None:
