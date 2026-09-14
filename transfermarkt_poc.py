@@ -294,12 +294,20 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
     datum_blok = s.select_one(".sb-datum") or s.select_one(".sb-spieldaten")
     blok_tekst = datum_blok.get_text(" ", strip=True) if datum_blok else ""
 
-    # Competitie-ID uit de eerste /wettbewerb/-link in het datumblok. Bij een
-    # competitiewedstrijd is dat de speeldag-link, bij een Europese wedstrijd
-    # een fase-link ("Competitiefase", "Achtste finale") — die heeft geen
-    # /spieltag/ in het pad, waardoor de vorige versie CL-duels liet vallen.
+    # Competitie- en seizoens-ID uit de prestatielinks van de spelers. Die
+    # dragen /saison/{jaar}/wettbewerb/{ID} en staan op élke wedstrijdpagina.
+    #
+    # Dit is bewust niet het datumblok: bij een competitiewedstrijd staat daar
+    # een speeldag-link met de competitie erin, maar bij een Europese wedstrijd
+    # staat er alleen platte tekst ("Groepsfase") en ontbreekt elke
+    # /wettbewerb/-link op de hele pagina.
     tournament_id = season_id = None
-    if datum_blok:
+    paren = re.findall(r"/saison/(\d{4})/wettbewerb/([A-Z0-9]+)", html)
+    if paren:
+        from collections import Counter
+        jaar, tid = Counter(paren).most_common(1)[0][0]
+        season_id, tournament_id = int(jaar), tid
+    elif datum_blok:
         for a in datum_blok.find_all("a", href=_WETTBEWERB_RE):
             m = _WETTBEWERB_RE.search(a.get("href", ""))
             if m:
@@ -333,6 +341,18 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
             if naam and not re.match(r"^\d+\.\s", naam):
                 tournament = naam
                 break
+
+    if not tournament:
+        # Laatste terugval: de paginatitel. Bij een Europese wedstrijd staat de
+        # competitie nergens als link op de pagina, maar wel hier:
+        #   "PSV - SSC Napoli, 21 okt. 2025 - UEFA Champions League
+        #    - Wedstrijdverslag | Transfermarkt"
+        titel_el = s.find("title")
+        if titel_el:
+            m = re.search(r"-\s*([^-|]{3,60}?)\s*-\s*[^-|]+\|\s*Transfermarkt\s*$",
+                          titel_el.get_text(strip=True))
+            if m:
+                tournament = m.group(1).strip()
 
     # Speeldagnummer bij competitiewedstrijden; knock-outduels hebben er geen,
     # die dragen een fasenaam. Dat is geen ontbrekend veld maar een ander soort
