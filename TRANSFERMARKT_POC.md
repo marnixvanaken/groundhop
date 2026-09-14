@@ -96,10 +96,29 @@ Bij 403/503: `--dump` gebruiken, pagina handmatig opslaan, dan `--html`.
 
 ## Status van deze PoC
 
-De parserlogica is getest tegen een fixture: sprite-minuutdecodering,
-bedragconversie (`€ 26,00 mln` → `26000000`), schemavorm en defensieve
-afhandeling kloppen. De **selectors zijn niet tegen de echte site gevalideerd**
-— `transfermarkt.nl`, `transfermarkt.com` en `transfermarkt-api.fly.dev`
-worden alle drie geblokkeerd door de egress-policy van de CI-omgeving. Eén run
-op je eigen machine wijst uit welke selectors bijgesteld moeten worden; het
-`GEMIST`-rapport zegt precies welke.
+Gevalideerd tegen een echte wedstrijd: PSV 4-1 Sparta Rotterdam
+(`spielbericht/4894734`, Eredivisie speeldag 6). Cloudflare liet `curl_cffi`
+zonder challenge door. Alle 16 velden komen correct binnen, inclusief 34.900
+toeschouwers, scheidsrechter Danny Makkelie, en opstellingen van 11+12 (PSV) en
+11+11 (Sparta) — met de hand nageteld.
+
+De eerste run legde vier selectorfouten bloot, waarvan één stil:
+
+| Veld | Probleem | Oplossing |
+|---|---|---|
+| `tournament` | gaf "6. Speeldag", **gerapporteerd als OK** | link naar seizoenspagina i.p.v. eerste `/wettbewerb/`-link |
+| `date` | notatie is `zo, 13-09-26`, tweecijferig jaar | ISO-datum uit de `/datum/`-link |
+| `attendance` | staat als `34.900 toeschouwers`, getal vóór label | beide volgordes |
+| `substitutions` | `sb-aktion-wechsel-ein` is `<span>`, niet `<div>` | selectie op class zonder tag |
+
+De stille fout is het leerzaamst: het veld was gevuld, dus het rapport zei `OK`,
+maar `tournaments` zou volgelopen zijn met "1. Speeldag", "2. Speeldag" in
+plaats van 21 competities. De parser markeert een competitienaam die op
+`N. ` begint nu expliciet als `GEMIST`, en controleert dat elke basisopstelling
+precies 11 spelers telt.
+
+Nog niet gevalideerd: de spelerprofielparser (marktwaarde, transfers,
+interlands) draaide alleen tegen een fixture, en de match-parser is op één
+wedstrijd getest. Een oude wedstrijd zonder publiekscijfer, een bekerduel met
+verlenging of strafschoppen, en een wedstrijd met een rode kaart zijn de
+volgende testgevallen.

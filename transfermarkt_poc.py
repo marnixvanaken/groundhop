@@ -275,29 +275,88 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         d.gemist("half_time", "div.sb-halbzeit")
 
     # ── Competitie, speelronde, datum ────────────────────────────────────────
-    datum_blok = s.select_one("div.sb-datum") or s.select_one("div.sb-spieldaten")
-    tournament, tournament_id, ronde, datum_iso, ts = "", None, None, "", None
-    if datum_blok:
-        comp_link = datum_blok.find("a", href=_WETTBEWERB_RE)
-        if comp_link:
-            tournament = comp_link.get_text(strip=True) or comp_link.get("title", "")
-            m = _WETTBEWERB_RE.search(comp_link.get("href", ""))
-            tournament_id = m.group(1) if m else None
-        blok_tekst = datum_blok.get_text(" ", strip=True)
-        m = re.search(r"(\d{1,2})\.\s*(?:speeldag|Spieltag|matchday)", blok_tekst, re.I)
-        if m:
-            ronde = int(m.group(1))
-        # Datum: dd-mm-yyyy of dd.mm.yyyy of yyyy-mm-dd
-        m = re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{4})", blok_tekst)
-        if m:
-            dag, maand, jaar = int(m.group(1)), int(m.group(2)), int(m.group(3))
-            datum_iso = f"{jaar:04d}-{maand:02d}-{dag:02d}"
-            ts = int(datetime(jaar, maand, dag, tzinfo=timezone.utc).timestamp())
+    # sb-datum is een <p> binnen div.sb-spieldaten, dus selecteer op class
+    # zonder tagnaam vast te leggen.
+    datum_blok = s.select_one(".sb-datum") or s.select_one(".sb-spieldaten")
+    blok_tekst = datum_blok.get_text(" ", strip=True) if datum_blok else ""
 
-    d.ok("tournament", tournament) if tournament else d.gemist("tournament", "a[href*=/wettbewerb/]")
+    # Competitie-ID komt uit de speeldag-link (/jumplist/spieltag/wettbewerb/NL1/...)
+    tournament_id = season_id = None
+    ronde_link = (datum_blok.find("a", href=re.compile(r"/spieltag/wettbewerb/"))
+                  if datum_blok else None)
+    if ronde_link:
+        m = _WETTBEWERB_RE.search(ronde_link.get("href", ""))
+        tournament_id = m.group(1) if m else None
+
+    # Competitienaam: de link naar de seizoenspagina draagt de naam als tekst.
+    # De navigatielinks bovenaan de pagina hebben dezelfde /wettbewerb/-vorm maar
+    # lege tekst, en de zijbalk heeft /marktwerte/ — beide moeten we mijden.
+    tournament = ""
+    for a in s.find_all("a", href=re.compile(r"/startseite/wettbewerb/[^/]+/saison_id/")):
+        naam = a.get_text(strip=True) or a.get("title", "")
+        if not naam:
+            continue
+        m = _WETTBEWERB_RE.search(a.get("href", ""))
+        if tournament_id and m and m.group(1) != tournament_id:
+            continue
+        tournament = naam
+        if not tournament_id and m:
+            tournament_id = m.group(1)
+        m = re.search(r"/saison_id/(\d{4})", a.get("href", ""))
+        if m:
+            season_id = int(m.group(1))
+        break
+    if not tournament and tournament_id:
+        # Terugval: navigatielink met dezelfde competitie-ID draagt de naam in
+        # title of img-alt.
+        for a in s.find_all("a", href=re.compile(rf"/wettbewerb/{tournament_id}\b")):
+            img = a.find("img")
+            naam = a.get("title", "") or (img.get("alt", "") if img else "")
+            if naam and not re.match(r"^\d+\.\s", naam):
+                tournament = naam
+                break
+
+    m = re.search(r"(\d{1,2})\.\s*(?:speeldag|Spieltag|matchday)", blok_tekst, re.I)
+    ronde = int(m.group(1)) if m else None
+
+    # Datum: de "wat gebeurde er vandaag"-link draagt een ISO-datum. Betrouwbaarder
+    # dan de zichtbare tekst, die een tweecijferig jaartal gebruikt ("zo, 13-09-26").
+    datum_iso, ts = "", None
+    datum_link = s.find("a", href=re.compile(r"/datum/(\d{4}-\d{2}-\d{2})"))
+    if datum_link:
+        datum_iso = re.search(r"/datum/(\d{4}-\d{2}-\d{2})", datum_link["href"]).group(1)
+    else:
+        m = re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{2,4})", blok_tekst)
+        if m:
+            jaar = int(m.group(3))
+            jaar += 2000 if jaar < 100 else 0
+            datum_iso = f"{jaar:04d}-{int(m.group(2)):02d}-{int(m.group(1)):02d}"
+    if datum_iso:
+        uur, minuut = 0, 0
+        m = re.search(r"\b(\d{1,2})[:.](\d{2})\b", blok_tekst)
+        if m:
+            uur, minuut = int(m.group(1)), int(m.group(2))
+        jaar, maand, dag = (int(x) for x in datum_iso.split("-"))
+        try:  # aftrapmoment is lokale tijd; zoneinfo zit in de stdlib vanaf 3.9
+            from zoneinfo import ZoneInfo
+            tz = ZoneInfo("Europe/Amsterdam")
+        except Exception:
+            tz = timezone.utc
+        ts = int(datetime(jaar, maand, dag, uur, minuut, tzinfo=tz).timestamp())
+
+    # "6. Speeldag" als competitienaam is een stille fout: het veld is gevuld,
+    # maar met de speelronde. Markeer dat expliciet als gemist.
+    if tournament and re.match(r"^\d+\.\s", tournament):
+        d.gemist("tournament", f"kreeg speelronde {tournament!r} i.p.v. competitie")
+        tournament = ""
+    elif tournament:
+        d.ok("tournament", tournament)
+    else:
+        d.gemist("tournament", "a[href*=/startseite/wettbewerb/.../saison_id/]")
     d.ok("tournament_id", tournament_id) if tournament_id else d.gemist("tournament_id")
+    d.ok("season_id", season_id) if season_id else d.leeg("season_id")
     d.ok("round", ronde) if ronde else d.gemist("round", "'N. speeldag'")
-    d.ok("date", datum_iso) if datum_iso else d.gemist("date", "datumregex in sb-datum")
+    d.ok("date", datum_iso) if datum_iso else d.gemist("date", "a[href*=/datum/]")
 
     # ── Stadion, publiek, scheidsrechter ─────────────────────────────────────
     extra = s.select_one("p.sb-zusatzinfos")
@@ -317,9 +376,14 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
                 venue_naam = eerste
     d.ok("venue", venue_naam) if venue_naam else d.gemist("venue", "p.sb-zusatzinfos")
 
+    # Transfermarkt schrijft "34.900 toeschouwers" — getal vóór het label.
+    # Sommige taalversies draaien dat om, dus beide vormen proberen.
     attendance = None
-    m = re.search(r"(?:bezoekers|toeschouwers|zuschauer|attendance)\s*:?\s*([\d.\s]+)",
+    m = re.search(r"([\d.,\s]{3,12})\s*(?:toeschouwers|bezoekers|zuschauer|spectators|attendance)",
                   extra_tekst, re.I)
+    if not m:
+        m = re.search(r"(?:toeschouwers|bezoekers|zuschauer|attendance)\s*:?\s*([\d.,\s]{3,12})",
+                      extra_tekst, re.I)
     if m:
         attendance = _eerste_getal(m.group(1))
     if attendance:
@@ -359,10 +423,15 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
             soort = "penalty"
         elif "eigen doelpunt" in actie_tekst or "eigentor" in actie_tekst or "own goal" in actie_tekst:
             soort = "own"
-        assist_link = links[1] if len(links) > 1 else None
+        # De doelpuntenmaker staat als a.wichtig; overige links kunnen portretten
+        # van dezelfde speler zijn. Alleen een afwijkend speler-ID is een assist.
+        maker = actie.select_one("a.wichtig") or links[0]
+        maker_id = speler_id(maker.get("href"))
+        assist_link = next(
+            (a for a in links if speler_id(a.get("href")) not in (None, maker_id)), None)
         goals.append({
-            "player": links[0].get_text(strip=True),
-            "player_id": speler_id(links[0].get("href")),
+            "player": maker.get_text(strip=True),
+            "player_id": maker_id,
             "team": home_team["name"] if kant == "home" else away_team["name"],
             "minute": minuut,
             "added_time": extra_tijd,
@@ -412,8 +481,11 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
     substitutions = []
     for li in s.select("#sb-wechsel li"):
         kant = kant_van(li)
-        in_blok = li.select_one("div.sb-aktion-wechsel-ein")
-        uit_blok = li.select_one("div.sb-aktion-wechsel-aus")
+        # sb-aktion-wechsel-ein/-aus zijn <span>, niet <div>: selecteer op class
+        # zonder tagnaam. Het <li> bevat daarnaast portretlinks van beide spelers,
+        # dus de richting mag alleen uit deze twee elementen komen.
+        in_blok = li.select_one(".sb-aktion-wechsel-ein")
+        uit_blok = li.select_one(".sb-aktion-wechsel-aus")
         in_link = in_blok.find("a", href=_SPELER_RE) if in_blok else None
         uit_link = uit_blok.find("a", href=_SPELER_RE) if uit_blok else None
         if not (in_link or uit_link):
@@ -450,8 +522,10 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         "half_time": half_time,
         "tournament": tournament,
         "tournament_id": tournament_id,
-        "season": "",
-        "season_id": None,
+        # Transfermarkt nummert seizoenen op het startjaar: saison_id 2026 = 2026/27.
+        "season": f"{tournament} {season_id}/{str(season_id + 1)[-2:]}".strip()
+                  if season_id else "",
+        "season_id": season_id,
         "round": ronde,
         "venue": {"name": venue_naam, "city": "", "id": venue_id},
         "attendance": attendance,
@@ -472,16 +546,25 @@ def parse_lineup(html: str, d: Diag) -> dict:
     lineup = {"home": [], "away": []}
 
     # De pagina toont vier boxen: basisopstelling thuis/uit, daarna bank thuis/uit.
-    boxen = s.select("div.box")
-    gevonden = 0
-    for box in boxen:
+    # De pagina toont de boxen in vaste volgorde: basisopstelling thuis, basis-
+    # opstelling uit, reservebank thuis, reservebank uit. Tel per soort apart,
+    # zodat de thuis/uit-toewijzing niet afhangt van de totale boxvolgorde.
+    tellers = {"start": 0, "bank": 0}
+    for box in s.select("div.box"):
         kop = box.select_one("h2, .table-header")
         koptekst = kop.get_text(" ", strip=True).lower() if kop else ""
         if not any(w in koptekst for w in
-                   ("opstelling", "aufstellung", "line-up", "lineup", "bank", "ersatzbank", "substitutes")):
+                   ("opstelling", "aufstellung", "line-up", "lineup",
+                    "bank", "ersatzbank", "substitutes")):
             continue
         is_bank = any(w in koptekst for w in ("bank", "ersatzbank", "substitutes", "reserve"))
-        kant = "home" if gevonden % 2 == 0 else "away"
+        soort = "bank" if is_bank else "start"
+        if tellers[soort] > 1:      # meer dan twee boxen van een soort: onverwacht
+            continue
+        kant = "home" if tellers[soort] == 0 else "away"
+        tellers[soort] += 1
+        # Elke speler staat twee keer in de box (portret + naamlink), dus ontdubbel
+        # op speler-ID en houd de link met een leesbare naam aan.
         for link in box.find_all("a", href=_SPELER_RE):
             naam = link.get_text(strip=True)
             pid = speler_id(link.get("href"))
@@ -489,18 +572,20 @@ def parse_lineup(html: str, d: Diag) -> dict:
                 continue
             if any(p["player_id"] == pid for p in lineup[kant]):
                 continue
-            lineup[kant].append({
-                "player": naam,
-                "player_id": pid,
-                "starter": not is_bank,
-            })
-        gevonden += 1
+            lineup[kant].append({"player": naam, "player_id": pid, "starter": not is_bank})
 
-    totaal = len(lineup["home"]) + len(lineup["away"])
-    if totaal:
-        d.ok("lineup", f"{len(lineup['home'])} thuis / {len(lineup['away'])} uit")
-    else:
+    n_thuis, n_uit = len(lineup["home"]), len(lineup["away"])
+    s_thuis = sum(1 for p in lineup["home"] if p["starter"])
+    s_uit = sum(1 for p in lineup["away"] if p["starter"])
+    if not (n_thuis + n_uit):
         d.gemist("lineup", "div.box met opstellingskop")
+    elif not (n_thuis and n_uit):
+        d.gemist("lineup", f"eenzijdig: {n_thuis} thuis / {n_uit} uit")
+    elif s_thuis != 11 or s_uit != 11:
+        # Elftal is per definitie 11; wijkt dat af, dan klopt de indeling niet.
+        d.gemist("lineup", f"basis {s_thuis}/{s_uit}, verwacht 11/11")
+    else:
+        d.ok("lineup", f"thuis {s_thuis}+{n_thuis - s_thuis} / uit {s_uit}+{n_uit - s_uit}")
     return lineup
 
 
