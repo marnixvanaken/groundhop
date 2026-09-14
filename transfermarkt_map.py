@@ -216,6 +216,76 @@ def speelschema(club_id: int, saison: int, toon: bool = False) -> list[dict]:
     return wedstrijden
 
 
+def probe_speelschema(club_id: int, saison: int, dump: Path | None = None):
+    """
+    Test welke URL het speelschema levert en waar de parser op stukloopt.
+
+    Onderscheidt twee foutbeelden die er in het rapport hetzelfde uitzien:
+    geen /spielbericht/-links op de pagina, of wel links maar geen leesbare
+    datum in de omliggende rij.
+    """
+    kandidaten = [
+        ("dummy-slug + seizoen",  f"{BASE}/club/spielplan/verein/{club_id}/saison_id/{saison}"),
+        ("echte slug + seizoen",  f"{BASE}/psv/spielplan/verein/{club_id}/saison_id/{saison}"),
+        ("zonder seizoen",        f"{BASE}/club/spielplan/verein/{club_id}"),
+        ("spielplandatum",        f"{BASE}/club/spielplandatum/verein/{club_id}/saison_id/{saison}"),
+        ("leistungsdaten",        f"{BASE}/club/leistungsdaten/verein/{club_id}/saison_id/{saison}"),
+    ]
+    print(f"\n{'=' * 78}\n  SPEELSCHEMA-PROBE club {club_id}, seizoen {saison}\n{'=' * 78}")
+    for naam, url in kandidaten:
+        print(f"\n▼ {naam}\n  {url}")
+        try:
+            resp = _http.get(url, headers=HEADERS, timeout=30, **_IMPERSONATE)
+        except Exception as e:
+            print(f"  ✗ {type(e).__name__}: {e}")
+            continue
+        body = resp.text or ""
+        print(f"  status={resp.status_code}  lengte={len(body):,}")
+        if resp.status_code != 200:
+            continue
+
+        s = soep(body)
+        titel = s.find("title")
+        print(f"  titel: {_knip(titel.get_text(strip=True) if titel else '(geen)', 90)}")
+
+        links = s.find_all("a", href=SPIELBERICHT_RE)
+        print(f"  /spielbericht/-links: {len(links)}")
+        if not links:
+            # Geen wedstrijdlinks: klopt de URL wel, en welke tabellen staan er?
+            print(f"  tabellen: {len(s.select('table'))}  responsive-table: "
+                  f"{len(s.select('div.responsive-table'))}")
+            hrefs = {a['href'].split('/')[1] for a in s.find_all('a', href=True)
+                     if a['href'].startswith('/') and len(a['href'].split('/')) > 1}
+            print(f"  eerste padsegmenten op de pagina: {sorted(hrefs)[:14]}")
+            if dump:
+                dump.mkdir(parents=True, exist_ok=True)
+                pad = dump / f"fixtures_{club_id}_{saison}_{re.sub(r'[^a-z]+','_',naam)}.html"
+                pad.write_text(body, encoding="utf-8")
+                print(f"  ✓ bewaard: {pad}")
+            continue
+
+        # Wel links: hoeveel rijen leveren een bruikbare datum?
+        met_datum, zonder_datum = 0, []
+        for a in links[:40]:
+            rij = _rij_van(a)
+            rijtekst = rij.get_text(" ", strip=True) if rij else ""
+            if re.search(r"(\d{1,2})[-./](\d{1,2})[-./](\d{2,4})", rijtekst):
+                met_datum += 1
+            elif len(zonder_datum) < 3:
+                zonder_datum.append((rij.name if rij else "?", _knip(rijtekst, 130)))
+        print(f"  rijen met leesbare datum: {met_datum} van {min(len(links), 40)}")
+        for tag, tekst in zonder_datum:
+            print(f"    geen datum in <{tag}>: {tekst}")
+        eerste = _rij_van(links[0])
+        if eerste is not None:
+            print(f"  EERSTE RIJ ruw: {_knip(str(eerste), 700)}")
+        if dump:
+            dump.mkdir(parents=True, exist_ok=True)
+            pad = dump / f"fixtures_{club_id}_{saison}.html"
+            pad.write_text(body, encoding="utf-8")
+            print(f"  ✓ bewaard: {pad}")
+
+
 # ─── Volledige koppeling ─────────────────────────────────────────────────────
 
 def los_clubs_op(namen: list[str]) -> dict:
@@ -352,11 +422,19 @@ def main():
     g.add_argument("--fixtures", type=int, help="toon het speelschema van deze club-ID")
     g.add_argument("--clubs", action="store_true", help="los alleen de club-ID's op")
     g.add_argument("--map", action="store_true", help="volledige koppeling")
-    p.add_argument("--season", type=int, help="seizoen (startjaar) bij --fixtures")
+    g.add_argument("--probe-fixtures", type=int, metavar="CLUB_ID",
+                   help="test welke URL het speelschema levert")
+    p.add_argument("--season", type=int, help="seizoen (startjaar)")
+    p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     args = p.parse_args()
 
     if args.search:
         zoek_club(args.search, toon=True)
+    elif args.probe_fixtures:
+        if args.season is None:
+            sys.exit("  --probe-fixtures vereist ook --season <startjaar>")
+        probe_speelschema(args.probe_fixtures, args.season,
+                          Path(args.dump) if args.dump else None)
     elif args.fixtures:
         if args.season is None:
             sys.exit("  --fixtures vereist ook --season <startjaar>")
