@@ -200,27 +200,41 @@ def _eerste_getal(tekst: str) -> int | None:
         return None
 
 
+_EENHEID = {"mln": 1_000_000, "mio": 1_000_000, "mil": 1_000_000, "m": 1_000_000,
+            "dzd": 1_000, "tsd": 1_000, "k": 1_000}
+
+
 def parse_bedrag(tekst: str) -> int | None:
-    """'€ 1,20 mln' → 1200000 · '€ 850 dzd' → 850000 · 'gratis' → 0."""
+    """
+    '10,00 mln. €' → 10000000 · '€14.00m' → 14000000 · '25 dzd. €' → 25000
+    · '1.200.000' → 1200000 · 'gratis' → 0.
+
+    Scheidingstekens zijn dubbelzinnig: in '14.00m' is de punt decimaal, in
+    '1.200.000' een duizendtalscheider. De eenheid beslist — staat er mln/dzd
+    achter, dan is het getal een decimaal, anders zijn het duizendtallen.
+    """
     if not tekst:
         return None
     t = tekst.lower().replace("\xa0", " ").strip()
-    if any(w in t for w in ("gratis", "free", "ablösefrei", "-")) and "€" not in t:
-        return 0 if any(w in t for w in ("gratis", "free", "ablösefrei")) else None
-    m = re.search(r"([\d.,]+)\s*(mln|mil|m|dzd|k|tsd)?", t)
+    if re.search(r"\b(gratis|free|ablösefrei|transfervrij|loan|huur)\b", t):
+        return 0
+    m = re.search(r"(\d[\d.,]*)\s*(mln|mio|mil|dzd|tsd|m|k)?\b", t)
     if not m:
         return None
-    getal = m.group(1).replace(".", "").replace(",", ".")
+    ruw, eenheid = m.group(1), (m.group(2) or "").strip()
+    factor = _EENHEID.get(eenheid, 1)
+    if factor > 1:
+        # Met eenheid: het laatste scheidingsteken is de decimale komma/punt.
+        if ruw.count(".") == 1 and "," not in ruw:
+            ruw = ruw.replace(".", ",")
+        ruw = ruw.replace(".", "").replace(",", ".")
+    else:
+        # Zonder eenheid zijn alle scheidingstekens duizendtallen.
+        ruw = re.sub(r"[.,]", "", ruw)
     try:
-        waarde = float(getal)
+        return int(float(ruw) * factor)
     except ValueError:
         return None
-    eenheid = (m.group(2) or "").strip()
-    if eenheid in ("mln", "mil", "m"):
-        waarde *= 1_000_000
-    elif eenheid in ("dzd", "k", "tsd"):
-        waarde *= 1_000
-    return int(waarde)
 
 
 # ─── Wedstrijdrapport ────────────────────────────────────────────────────────
@@ -591,6 +605,139 @@ def parse_lineup(html: str, d: Diag) -> dict:
 
 # ─── Spelerprofiel ───────────────────────────────────────────────────────────
 
+def _lokale_tz():
+    """Transfermarkt zet tijdstempels op lokale middernacht (CET/CEST)."""
+    try:
+        from zoneinfo import ZoneInfo
+        return ZoneInfo("Europe/Amsterdam")
+    except Exception:
+        return timezone.utc
+
+
+CEAPI_TRANSFERS = "/ceapi/transferHistory/list/{id}"
+CEAPI_MARKTWAARDE = "/ceapi/marketValueDevelopment/graph/{id}"
+
+
+def haal_json(url: str, dump_naar: Path | None = None, naam: str = "data") -> dict | None:
+    """Haalt een ceapi-endpoint op. Geeft None bij een fout i.p.v. te stoppen."""
+    print(f"  → GET {url}")
+    try:
+        resp = _http.get(url, headers={**HEADERS, "Accept": "application/json",
+                                       "X-Requested-With": "XMLHttpRequest"},
+                         timeout=25, **_IMPERSONATE)
+    except Exception as e:
+        print(f"  ! {type(e).__name__}: {e}")
+        return None
+    if resp.status_code != 200:
+        print(f"  ! HTTP {resp.status_code}")
+        return None
+    try:
+        data = resp.json()
+    except Exception:
+        print("  ! antwoord is geen geldige JSON")
+        return None
+    if dump_naar:
+        dump_naar.mkdir(parents=True, exist_ok=True)
+        pad = dump_naar / f"{naam}.json"
+        pad.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        print(f"  ✓ JSON bewaard: {pad}")
+    return data
+
+
+def _kies_sleutel(obj: dict, *patronen: str) -> str | None:
+    """Zoekt de eerste sleutel die op een patroon past; exacte match gaat voor."""
+    for p in patronen:
+        for k in obj:
+            if re.fullmatch(p, k, re.I):
+                return k
+    for p in patronen:
+        for k in obj:
+            if re.search(p, k, re.I):
+                return k
+    return None
+
+
+def parse_transfers_ceapi(data: dict, d: Diag) -> list:
+    """
+    Zet /ceapi/transferHistory/list/{id} om naar transferrecords.
+
+    De buitenste vorm is bekend (transfers[] met from/to als clubobjecten),
+    maar de sleutelnamen voor datum, seizoen en som kunnen wijzigen — die
+    worden gedetecteerd en in het rapport benoemd.
+    """
+    rijen = (data or {}).get("transfers") or []
+    if not rijen:
+        d.leeg("transfers", "lege transfers-lijst")
+        return []
+
+    eerste = rijen[0]
+    k_datum = _kies_sleutel(eerste, r"date", r"datum")
+    k_seizoen = _kies_sleutel(eerste, r"season", r"saison")
+    k_som = _kies_sleutel(eerste, r"^fee$", r"transferfee", r"fee", r"ablose")
+
+    def club(entry, kant):
+        blok = entry.get(kant)
+        if isinstance(blok, dict):
+            return blok.get("clubName") or blok.get("name") or ""
+        return str(blok or "")
+
+    transfers = []
+    for r in rijen:
+        som_ruw = r.get(k_som, "") if k_som else ""
+        if isinstance(som_ruw, dict):
+            som_ruw = som_ruw.get("value") or som_ruw.get("text") or ""
+        transfers.append({
+            "season": str(r.get(k_seizoen, "") if k_seizoen else ""),
+            "date": str(r.get(k_datum, "") if k_datum else ""),
+            "from": club(r, "from"),
+            "to": club(r, "to"),
+            "fee_raw": str(som_ruw),
+            "fee": parse_bedrag(str(som_ruw)),
+        })
+
+    bedragen = [t["fee"] for t in transfers if t["fee"]]
+    gebruikt = f"sleutels: datum={k_datum} seizoen={k_seizoen} som={k_som}"
+    if bedragen:
+        d.ok("transfers", f"{len(transfers)} stuks, hoogste € {max(bedragen):,}")
+    else:
+        d.ok("transfers", f"{len(transfers)} stuks, geen bedragen — {gebruikt}")
+    return transfers
+
+
+def parse_marktwaarde_ceapi(data: dict, d: Diag) -> tuple[int | None, list]:
+    """
+    Zet /ceapi/marketValueDevelopment/graph/{id} om naar (huidige waarde, historie).
+    Elk punt heeft x (epoch ms), y (waarde in euro), verein en age.
+    """
+    punten = (data or {}).get("list") or []
+    tz = _lokale_tz()
+    historie = []
+    for p in punten:
+        iso = ""
+        if isinstance(p.get("x"), (int, float)):
+            # In UTC valt dit op de dag ervoor: x is lokale middernacht.
+            iso = datetime.fromtimestamp(p["x"] / 1000, tz).strftime("%Y-%m-%d")
+        historie.append({
+            "date": iso or str(p.get("datum_mw", "")),
+            "value": int(p["y"]) if isinstance(p.get("y"), (int, float)) else
+                     parse_bedrag(str(p.get("mw", ""))),
+            "club": p.get("verein", ""),
+            "age": int(p["age"]) if str(p.get("age", "")).isdigit() else None,
+        })
+    huidig = parse_bedrag(str((data or {}).get("current", "")))
+    if huidig is None and historie:
+        huidig = historie[-1]["value"]
+
+    if historie:
+        eerste, laatst = historie[0], historie[-1]
+        d.ok("market_value_history",
+             f"{len(historie)} punten, {eerste['date']} € {eerste['value']:,} "
+             f"→ {laatst['date']} € {laatst['value']:,}")
+    else:
+        d.leeg("market_value_history", "lege lijst in ceapi-antwoord")
+    return huidig, historie
+
+
 _MAANDEN = {"jan": 1, "feb": 2, "mrt": 3, "maa": 3, "apr": 4, "mei": 5, "jun": 6,
             "jul": 7, "aug": 8, "sep": 9, "okt": 10, "nov": 11, "dec": 12}
 
@@ -622,13 +769,14 @@ def _header_velden(s) -> dict:
     return velden
 
 
-def parse_player(html: str, player_id: int, transfers_html: str | None = None,
-                 mv_html: str | None = None) -> tuple[dict, Diag]:
+def parse_player(html: str, player_id: int, transfers_data: dict | None = None,
+                 mv_data: dict | None = None) -> tuple[dict, Diag]:
     """
     Haalt profiel, marktwaarde, transfers en interlandcijfers op.
 
-    Marktwaarde en transfers staan NIET op de profielpagina maar op eigen
-    subpagina's (/marktwertverlauf/ en /transfers/); geef die HTML mee.
+    Transfers en marktwaardehistorie staan niet in de HTML — ook niet op de
+    subpagina's — maar worden door de frontend geladen via ceapi-endpoints.
+    Geef die JSON mee; de profiel-HTML levert de rest.
     """
     s = soep(html)
     d = Diag()
@@ -670,74 +818,32 @@ def parse_player(html: str, player_id: int, transfers_html: str | None = None,
     d.ok("national_team_goals", goals_nt) if goals_nt is not None \
         else d.leeg("national_team_goals")
 
-    # ── Huidige marktwaarde ──────────────────────────────────────────────────
+    # ── Marktwaarde: huidige waarde + historie uit het ceapi-endpoint ────────
+    historie = []
     market_value = None
-    for sel in ("a.data-header__market-value-wrapper",
-                ".tm-player-market-value-development__current-value",
-                "div.tm-player-market-value-development__current-value"):
-        el = s.select_one(sel)
+    if mv_data is not None:
+        market_value, historie = parse_marktwaarde_ceapi(mv_data, d)
+    else:
+        d.leeg("market_value_history", "ceapi niet opgehaald")
+
+    if market_value is None:
+        # Terugval op de profielpagina: die toont de huidige waarde wel.
+        el = s.select_one("a.data-header__market-value-wrapper")
         if el and el.get_text(strip=True):
-            market_value = parse_bedrag(el.get_text(" ", strip=True))
-            break
-    if market_value is None and mv_html:
-        ms = soep(mv_html)
-        el = ms.select_one(".tm-player-market-value-development__current-value")
-        if el:
             market_value = parse_bedrag(el.get_text(" ", strip=True))
     if market_value is not None:
         d.ok("market_value", f"€ {market_value:,}")
-    elif "einde carrière" in " ".join(velden) or zoek_label("einde carrière", "karriereende"):
+    elif zoek_label("einde carrière", "karriereende"):
         d.leeg("market_value", "speler is gestopt — TM toont geen waarde")
     else:
-        d.gemist("market_value", "marktwaarde-element niet gevonden")
+        d.gemist("market_value", "niet in ceapi en niet op het profiel")
 
-    # ── Marktwaardehistorie (grafiekdata in een script op de subpagina) ──────
-    historie = []
-    for bron in (mv_html, html):
-        if not bron:
-            continue
-        for m in re.finditer(r"[\"']y[\"']\s*:\s*(\d+)\s*,.*?[\"']datum_mw[\"']\s*:\s*[\"']([^\"']+)[\"']",
-                             bron):
-            historie.append({"value": int(m.group(1)), "date": m.group(2)})
-        if historie:
-            break
-    if historie:
-        d.ok("market_value_history", f"{len(historie)} datapunten")
+    # ── Transfers uit het ceapi-endpoint ─────────────────────────────────────
+    if transfers_data is not None:
+        transfers = parse_transfers_ceapi(transfers_data, d)
     else:
-        d.leeg("market_value_history", "JS-geladen, niet in HTML — zie --probe")
-
-    # ── Transfers (eigen subpagina) ──────────────────────────────────────────
-    transfers = []
-    if transfers_html:
-        ts = soep(transfers_html)
-        for rij in ts.select("div.grid.tm-player-transfer-history-grid"):
-            klassen = " ".join(rij.get("class", []))
-            if "heading" in klassen or "header" in klassen:
-                continue
-
-            def cel(suffix, _rij=rij):
-                el = _rij.select_one(f".tm-player-transfer-history-grid__{suffix}")
-                return el.get_text(" ", strip=True) if el else ""
-
-            van, naar = cel("old-club"), cel("new-club")
-            if not (van or naar):
-                continue
-            fee = cel("fee")
-            transfers.append({
-                "season": cel("season"), "date": cel("date"),
-                "from": van, "to": naar,
-                "fee_raw": fee, "fee": parse_bedrag(fee),
-            })
-    if transfers:
-        bedragen = [t["fee"] for t in transfers if t["fee"]]
-        d.ok("transfers", f"{len(transfers)} stuks, hoogste € {max(bedragen):,}"
-             if bedragen else f"{len(transfers)} stuks, geen bedragen")
-    elif transfers_html:
-        # De transferpagina bevat geen enkele transfer-class: de tabel wordt
-        # door de frontend nageladen. Dat is geen selectorfout.
-        d.leeg("transfers", "JS-geladen, niet in HTML — zie --probe")
-    else:
-        d.leeg("transfers", "subpagina niet opgehaald")
+        transfers = []
+        d.leeg("transfers", "ceapi niet opgehaald")
 
     record = {
         "id": player_id,
@@ -1046,8 +1152,8 @@ def main():
     g.add_argument("--player", help="speler-ID of volledige URL")
     p.add_argument("--html", help="parse een lokaal opgeslagen HTML-bestand (geen netwerk)")
     p.add_argument("--lineup-html", help="lokaal opgeslagen opstellingspagina")
-    p.add_argument("--transfers-html", help="lokaal opgeslagen transferpagina")
-    p.add_argument("--mv-html", help="lokaal opgeslagen marktwaardepagina")
+    p.add_argument("--transfers-json", help="lokaal opgeslagen ceapi-transfers JSON")
+    p.add_argument("--mv-json", help="lokaal opgeslagen ceapi-marktwaarde JSON")
     p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     p.add_argument("--json", help="schrijf het resultaat als JSON naar dit pad")
     p.add_argument("--no-lineup", action="store_true", help="sla de opstellingspagina over")
@@ -1105,30 +1211,25 @@ def main():
                 else f"{BASE}/speler/profil/spieler/{pid}"
             html = fetch(url, dump, f"player_{pid}")
 
-        # Marktwaarde en transfers staan op eigen subpagina's, niet op het profiel.
-        transfers_html = mv_html = None
-        if args.transfers_html:
-            transfers_html = Path(args.transfers_html).read_text(encoding="utf-8")
-        if args.mv_html:
-            mv_html = Path(args.mv_html).read_text(encoding="utf-8")
+        # Transfers en marktwaarde komen uit de ceapi-endpoints, niet uit HTML.
+        transfers_data = mv_data = None
+        if args.transfers_json:
+            transfers_data = json.loads(Path(args.transfers_json).read_text(encoding="utf-8"))
+        if args.mv_json:
+            mv_data = json.loads(Path(args.mv_json).read_text(encoding="utf-8"))
         if not args.html:
-            for naam, pad, doel in (
-                    ("transfers", f"{BASE}/speler/transfers/spieler/{pid}", "transfers"),
-                    ("marktwaarde", f"{BASE}/speler/marktwertverlauf/spieler/{pid}", "mv")):
-                try:
-                    inhoud = fetch(pad, dump, f"player_{pid}_{doel}")
-                    if doel == "transfers":
-                        transfers_html = inhoud
-                    else:
-                        mv_html = inhoud
-                except SystemExit as e:
-                    print(f"  ! subpagina {naam} overgeslagen: {e}")
+            if transfers_data is None:
+                transfers_data = haal_json(BASE + CEAPI_TRANSFERS.format(id=pid),
+                                           dump, f"player_{pid}_transfers")
+            if mv_data is None:
+                mv_data = haal_json(BASE + CEAPI_MARKTWAARDE.format(id=pid),
+                                    dump, f"player_{pid}_mv")
 
         if args.inspect:
-            inspect_player(html, transfers_html, mv_html)
+            inspect_player(html)
             return
 
-        record, d = parse_player(html, pid, transfers_html, mv_html)
+        record, d = parse_player(html, pid, transfers_data, mv_data)
         d.rapport(f"SPELER {pid} — {record['name']}")
 
     if args.json:

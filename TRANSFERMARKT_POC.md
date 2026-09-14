@@ -35,9 +35,9 @@ exact, met `lineup` en `id_source` als enige toevoegingen.
 | kaarten + reden | `#sb-karten` |
 | wissels | `#sb-wechsel` |
 | opstelling + bank | subpagina `/spielbericht/aufstellung/` |
-| marktwaarde + historie | spelerprofiel |
-| transfers + bedragen | `div.tm-player-transfer-history-grid` |
-| interlands + doelpunten | data-header spelerprofiel |
+| bio, positie, lengte, interlands | data-header spelerprofiel |
+| marktwaarde + historie | `ceapi/marketValueDevelopment/graph/{id}` |
+| transfers + bedragen | `ceapi/transferHistory/list/{id}` |
 
 **Publiekscijfers zijn de grootste winst**: nu 41 van 180 wedstrijden (23%)
 via Sofascore, op Transfermarkt vrijwel altijd aanwezig — ook bij oude
@@ -116,21 +116,30 @@ plaats van 21 competities. De parser markeert een competitienaam die op
 `N. ` begint nu expliciet als `GEMIST`, en controleert dat elke basisopstelling
 precies 11 spelers telt.
 
-De eerste echte run van de spelerparser legde bloot dat marktwaarde en
-transfers **niet op de profielpagina staan**, maar op eigen subpagina's:
+De spelerparser bleek een ander probleem te hebben: transfers en
+marktwaardehistorie staan **in het geheel niet in de HTML**, ook niet op de
+eigen subpagina's. Op `/transfers/spieler/{id}` is de enige class met
+"transfer" erin een footerlink. De frontend laadt beide na via interne
+JSON-endpoints, en die zijn rechtstreeks bruikbaar:
 
-| Gegeven | Pagina |
+| Gegeven | Bron |
 |---|---|
-| bio, positie, interlands | `/profil/spieler/{id}` |
-| transferhistorie + bedragen | `/transfers/spieler/{id}` |
-| marktwaarde + historie | `/marktwertverlauf/spieler/{id}` |
+| naam, bio, positie, lengte, interlands | `/profil/spieler/{id}` (HTML) |
+| transfers + bedragen | `/ceapi/transferHistory/list/{id}` (JSON) |
+| marktwaarde + volledige historie | `/ceapi/marketValueDevelopment/graph/{id}` (JSON) |
 
-Ook staat het interlandcijfer als één veld (`Interlands/doelp.: 3 / 1`), met
-een lege `data-header__content` — de waarde moet uit de labeltekst komen. De
-parser haalt de drie pagina's nu apart op en leest de data-header via
-label/waarde-splitsing.
+Dat is beter dan HTML-parsen: gestructureerde data die niet breekt bij een
+opmaakwijziging. De marktwaardehistorie levert per punt de waarde, de datum,
+de club en de leeftijd van de speler.
 
-Nog niet gevalideerd: de spelerparser tegen een echte huidige speler (de eerste
-test trof een gestopte speler zonder marktwaarde), en randgevallen bij
-wedstrijden — verlenging, strafschoppen, rode kaart, en een oude wedstrijd
-zonder publiekscijfer.
+Twee vallen die daarbij zijn afgevangen:
+
+- **Bedragen.** `10,00 mln. €` is Nederlands, `€14.00m` Engels. Naïef de punten
+  strippen maakt van de tweede 1,4 miljard. De eenheid beslist nu of een
+  scheidingsteken decimaal of duizendtal is; tien notaties zijn getest.
+- **Datums.** De `x`-tijdstempels staan op lokale middernacht (CET/CEST).
+  Omrekenen in UTC schuift elke datum een dag terug — gecontroleerd tegen het
+  `datum_mw`-veld uit dezelfde respons.
+
+Nog niet gevalideerd: randgevallen bij wedstrijden — verlenging, strafschoppen,
+rode kaart, en een oude wedstrijd zonder publiekscijfer.
