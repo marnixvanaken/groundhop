@@ -147,6 +147,22 @@ def _naamvormen(naam: str) -> list[str]:
     return [naam] + _ALIASSEN.get(plat, [])
 
 
+def namen_matchen(a: str, b: str) -> bool:
+    """
+    Naamvergelijking die de aliastabel meeneemt.
+
+    lijkt_op() alleen is niet genoeg voor de controle achteraf: Transfermarkt
+    noemt de tegenstander 'Italië' waar de eigen data 'Italy' zegt, en
+    'Noord-Ierland' waar er 'Northern Ireland' staat. Beide koppelingen waren
+    correct maar werden afgekeurd.
+    """
+    for va in _naamvormen(a):
+        for vb in _naamvormen(b):
+            if lijkt_op(va, vb):
+                return True
+    return False
+
+
 def kies_club(naam: str, kandidaten: list[dict]) -> tuple[dict | None, list[dict]]:
     """
     Kiest de beste club, of niets bij twijfel.
@@ -505,8 +521,13 @@ def koppel_alles():
     # Stap 1: welke (club, seizoen)-paren moeten opgehaald worden?
     paren = {}
     for m in matches:
-        club = bron_club(m)
-        paren.setdefault((club, saison_van(m["date"])), []).append(m)
+        club, saison = bron_club(m), saison_van(m["date"])
+        paren.setdefault((club, saison), []).append(m)
+        # Oefenduels in de voorbereiding staan op Transfermarkt soms nog onder
+        # het afgelopen seizoen. De index is op (club, datum), dus een extra
+        # speelschema kan alleen maar treffers opleveren.
+        if int(m["date"][5:7]) in (7, 8):
+            paren.setdefault((club, saison - 1), [])
     print(f"  {len(paren)} speelschema's op te halen\n")
 
     # Stap 2: club-ID's oplossen.
@@ -552,10 +573,10 @@ def koppel_alles():
             else:
                 verwacht = None
             if verwacht:
-                klopt = any(lijkt_op(n, verwacht) for n in namen)
+                klopt = any(namen_matchen(n, verwacht) for n in namen)
             else:
-                klopt = any(lijkt_op(n, m["home_team"]["name"])
-                            or lijkt_op(n, m["away_team"]["name"]) for n in namen)
+                klopt = any(namen_matchen(n, m["home_team"]["name"])
+                            or namen_matchen(n, m["away_team"]["name"]) for n in namen)
             if klopt:
                 mapping[str(m["id"])] = {
                     "tm_match_id": w["match_id"], "date": m["date"],
@@ -572,8 +593,8 @@ def koppel_alles():
         elif len(kandidaten) > 1:
             # Zelfde club, zelfde dag: kies op tegenstandersnaam.
             beste = next((w for w in kandidaten
-                          if any(lijkt_op(c["name"], m["away_team"]["name"])
-                                 or lijkt_op(c["name"], m["home_team"]["name"])
+                          if any(namen_matchen(c["name"], m["away_team"]["name"])
+                                 or namen_matchen(c["name"], m["home_team"]["name"])
                                  for c in w["clubs"])), None)
             if beste:
                 mapping[str(m["id"])] = {
