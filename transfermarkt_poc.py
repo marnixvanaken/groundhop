@@ -593,6 +593,82 @@ def parse_player(html: str, player_id: int) -> tuple[dict, Diag]:
     return record, d
 
 
+# ─── Inspectiemodus ──────────────────────────────────────────────────────────
+
+def _knip(tekst: str, n: int = 900) -> str:
+    tekst = re.sub(r"\s+", " ", tekst or "").strip()
+    return tekst if len(tekst) <= n else tekst[:n] + " …[afgekapt]"
+
+
+def inspect(html: str, lineup_html: str | None = None):
+    """
+    Print de HTML-fragmenten rond de velden die de parser mist, zodat de
+    selectors bijgesteld kunnen worden zonder de hele pagina te delen.
+    """
+    s = soep(html)
+
+    def kop(titel):
+        print(f"\n{'─' * 78}\n▼ {titel}\n{'─' * 78}")
+
+    kop("1. sb-datum (bron voor date / tournament / round)")
+    blok = s.select_one("div.sb-datum") or s.select_one("div.sb-spieldaten")
+    print(_knip(str(blok)) if blok else "  !! niet gevonden")
+
+    kop("2. Datum-kandidaten: links met /datum/ of /aktuell/")
+    treffers = [a.get("href") for a in s.find_all("a", href=re.compile(r"/datum/"))][:5]
+    print("  " + ("\n  ".join(treffers) if treffers else "!! geen /datum/-links"))
+
+    kop("3. Competitie-kandidaten: alle /wettbewerb/-links (tekst | title)")
+    for a in s.find_all("a", href=_WETTBEWERB_RE)[:8]:
+        img = a.find("img")
+        print(f"  href={a.get('href','')[:58]}")
+        print(f"     tekst={a.get_text(strip=True)!r} title={a.get('title','')!r} "
+              f"img_alt={img.get('alt','') if img else '-'!r}")
+
+    kop("4. sb-zusatzinfos (bron voor venue / attendance / referee)")
+    extra = s.select_one("p.sb-zusatzinfos")
+    if extra:
+        print(f"  TEKST: {_knip(extra.get_text(' ', strip=True), 400)}")
+        print(f"  HTML : {_knip(str(extra), 700)}")
+    else:
+        print("  !! p.sb-zusatzinfos niet gevonden")
+
+    kop("5. Aanwezige sb-* id's op de pagina")
+    ids = sorted({el.get("id") for el in s.find_all(id=True)
+                  if str(el.get("id")).startswith("sb-")})
+    print("  " + (", ".join(ids) if ids else "!! geen sb-* id's"))
+
+    kop("6. Wissels: #sb-wechsel structuur")
+    wechsel = s.select_one("#sb-wechsel")
+    if not wechsel:
+        kand = s.find_all(class_=re.compile(r"wechsel", re.I))[:3]
+        print(f"  !! #sb-wechsel ontbreekt. Elementen met 'wechsel' in class: {len(kand)}")
+        for el in kand:
+            print(f"     <{el.name} class={el.get('class')}>")
+    else:
+        lis = wechsel.find_all("li")
+        print(f"  #sb-wechsel gevonden, {len(lis)} <li>. Directe kinderen: "
+              f"{[k.name for k in wechsel.find_all(recursive=False)][:6]}")
+        doel = lis[0] if lis else wechsel
+        print(f"  EERSTE ITEM: {_knip(str(doel), 900)}")
+
+    kop("7. Doelpunten: #sb-tore eerste item (werkt al — ter vergelijking)")
+    tore = s.select_one("#sb-tore li")
+    print(_knip(str(tore), 600) if tore else "  !! niet gevonden")
+
+    if lineup_html:
+        kop("8. Opstellingspagina: alle box-koppen")
+        ls = soep(lineup_html)
+        for i, box in enumerate(ls.select("div.box")[:12]):
+            k = box.select_one("h2, .table-header")
+            n_spelers = len(box.find_all("a", href=_SPELER_RE))
+            print(f"  [{i}] kop={_knip(k.get_text(' ', strip=True), 60)!r} "
+                  f"spelerlinks={n_spelers}")
+        kop("9. Opstelling: eerste formatie-/tabelcontainer")
+        c = ls.select_one("div.responsive-table") or ls.select_one("div.aufstellung-vereinsseite")
+        print(_knip(str(c), 700) if c else "  !! geen bekende opstellingscontainer")
+
+
 # ─── Wat Transfermarkt structureel NIET heeft ────────────────────────────────
 
 ONTBREEKT_OP_TM = [
@@ -648,6 +724,8 @@ def main():
     p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     p.add_argument("--json", help="schrijf het resultaat als JSON naar dit pad")
     p.add_argument("--no-lineup", action="store_true", help="sla de opstellingspagina over")
+    p.add_argument("--inspect", action="store_true",
+                   help="print HTML-fragmenten rond gemiste velden i.p.v. te parsen")
     args = p.parse_args()
 
     dump = Path(args.dump) if args.dump else None
@@ -671,6 +749,10 @@ def main():
                     dump, f"lineup_{mid}")
             except SystemExit as e:
                 print(f"  ! opstelling overgeslagen: {e}")
+
+        if args.inspect:
+            inspect(html, lineup_html)
+            return
 
         record, d = parse_match(html, mid, lineup_html)
         d.rapport(f"WEDSTRIJD {mid} — {record['home_team']['name']} "
