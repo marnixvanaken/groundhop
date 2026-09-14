@@ -294,13 +294,17 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
     datum_blok = s.select_one(".sb-datum") or s.select_one(".sb-spieldaten")
     blok_tekst = datum_blok.get_text(" ", strip=True) if datum_blok else ""
 
-    # Competitie-ID komt uit de speeldag-link (/jumplist/spieltag/wettbewerb/NL1/...)
+    # Competitie-ID uit de eerste /wettbewerb/-link in het datumblok. Bij een
+    # competitiewedstrijd is dat de speeldag-link, bij een Europese wedstrijd
+    # een fase-link ("Competitiefase", "Achtste finale") — die heeft geen
+    # /spieltag/ in het pad, waardoor de vorige versie CL-duels liet vallen.
     tournament_id = season_id = None
-    ronde_link = (datum_blok.find("a", href=re.compile(r"/spieltag/wettbewerb/"))
-                  if datum_blok else None)
-    if ronde_link:
-        m = _WETTBEWERB_RE.search(ronde_link.get("href", ""))
-        tournament_id = m.group(1) if m else None
+    if datum_blok:
+        for a in datum_blok.find_all("a", href=_WETTBEWERB_RE):
+            m = _WETTBEWERB_RE.search(a.get("href", ""))
+            if m:
+                tournament_id = m.group(1)
+                break
 
     # Competitienaam: de link naar de seizoenspagina draagt de naam als tekst.
     # De navigatielinks bovenaan de pagina hebben dezelfde /wettbewerb/-vorm maar
@@ -330,8 +334,19 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
                 tournament = naam
                 break
 
+    # Speeldagnummer bij competitiewedstrijden; knock-outduels hebben er geen,
+    # die dragen een fasenaam. Dat is geen ontbrekend veld maar een ander soort
+    # wedstrijd, dus leggen we de fase apart vast.
     m = re.search(r"(\d{1,2})\.\s*(?:speeldag|Spieltag|matchday)", blok_tekst, re.I)
     ronde = int(m.group(1)) if m else None
+    ronde_naam = ""
+    if ronde is None:
+        m = re.search(r"(groepsfase|competitiefase|league phase|gruppenphase|"
+                      r"(?:achtste|kwart|halve)\s*finale|tussenronde|play-?offs?|"
+                      r"voorronde|kwalificatie|1/\d+[- ]?finale|finale)",
+                      blok_tekst, re.I)
+        if m:
+            ronde_naam = m.group(1).strip()
 
     # Datum: de "wat gebeurde er vandaag"-link draagt een ISO-datum. Betrouwbaarder
     # dan de zichtbare tekst, die een tweecijferig jaartal gebruikt ("zo, 13-09-26").
@@ -369,7 +384,12 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         d.gemist("tournament", "a[href*=/startseite/wettbewerb/.../saison_id/]")
     d.ok("tournament_id", tournament_id) if tournament_id else d.gemist("tournament_id")
     d.ok("season_id", season_id) if season_id else d.leeg("season_id")
-    d.ok("round", ronde) if ronde else d.gemist("round", "'N. speeldag'")
+    if ronde:
+        d.ok("round", ronde)
+    elif ronde_naam:
+        d.leeg("round", f"knock-out: {ronde_naam}")
+    else:
+        d.gemist("round", "'N. speeldag' noch een fasenaam")
     d.ok("date", datum_iso) if datum_iso else d.gemist("date", "a[href*=/datum/]")
 
     # ── Stadion, publiek, scheidsrechter ─────────────────────────────────────
@@ -541,6 +561,7 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
                   if season_id else "",
         "season_id": season_id,
         "round": ronde,
+        "round_name": ronde_naam,
         "venue": {"name": venue_naam, "city": "", "id": venue_id},
         "attendance": attendance,
         "referee": referee,
