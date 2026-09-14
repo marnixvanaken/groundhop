@@ -482,7 +482,7 @@ def los_clubs_op(namen: list[str]) -> dict:
     if open_staand:
         print(f"\n  ▼ {len(open_staand)} clubs onopgelost — zet ze handmatig:")
         for naam, twijfel in open_staand:
-            print(f"    python3 transfermarkt_map.py --set-club {naam!r} <ID>")
+            print(f"    python3 transfermarkt_map.py --set-club {naam!r} ID")
             for k in twijfel[:6]:
                 print(f"        {k['id']:>7}  {k['name']}")
     return bekend
@@ -624,8 +624,9 @@ def koppel_alles():
         print(f"\n  ▼ Speelschema's die niet opgehaald konden worden:")
         for club, saison, reden in mislukt[:15]:
             print(f"    {club} {saison} — {reden}")
-        print(f"\n     Los op met: python3 transfermarkt_map.py --set-club '<naam>' <ID>")
-        print(f"     Zoek het juiste ID met: --search '<naam>'")
+        print(f"\n     Los op met: python3 transfermarkt_map.py --set-club 'naam' ID")
+        print(f"     Zoek het juiste ID met: --search 'naam'")
+        print(f"     (zonder punthaken — die leest de shell als omleiding)")
 
     MATCH_MAP.parent.mkdir(exist_ok=True)
     MATCH_MAP.write_text(json.dumps(mapping, ensure_ascii=False, indent=2), "utf-8")
