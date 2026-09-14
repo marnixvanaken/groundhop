@@ -141,5 +141,33 @@ Twee vallen die daarbij zijn afgevangen:
   Omrekenen in UTC schuift elke datum een dag terug — gecontroleerd tegen het
   `datum_mw`-veld uit dezelfde respons.
 
-Nog niet gevalideerd: randgevallen bij wedstrijden — verlenging, strafschoppen,
-rode kaart, en een oude wedstrijd zonder publiekscijfer.
+## Eindstand van de PoC
+
+Beide parsers zijn gevalideerd tegen echte pagina's, zonder gemiste velden:
+
+| Parser | Testgeval | Resultaat |
+|---|---|---|
+| Wedstrijd | PSV 4-1 Sparta (`4894734`) | **16/16** velden |
+| Speler | Ruben van Bommel (`735701`) | **10/10** velden |
+
+De spelerrun leverde 13 marktwaardepunten op (€25.000 bij MVV O18 in juni 2022
+tot €10 mln bij PSV in mei 2026) en 5 transfers met €15,8 mln als hoogste som.
+Cloudflare gaf geen enkele keer een challenge met `curl_cffi`.
+
+Onderweg zijn zes fouten gevonden en hersteld, waarvan **drie stil** — velden
+die gevuld leken maar verkeerde data bevatten. Dat is de belangrijkste les uit
+deze PoC: een gevuld veld is geen bewijs van een correct veld. Het rapport
+controleert daarom nu ook op plausibiliteit (competitienaam die op `N. `
+begint, basisopstelling die niet op 11 uitkomt) in plaats van alleen op
+aanwezigheid.
+
+## Wat nog getest moet worden
+
+Randgevallen uit de eigen dataset: verlenging, strafschoppen, een rode kaart,
+en een oude wedstrijd zonder publiekscijfer. Draai daarvoor:
+
+```bash
+python3 transfermarkt_poc.py --match <id> --dump html_dump/
+```
+
+en bekijk of er `GEMIST`-regels verschijnen.
