@@ -126,6 +126,27 @@ def _kwal_sig(naam: str) -> frozenset:
     return frozenset(sig)
 
 
+# De .nl-site gebruikt Nederlandse clubnamen, de bestaande data Engelse. Zonder
+# deze tabel vindt 'Netherlands' de club 'Nederland' niet, ook al staat die in
+# de zoekresultaten.
+_ALIASSEN = {
+    "netherlands": ["nederland"],
+    "standard liege": ["standard luik"],
+    "bayern munich": ["bayern munchen"],
+    "cologne": ["koln"],
+    "the hague": ["den haag"],
+    "spain": ["spanje"], "germany": ["duitsland"], "belgium": ["belgie"],
+    "france": ["frankrijk"], "italy": ["italie"], "england": ["engeland"],
+    "wales": ["wales"], "northern ireland": ["noord ierland"],
+}
+
+
+def _naamvormen(naam: str) -> list[str]:
+    """Geeft de naam plus bekende anderstalige varianten."""
+    plat = " ".join(_kernwoorden(naam))
+    return [naam] + _ALIASSEN.get(plat, [])
+
+
 def kies_club(naam: str, kandidaten: list[dict]) -> tuple[dict | None, list[dict]]:
     """
     Kiest de beste club, of niets bij twijfel.
@@ -135,21 +156,27 @@ def kies_club(naam: str, kandidaten: list[dict]) -> tuple[dict | None, list[dict
     op PSV uitkwamen: de zoekpagina bevat zijbalklinks naar clubs, en 'PSV' won
     de sortering op naamlengte.
     """
-    q, qk = set(_kernwoorden(naam)), _kwal_sig(naam)
+    qk = _kwal_sig(naam)
+    vormen = [set(_kernwoorden(v)) for v in _naamvormen(naam)]
     scored = []
     for k in kandidaten:
         c, ck = set(_kernwoorden(k["name"])), _kwal_sig(k["name"])
         if qk != ck:          # jeugd/vrouwen nooit op het seniorenteam laten vallen
             continue
-        if q == c:
-            score = 0
-        elif q <= c:
-            score = len(c - q)
-        elif c <= q:
-            score = len(q - c)
-        else:
+        beste = None
+        for q in vormen:
+            if q == c:
+                s = 0
+            elif q <= c:
+                s = len(c - q)
+            elif c <= q:
+                s = len(q - c)
+            else:
+                continue
+            beste = s if beste is None else min(beste, s)
+        if beste is None:
             continue
-        scored.append((score, k))
+        scored.append((beste, k))
 
     if not scored:
         return None, kandidaten[:6]
@@ -392,6 +419,23 @@ def probe_speelschema(club_id: int, saison: int, dump: Path | None = None):
 
 # ─── Volledige koppeling ─────────────────────────────────────────────────────
 
+def bron_club(match: dict) -> str:
+    """
+    De club wiens speelschema deze wedstrijd bevat.
+
+    Vrouwenwedstrijden staan in de eigen data onder de mannennaam ("PSV
+    Eindhoven"), terwijl het toernooiveld wel klopt ("Eurojackpot Vrouwen
+    Eredivisie"). Op Transfermarkt is dat een aparte club, dus leiden we de
+    juiste naam uit het toernooi af.
+    """
+    club = match.get("source_team") or match["home_team"]["name"]
+    toernooi = (match.get("tournament") or "").lower()
+    if any(w in toernooi for w in ("vrouwen", "women", "dames", "feminin")):
+        if not any(w in club.lower() for w in ("vrouwen", "women", "dames")):
+            return f"{club} Vrouwen"
+    return club
+
+
 def los_clubs_op(namen: list[str]) -> dict:
     """
     Zoekt per clubnaam de Transfermarkt-ID. Hergebruikt een eerdere run, zodat
@@ -439,7 +483,7 @@ def los_clubs_op(namen: list[str]) -> dict:
         print(f"\n  ▼ {len(open_staand)} clubs onopgelost — zet ze handmatig:")
         for naam, twijfel in open_staand:
             print(f"    python3 transfermarkt_map.py --set-club {naam!r} <ID>")
-            for k in twijfel[:3]:
+            for k in twijfel[:6]:
                 print(f"        {k['id']:>7}  {k['name']}")
     return bekend
 
@@ -461,7 +505,7 @@ def koppel_alles():
     # Stap 1: welke (club, seizoen)-paren moeten opgehaald worden?
     paren = {}
     for m in matches:
-        club = m.get("source_team") or m["home_team"]["name"]
+        club = bron_club(m)
         paren.setdefault((club, saison_van(m["date"])), []).append(m)
     print(f"  {len(paren)} speelschema's op te halen\n")
 
@@ -493,7 +537,7 @@ def koppel_alles():
     print(f"\n{'=' * 78}\n  KOPPELRESULTAAT\n{'=' * 78}")
     mapping, ongekoppeld, twijfel = {}, [], []
     for m in matches:
-        club = m.get("source_team") or m["home_team"]["name"]
+        club = bron_club(m)
         kandidaten = index.get((club, m["date"]), [])
         if len(kandidaten) == 1:
             w = kandidaten[0]
@@ -558,11 +602,23 @@ def koppel_alles():
                   f"  (id {w['match_id']})")
 
     if ongekoppeld:
-        print(f"\n  ▼ Niet gekoppeld:")
-        for m in ongekoppeld[:15]:
-            club = m.get("source_team") or m["home_team"]["name"]
-            print(f"    {m['date']}  {m['home_team']['name']} - {m['away_team']['name']}"
-                  f"   (via {club})")
+        groepen = {}
+        for m in ongekoppeld:
+            club, toernooi = bron_club(m), (m.get("tournament") or "")
+            if not clubs.get(club):
+                reden = f"club onopgelost: {club}"
+            elif "friendly" in toernooi.lower() or "vriend" in toernooi.lower():
+                reden = "vriendschappelijk — staat mogelijk niet in het speelschema"
+            else:
+                reden = "datum niet in het speelschema"
+            groepen.setdefault(reden, []).append(m)
+        print(f"\n  ▼ Niet gekoppeld, gegroepeerd op oorzaak:")
+        for reden, groep in sorted(groepen.items(), key=lambda x: -len(x[1])):
+            print(f"\n    [{len(groep)}x] {reden}")
+            for m in groep[:6]:
+                print(f"       {m['date']}  {m['home_team']['name']} - {m['away_team']['name']}")
+            if len(groep) > 6:
+                print(f"       ... en nog {len(groep) - 6}")
 
     if mislukt:
         print(f"\n  ▼ Speelschema's die niet opgehaald konden worden:")
