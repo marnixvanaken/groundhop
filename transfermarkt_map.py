@@ -53,6 +53,7 @@ from transfermarkt_poc import (BASE, HEADERS, _IMPERSONATE, _datum_nl, _http,
 SELECTED = Path("data/selected_matches.json")
 CLUB_MAP = Path("data/tm_club_map.json")
 MATCH_MAP = Path("data/tm_match_map.json")
+UITGESTELD = Path("data/tm_uitgesteld.json")
 
 SPIELBERICHT_RE = re.compile(r"/spielbericht/index/spielbericht/(\d+)")
 VEREIN_RE = re.compile(r"/verein/(\d+)")
@@ -435,6 +436,22 @@ def probe_speelschema(club_id: int, saison: int, dump: Path | None = None):
 
 # ─── Volledige koppeling ─────────────────────────────────────────────────────
 
+def wordt_overgeslagen(match: dict) -> str | None:
+    """
+    Geeft een reden als deze wedstrijd bewust niet gemigreerd wordt, anders None.
+
+    Vrouwenwedstrijden staan op Transfermarkt onder een eigen club die de
+    snelzoekfunctie niet oplevert. Bewust uitgesteld in plaats van halfbakken
+    gekoppeld; ze worden vastgelegd in data/tm_uitgesteld.json.
+    """
+    toernooi = (match.get("tournament") or "").lower()
+    ploegen = f"{match['home_team']['name']} {match['away_team']['name']}".lower()
+    if any(w in toernooi for w in ("vrouwen", "women", "dames")) or \
+            any(w in ploegen for w in ("vrouwen", "women")):
+        return "vrouwenvoetbal — uitgesteld"
+    return None
+
+
 def bron_club(match: dict) -> str:
     """
     De club wiens speelschema deze wedstrijd bevat.
@@ -520,7 +537,12 @@ def koppel_alles():
 
     # Stap 1: welke (club, seizoen)-paren moeten opgehaald worden?
     paren = {}
-    for m in matches:
+    overgeslagen = [(m, wordt_overgeslagen(m)) for m in matches if wordt_overgeslagen(m)]
+    te_koppelen = [m for m in matches if not wordt_overgeslagen(m)]
+    if overgeslagen:
+        print(f"  {len(overgeslagen)} bewust overgeslagen "
+              f"({overgeslagen[0][1]})")
+    for m in te_koppelen:
         club, saison = bron_club(m), saison_van(m["date"])
         paren.setdefault((club, saison), []).append(m)
         # Oefenduels in de voorbereiding staan op Transfermarkt soms nog onder
@@ -557,7 +579,7 @@ def koppel_alles():
     # Stap 4: koppelen op datum.
     print(f"\n{'=' * 78}\n  KOPPELRESULTAAT\n{'=' * 78}")
     mapping, ongekoppeld, twijfel = {}, [], []
-    for m in matches:
+    for m in te_koppelen:
         club = bron_club(m)
         kandidaten = index.get((club, m["date"]), [])
         if len(kandidaten) == 1:
@@ -652,6 +674,35 @@ def koppel_alles():
     MATCH_MAP.parent.mkdir(exist_ok=True)
     MATCH_MAP.write_text(json.dumps(mapping, ensure_ascii=False, indent=2), "utf-8")
     print(f"\n  ✓ {MATCH_MAP} geschreven ({len(mapping)} koppelingen)")
+
+    # Alles wat níét meegaat, met reden, zodat er niets stilzwijgend verdwijnt.
+    uitgesteld = []
+    for m, reden in overgeslagen:
+        uitgesteld.append({"id": m["id"], "date": m["date"], "reden": reden,
+                           "label": f"{m['home_team']['name']} - {m['away_team']['name']}",
+                           "tournament": m.get("tournament", "")})
+    for m in ongekoppeld:
+        club = bron_club(m)
+        if not clubs.get(club):
+            reden = f"club onopgelost: {club}"
+        elif "friendly" in (m.get("tournament") or "").lower():
+            reden = "oefenduel — niet in het speelschema"
+        else:
+            reden = "datum niet in het speelschema"
+        uitgesteld.append({"id": m["id"], "date": m["date"], "reden": reden,
+                           "label": f"{m['home_team']['name']} - {m['away_team']['name']}",
+                           "tournament": m.get("tournament", "")})
+    for m, w in twijfel:
+        uitgesteld.append({"id": m["id"], "date": m["date"],
+                           "reden": "afgekeurd: clubnaam wijkt af van de datumtreffer",
+                           "label": f"{m['home_team']['name']} - {m['away_team']['name']}",
+                           "tournament": m.get("tournament", ""),
+                           "tm_kandidaat": w["match_id"]})
+    uitgesteld.sort(key=lambda x: x["date"])
+    UITGESTELD.write_text(json.dumps(uitgesteld, ensure_ascii=False, indent=2), "utf-8")
+    print(f"  ✓ {UITGESTELD} geschreven ({len(uitgesteld)} niet meegenomen)")
+    print(f"\n  {len(mapping)} van {len(matches)} wedstrijden gaan mee "
+          f"({100 * len(mapping) // len(matches)}%)")
 
 
 def main():
