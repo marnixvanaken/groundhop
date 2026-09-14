@@ -704,7 +704,7 @@ def parse_player(html: str, player_id: int, transfers_html: str | None = None,
     if historie:
         d.ok("market_value_history", f"{len(historie)} datapunten")
     else:
-        d.leeg("market_value_history", "geen grafiekdata in HTML")
+        d.leeg("market_value_history", "JS-geladen, niet in HTML — zie --probe")
 
     # ── Transfers (eigen subpagina) ──────────────────────────────────────────
     transfers = []
@@ -733,7 +733,9 @@ def parse_player(html: str, player_id: int, transfers_html: str | None = None,
         d.ok("transfers", f"{len(transfers)} stuks, hoogste € {max(bedragen):,}"
              if bedragen else f"{len(transfers)} stuks, geen bedragen")
     elif transfers_html:
-        d.gemist("transfers", "div.grid.tm-player-transfer-history-grid")
+        # De transferpagina bevat geen enkele transfer-class: de tabel wordt
+        # door de frontend nageladen. Dat is geen selectorfout.
+        d.leeg("transfers", "JS-geladen, niet in HTML — zie --probe")
     else:
         d.leeg("transfers", "subpagina niet opgehaald")
 
@@ -938,6 +940,60 @@ def inspect_player(html: str, transfers_html: str | None = None,
         kop("10-11. SUBPAGINA marktwaarde — niet opgehaald")
 
 
+def probe_player(pid: int, dump_naar: Path | None = None):
+    """
+    Transfers en marktwaardehistorie staan niet in de server-HTML; de frontend
+    laadt ze na. Deze probe test de kandidaat-endpoints en rapporteert per stuk
+    de statuscode, het content-type en een fragment van de inhoud, zodat de
+    juiste bron vastgesteld wordt zonder te gokken.
+    """
+    kandidaten = [
+        ("transfers (ceapi JSON)",     f"{BASE}/ceapi/transferHistory/list/{pid}"),
+        ("marktwaarde (ceapi JSON)",   f"{BASE}/ceapi/marketValueDevelopment/graph/{pid}"),
+        ("marktwaarde (ceapi alt)",    f"{BASE}/ceapi/marketValueDevelopment/graph/player/{pid}"),
+        ("transfers (per seizoen)",    f"{BASE}/speler/transfersnachsaison/spieler/{pid}"),
+        ("prestaties (leistungsdaten)", f"{BASE}/speler/leistungsdaten/spieler/{pid}"),
+    ]
+    print(f"\n{'=' * 78}\n  ENDPOINT-PROBE voor speler {pid}\n{'=' * 78}")
+    for naam, url in kandidaten:
+        print(f"\n▼ {naam}\n  {url}")
+        try:
+            resp = _http.get(url, headers={**HEADERS, "Accept": "application/json, text/html, */*",
+                                           "X-Requested-With": "XMLHttpRequest"},
+                             timeout=25, **_IMPERSONATE)
+        except Exception as e:
+            print(f"  ✗ verzoek mislukt: {type(e).__name__}: {e}")
+            continue
+        ct = resp.headers.get("Content-Type", "?")
+        body = resp.text or ""
+        print(f"  status={resp.status_code}  type={ct}  lengte={len(body):,}")
+        if resp.status_code != 200:
+            continue
+        if dump_naar:
+            dump_naar.mkdir(parents=True, exist_ok=True)
+            veilig = re.sub(r"[^a-z0-9]+", "_", naam.lower()).strip("_")
+            ext = "json" if "json" in ct else "html"
+            pad = dump_naar / f"probe_{pid}_{veilig}.{ext}"
+            pad.write_text(body, encoding="utf-8")
+            print(f"  ✓ bewaard: {pad}")
+        if "json" in ct:
+            try:
+                data = json.loads(body)
+                print(f"  JSON-sleutels: {list(data)[:12] if isinstance(data, dict) else f'lijst[{len(data)}]'}")
+                print(f"  fragment: {_knip(json.dumps(data, ensure_ascii=False), 700)}")
+            except Exception:
+                print(f"  fragment (geen geldige JSON): {_knip(body, 400)}")
+        else:
+            ps = soep(body)
+            klassen = {}
+            for el in ps.find_all(class_=re.compile(r"transfer|market", re.I)):
+                for c in el.get("class", []):
+                    if re.search(r"transfer|market", c, re.I):
+                        klassen[c] = klassen.get(c, 0) + 1
+            print(f"  relevante classes: {sorted(klassen, key=lambda k: -klassen[k])[:8] or 'geen'}")
+            print(f"  tabellen: {len(ps.select('table.items'))}x table.items")
+
+
 # ─── Wat Transfermarkt structureel NIET heeft ────────────────────────────────
 
 ONTBREEKT_OP_TM = [
@@ -997,6 +1053,8 @@ def main():
     p.add_argument("--no-lineup", action="store_true", help="sla de opstellingspagina over")
     p.add_argument("--inspect", action="store_true",
                    help="print HTML-fragmenten rond gemiste velden i.p.v. te parsen")
+    p.add_argument("--probe", action="store_true",
+                   help="test welke endpoints transfers/marktwaarde leveren (alleen --player)")
     args = p.parse_args()
 
     dump = Path(args.dump) if args.dump else None
@@ -1032,6 +1090,11 @@ def main():
     else:
         pid = haal_id(args.player, r"/spieler/(\d+)")
         print(f"\n  Transfermarkt PoC — speler {pid}")
+
+        if args.probe:
+            probe_player(pid, dump)
+            return
+
         if args.html:
             html = Path(args.html).read_text(encoding="utf-8")
             print(f"  ← lokaal bestand: {args.html}")
