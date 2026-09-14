@@ -6,3 +6,5 @@ data/player_cache/
 data/player_national_cache/
 data/player_transfer_cache/
 data/sync_progress.json
+html_dump/
+.venv/
