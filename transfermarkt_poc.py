@@ -901,6 +901,14 @@ def inspect(html: str, lineup_html: str | None = None):
     def kop(titel):
         print(f"\n{'─' * 78}\n▼ {titel}\n{'─' * 78}")
 
+    kop("0. Paginatitel en kruimelpad (mogelijke bron voor de competitie)")
+    titel = s.find("title")
+    print(f"  <title>: {_knip(titel.get_text(strip=True) if titel else '(geen)', 140)}")
+    for sel in ("div.breadcrumb", ".breadcrumb", "nav.breadcrumb", "h1"):
+        el = s.select_one(sel)
+        if el:
+            print(f"  {sel}: {_knip(el.get_text(' | ', strip=True), 140)}")
+
     kop("1. sb-datum (bron voor date / tournament / round)")
     blok = s.select_one("div.sb-datum") or s.select_one("div.sb-spieldaten")
     print(_knip(str(blok)) if blok else "  !! niet gevonden")
