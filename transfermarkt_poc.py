@@ -31,6 +31,8 @@ Afhankelijkheden: beautifulsoup4 (+ lxml optioneel), curl_cffi (optioneel maar
 sterk aanbevolen: Transfermarkt zit achter Cloudflare).
 """
 
+from __future__ import annotations  # PEP 604-annotaties op Python 3.9 (macOS CLT)
+
 import argparse
 import json
 import re
