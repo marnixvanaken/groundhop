@@ -754,6 +754,63 @@ def inspect(html: str, lineup_html: str | None = None):
         print(_knip(str(c), 700) if c else "  !! geen bekende opstellingscontainer")
 
 
+def inspect_player(html: str):
+    """Zelfde principe als inspect(), maar voor de velden op een spelerprofiel."""
+    s = soep(html)
+
+    def kop(titel):
+        print(f"\n{'─' * 78}\n▼ {titel}\n{'─' * 78}")
+
+    kop("1. Kop van de pagina (naam)")
+    for sel in ("h1.data-header__headline-wrapper", "h1", ".data-header__headline-container"):
+        el = s.select_one(sel)
+        if el:
+            print(f"  {sel} -> {_knip(el.get_text(' ', strip=True), 120)!r}")
+
+    kop("2. Marktwaarde-kandidaten")
+    for el in s.select("[class*='market-value'], [class*='marktwert'], [class*='market_value']")[:6]:
+        print(f"  <{el.name} class={el.get('class')}>")
+        print(f"     {_knip(el.get_text(' ', strip=True), 120)!r}")
+
+    kop("3. data-header: alle label/waarde-paren")
+    for li in s.select("li.data-header__label, span.data-header__label")[:14]:
+        waarde = li.select_one("span.data-header__content")
+        print(f"  {_knip(li.get_text(' ', strip=True), 70)!r}"
+              f"  -> content={_knip(waarde.get_text(' ', strip=True), 40) if waarde else '-'!r}")
+
+    kop("4. Transferhistorie: containers met 'transfer' in class")
+    klassen = {}
+    for el in s.find_all(class_=re.compile(r"transfer", re.I)):
+        for c in el.get("class", []):
+            if "transfer" in c.lower():
+                klassen[c] = klassen.get(c, 0) + 1
+    for c, n in sorted(klassen.items(), key=lambda x: -x[1])[:12]:
+        print(f"  {n:>3}x  .{c}")
+    if not klassen:
+        print("  !! geen enkele class met 'transfer'")
+
+    kop("5. Eerste transferrij, ruw")
+    rij = s.select_one("div.tm-player-transfer-history-grid:not(.tm-player-transfer-history-grid--heading)")
+    if not rij:
+        kand = s.find_all(class_=re.compile(r"transfer.*(grid|row|item)", re.I))
+        rij = kand[1] if len(kand) > 1 else (kand[0] if kand else None)
+    print(_knip(str(rij), 900) if rij else "  !! geen transferrij gevonden")
+
+    kop("6. Interlandcijfers: tekst rond 'interland'")
+    tekst = s.get_text(" ", strip=True)
+    for m in list(re.finditer(r"interland|länderspiele|caps|nationale? ploeg", tekst, re.I))[:4]:
+        print(f"  …{_knip(tekst[max(0, m.start() - 60):m.start() + 90], 160)}…")
+
+    kop("7. Scripts met marktwaardegrafiek")
+    for sc in s.find_all("script"):
+        inhoud = sc.string or ""
+        if re.search(r"marketValueDevelopment|highcharts|datum_mw", inhoud, re.I):
+            print(f"  script ({len(inhoud)} tekens): {_knip(inhoud, 500)}")
+            break
+    else:
+        print("  !! geen grafiekscript gevonden (waarde-historie is dan JS-geladen)")
+
+
 # ─── Wat Transfermarkt structureel NIET heeft ────────────────────────────────
 
 ONTBREEKT_OP_TM = [
@@ -848,8 +905,18 @@ def main():
         print(f"\n  Transfermarkt PoC — speler {pid}")
         if args.html:
             html = Path(args.html).read_text(encoding="utf-8")
+            print(f"  ← lokaal bestand: {args.html}")
         else:
-            html = fetch(f"{BASE}/speler/profil/spieler/{pid}", dump, f"player_{pid}")
+            # Een meegegeven URL bevat de echte slug; die is betrouwbaarder dan
+            # zelf een URL samenstellen met een verzonnen slug.
+            url = args.player if args.player.startswith("http") \
+                else f"{BASE}/speler/profil/spieler/{pid}"
+            html = fetch(url, dump, f"player_{pid}")
+
+        if args.inspect:
+            inspect_player(html)
+            return
+
         record, d = parse_player(html, pid)
         d.rapport(f"SPELER {pid} — {record['name']}")
 
