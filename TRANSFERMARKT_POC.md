@@ -299,6 +299,18 @@ uiteen in drie groepen, en alleen de laatste vraagt om een mens.
 de Sofascore-kant. Dat is geen afwijkende datum maar een gat dat als datum is
 opgeslagen, en het wordt nu apart geteld in plaats van als fout.
 
+**Jaren uiteen is geen leesverschil.** Twee bronnen kunnen het oneens zijn over
+een dag, een maand, soms een jaar. Liggen de data vijftien jaar uiteen, dan
+lezen ze niet dezelfde geboortedatum verkeerd maar beschrijven ze twee mensen.
+Dat is de enige aanwijzing die ook werkt als beide bronnen dezelfde club noemen,
+en het is wat Andy Little eruit haalt (TM 1989-05-12, Sofascore 1974-10-03) —
+een naam die bij twee spelers hoort, bij beide bronnen alleen gezien bij het
+Noord-Ierse elftal, waar de clubtoets dus blind is.
+
+Wat er over 2331 vergelijkingen overblijft: geen enkel geval waarin de twee
+bronnen dezelfde naam bij verschillende clubs zagen. Er is dus nergens een
+profiel van de verkeerde speler opgehaald.
+
 Draai `python3 transfermarkt_profiles.py --rapport` voor de indeling; dat haalt
 niets op. `--zelftest` rekent de controle zelf na op vijfendertig gevallen
 waarvan de uitkomst vaststaat: de vormen, de naamgenoten, de clubnamen en de

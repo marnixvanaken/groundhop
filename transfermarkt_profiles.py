@@ -101,7 +101,13 @@ def haal_profiel(pid: int, volledig: bool, force: bool = False) -> dict | None:
 # Van mild naar ernstig. De volgorde is ook de rangorde waarmee we bij meerdere
 # kandidaat-data de meest onschuldige verklaring kiezen.
 VORMEN = ("één dag", "twee of drie dagen", "dag en maand verwisseld",
-          "alleen het jaar", "geheel anders")
+          "alleen het jaar", "geheel anders", "meer dan vijf jaar")
+
+# Twee bronnen kunnen het oneens zijn over een dag, een maand, soms een jaar.
+# Liggen de data jaren uiteen, dan lezen ze niet dezelfde geboortedatum verkeerd
+# maar beschrijven ze twee mensen. Dat is de enige vorm die een naamgenoot
+# aanwijst ook als beide bronnen dezelfde club noemen.
+VEEL_JAREN = 5 * 366
 
 
 def vergelijk(tm: str, sofa: str) -> tuple:
@@ -119,6 +125,8 @@ def vergelijk(tm: str, sofa: str) -> tuple:
         return "twee of drie dagen", dagen
     if (a.month, a.day) == (b.month, b.day):
         return "alleen het jaar", dagen
+    if abs(dagen) > VEEL_JAREN:
+        return "meer dan vijf jaar", dagen
     return "geheel anders", dagen
 
 
@@ -283,8 +291,19 @@ def controleer(profielen: list[dict]) -> None:
         if vorm in ("één dag", "twee of drie dagen"):
             later = sum(1 for r in echt if r[3] == vorm and r[1] > r[2])
             extra = f"   (TM later {later}, TM eerder {tellen[vorm] - later})"
-        merk = "   ✗" if vorm == "geheel anders" else ""
+        merk = ""
+        if vorm == "geheel anders":
+            merk = "   ✗"
+        elif vorm == "meer dan vijf jaar":
+            merk = "   ✗ vrijwel zeker een naamgenoot"
         print(f"  {vorm:<26}{tellen[vorm]:>5}{extra}{merk}")
+
+    ver = [r for r in echt if r[3] == "meer dan vijf jaar"]
+    if ver:
+        print(f"\n  ! Zoveel jaar ertussen is geen leesverschil maar een andere")
+        print(f"    speler. Deze horen niet bij elkaar:")
+        for naam, tm, sofa, _, _ in ver:
+            print(f"    {naam}: TM {tm} / Sofascore {sofa}")
 
     anders = [r for r in echt if r[3] == "geheel anders"]
     if not anders:
@@ -355,6 +374,12 @@ def zelftest() -> int:
         "dag en maand verwisseld")
     eis("alleen het jaar", vergelijk("2000-11-28", "1999-11-28")[0], "alleen het jaar")
     eis("geheel anders", vergelijk("1993-04-24", "1995-08-11")[0], "geheel anders")
+    eis("vijftien jaar ertussen",
+        vergelijk("1989-05-12", "1974-10-03")[0], "meer dan vijf jaar")
+    eis("vier jaar is nog geen naamgenoot",
+        vergelijk("1989-05-12", "1993-10-03")[0], "geheel anders")
+    eis("alleen het jaar blijft dat, ook ver uiteen",
+        vergelijk("1989-05-12", "1974-05-12")[0], "alleen het jaar")
     eis("onleesbaar", vergelijk("", "1995-08-11")[0], "geheel anders")
     # Een verschil van drie dagen is geen verwisseling, ook al lijkt het erop.
     eis("drie dagen telt als dagkwestie",
