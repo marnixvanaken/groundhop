@@ -555,7 +555,12 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
             continue
         minuut, extra_tijd = lees_minuut(li.select_one("div.sb-aktion-uhr"))
         t = actie.get_text(" ", strip=True).lower()
-        if "tweede gele" in t or "gelb-rote" in t or "second yellow" in t:
+        # "Geel-rode kaart" is de gangbare notatie op transfermarkt.nl; zonder
+        # die term valt hij door naar "rode kaart" (want die tekst zit erin).
+        # Het aantal rode kaarten klopt dan nog steeds, maar het onderscheid
+        # tussen direct rood en tweede geel gaat verloren.
+        if ("tweede gele" in t or "geel-rode" in t or "gelb-rote" in t
+                or "second yellow" in t):
             soort = "second_yellow"
         elif "rode kaart" in t or "rote karte" in t or "red card" in t:
             soort = "red"
