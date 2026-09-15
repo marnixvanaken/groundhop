@@ -270,17 +270,39 @@ elke afwijking in, van mild naar ernstig:
 | alleen het jaar | zelfde dag en maand, ander jaar |
 | geheel anders | **kan een verkeerd profiel zijn** |
 
-Over de vijftien afwijkingen die de run liet zien: 7× één dag (zesmaal staat TM
-een dag later), 2× dag/maand verwisseld, 2× twee dagen, 1× alleen het jaar en
-3× geheel anders, waarvan er één (Ben Davies) een bevestigde naamgenoot is.
-Alleen die laatste categorie is het nakijken waard, en daar staan nu de clubs
-bij: zagen twee bronnen dezelfde naam bij niet-overlappende clubs, dan zijn het
-twee mensen en klopt er niets mis. De club is een getuige die losstaat van de
-geboortedatum — precies wat een kruiscontrole moet zijn.
+Over de volle set (79 na aftrek van de naamgenoten):
 
-Draai `python3 transfermarkt_profiles.py --rapport` voor de indeling over alle
-82; dat haalt niets op. `--zelftest` rekent de controle zelf na op twintig
-gevallen waarvan de uitkomst vaststaat, inclusief de naamgenoten.
+| vorm | aantal |
+|---|---|
+| één dag | 37 — waarvan 31× TM later |
+| twee of drie dagen | 5 |
+| dag en maand verwisseld | 3 |
+| alleen het jaar | 4 |
+| geheel anders | 29 |
+
+**De dagverschillen zijn van de bron, niet van de parser.** 31 van de 37 staan
+dezelfde kant op; dat is te eenzijdig voor toeval. Waar de datum onafhankelijk
+bekend is, heeft Transfermarkt gelijk — Paul Wanner is van 23 december 2005,
+Zeno Debast van 24 oktober 2003, beide zoals TM ze geeft. Sofascore zit er
+systematisch één dag naast, zoals je krijgt wanneer een geboortedatum als
+tijdstempel bewaard wordt en in een andere tijdzone teruggelezen.
+
+**De club is de tweede getuige.** Bij een datum die nergens op lijkt is de vraag
+niet welke datum klopt maar of het dezelfde mens is, en daar staat de
+geboortedatum buiten. `clubs_overlappen()` reduceert beide clubnamen tot hun
+onderscheidende woorden (`FK Haugesund` en `Haugesund` worden allebei
+`{haugesund}`) en kijkt of er één gemeenschappelijk is. Zo valt 'geheel anders'
+uiteen in drie groepen, en alleen de laatste vraagt om een mens.
+
+**Een deel van de Sofascore-data zijn plaatshouders.** `1996-11-30`,
+`1998-11-30`, `1999-11-30`, `2005-01-01` — 30 november en 1 januari, steeds aan
+de Sofascore-kant. Dat is geen afwijkende datum maar een gat dat als datum is
+opgeslagen, en het wordt nu apart geteld in plaats van als fout.
+
+Draai `python3 transfermarkt_profiles.py --rapport` voor de indeling; dat haalt
+niets op. `--zelftest` rekent de controle zelf na op vijfendertig gevallen
+waarvan de uitkomst vaststaat: de vormen, de naamgenoten, de clubnamen en de
+plaatshouders.
 
 ## 502 en 504 hoorden ook bij de tijdelijke fouten
 

@@ -27,7 +27,9 @@ from __future__ import annotations
 import argparse
 import json
 import random
+import re
 import time
+import unicodedata
 from collections import Counter
 from datetime import date
 from pathlib import Path
@@ -129,6 +131,46 @@ def dichtstbij(tm: str, kandidaten) -> tuple:
         if beste is None or sleutel < beste[0]:
             beste = (sleutel, sofa, vorm)
     return beste[1], beste[2]
+
+
+# Sofascore zet bij een onbekende geboortedatum een datum neer die eruitziet
+# als een datum: 30 november of 1 januari. Dat is geen afwijking maar een gat,
+# en het hoort niet als verkeerd profiel geteld te worden.
+PLAATSHOUDERS = ((11, 30), (1, 1))
+
+# Woorden die in clubnamen niets onderscheiden. 'FK Haugesund' en 'Haugesund'
+# zijn dezelfde club; zonder deze lijst zouden ze niet overlappen.
+RUIS = {"fc", "sc", "ac", "cf", "sv", "vv", "afc", "bv", "cd", "rc", "ssc",
+        "as", "us", "ss", "fk", "kv", "kaa", "rsc", "ud", "sk", "nk", "if",
+        "ik", "bk", "club", "cp", "uefa", "u19", "u21", "vfl", "vfb", "tsv",
+        "bsc"}
+
+
+def clubwoorden(naam: str) -> set:
+    """Reduceert een clubnaam tot zijn onderscheidende woorden."""
+    kaal = unicodedata.normalize("NFKD", naam.lower())
+    kaal = "".join(c for c in kaal if not unicodedata.combining(c))
+    return {w for w in re.split(r"[^a-z0-9]+", kaal) if w and w not in RUIS}
+
+
+def clubs_overlappen(links, rechts) -> bool:
+    """Zagen beide bronnen deze speler bij minstens één dezelfde club?
+
+    Een getuige die losstaat van de geboortedatum: hoort een naam bij twee
+    verschillende mensen, dan zijn de clubs zelden dezelfde.
+    """
+    a = set().union(*(clubwoorden(c) for c in links)) if links else set()
+    b = set().union(*(clubwoorden(c) for c in rechts)) if rechts else set()
+    return bool(a & b)
+
+
+def is_plaatshouder(datum: str) -> bool:
+    """Is dit een ingevuld gat in plaats van een geboortedatum?"""
+    try:
+        d = date.fromisoformat(datum)
+    except ValueError:
+        return False
+    return (d.month, d.day) in PLAATSHOUDERS
 
 
 def tel_geboortedata(profielen: list[dict], op_naam: dict) -> tuple:
@@ -250,17 +292,41 @@ def controleer(profielen: list[dict]) -> None:
         print(f"    geen enkel profiel hoort bij een andere speler.")
         return
     # Bij een datum die nergens op lijkt is de vraag: is dit hetzelfde mens?
-    # Daar is de club een getuige voor die los van de geboortedatum staat.
-    # Zagen we de een bij Millwall en de ander alleen bij Vitesse, dan zijn het
-    # twee spelers met dezelfde naam en klopt er niets mis.
-    print(f"\n  ! Alleen 'geheel anders' kan een verkeerd profiel zijn.")
-    print(f"    De clubs staan erbij: overlappen die niet, dan is het een naamgenoot.")
-    for naam, tm, sofa, _, _ in anders[:25]:
+    # Drie antwoorden, van onschuldig naar verdacht: de Sofascore-datum is een
+    # plaatshouder en dus helemaal geen datum; de clubs overlappen dus is het
+    # dezelfde speler waar de bronnen het niet over eens zijn; of de clubs
+    # overlappen niet, en dan moet er iemand naar kijken.
+    plaatshouder, zelfde, onbekend = [], [], []
+    for r in anders:
+        naam, sofa = r[0], r[2]
+        if is_plaatshouder(sofa):
+            plaatshouder.append(r)
+        elif clubs_overlappen(tm_clubs.get(naam, ()), sofa_clubs.get(naam, ())):
+            zelfde.append(r)
+        else:
+            onbekend.append(r)
+
+    print(f"\n  ── 'geheel anders' uitgesplitst ──")
+    print(f"  Sofascore-datum is plaatshouder {len(plaatshouder):>4}   "
+          f"(30-11 of 01-01: een gat, geen datum)")
+    print(f"  clubs overlappen               {len(zelfde):>5}   "
+          f"(zelfde speler, bronnen oneens)")
+    print(f"  clubs overlappen niet          {len(onbekend):>5}"
+          f"{'   ✗ nakijken' if onbekend else ''}")
+
+    if not onbekend:
+        print(f"\n  ✓ elke afwijking hoort bij een speler die beide bronnen bij")
+        print(f"    dezelfde club zagen. Geen enkel profiel is van iemand anders.")
+        return
+    print(f"\n  ! Deze namen zagen de twee bronnen bij verschillende clubs.")
+    print(f"    Dat is een naamgenoot, of een clubnaam die anders vertaald is")
+    print(f"    ('Noord-Ierland' tegen 'Northern Ireland').")
+    for naam, tm, sofa, _, _ in onbekend[:25]:
         print(f"    {naam}: TM {tm} / Sofascore {sofa}")
         print(f"      TM  {', '.join(sorted(tm_clubs.get(naam, ()))) or '—'}")
         print(f"      SS  {', '.join(sorted(sofa_clubs.get(naam, ()))) or '—'}")
-    if len(anders) > 25:
-        print(f"    ... en nog {len(anders) - 25}")
+    if len(onbekend) > 25:
+        print(f"    ... en nog {len(onbekend) - 25}")
 
 
 # ─── Zelftest ────────────────────────────────────────────────────────────────
@@ -340,6 +406,25 @@ def zelftest() -> int:
          {"name": "Paul Wanner", "date_of_birth": "2005-12-22"}],
         {"Paul Wanner": {"2005-12-22"}})
     eis("alleen vergelijkbare spelers tellen", (v, g, len(a)), (1, 1, 0))
+
+    # ── clubs als tweede getuige ──
+    eis("club met en zonder FK", clubs_overlappen(["FK Haugesund"], ["Haugesund"]), True)
+    eis("club met en zonder FC", clubs_overlappen(["Millwall FC"], ["Millwall"]), True)
+    eis("langere clubnaam", clubs_overlappen(["Jong PSV"], ["Jong PSV Eindhoven"]), True)
+    eis("jeugdelftal", clubs_overlappen(["Sevilla FC UEFA U19"], ["Sevilla U19"]), True)
+    eis("schuine streep", clubs_overlappen(["FK Bodø/Glimt"], ["Bodø/Glimt"]), True)
+    eis("één van twee clubs volstaat",
+        clubs_overlappen(["NEC Nijmegen", "SC Telstar"], ["SC Telstar"]), True)
+    eis("verschillende clubs", clubs_overlappen(["Millwall FC"], ["Vitesse"]), False)
+    eis("vertaalde landsnaam blijft onzichtbaar",
+        clubs_overlappen(["Noord-Ierland"], ["Northern Ireland"]), False)
+    eis("zonder clubs geen overlap", clubs_overlappen([], ["Vitesse"]), False)
+
+    # ── plaatshouders ──
+    eis("30 november", is_plaatshouder("1998-11-30"), True)
+    eis("1 januari", is_plaatshouder("2005-01-01"), True)
+    eis("gewone datum", is_plaatshouder("1998-11-29"), False)
+    eis("onleesbaar is geen plaatshouder", is_plaatshouder(""), False)
 
     if fouten:
         print(f"  ✗ {len(fouten)} van de gevallen klopt niet:")
