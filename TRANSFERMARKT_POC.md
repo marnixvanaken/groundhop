@@ -161,6 +161,40 @@ controleert daarom nu ook op plausibiliteit (competitienaam die op `N. `
 begint, basisopstelling die niet op 11 uitkomt) in plaats van alleen op
 aanwezigheid.
 
+## De vijfde stille fout: strafschoppen in de eindstand
+
+De spelerslaag telt de doelpunten op spelersnaam en vergelijkt die met de som
+van alle eindstanden. Over 164 wedstrijden kwam die controle 5 doelpunten
+tekort, allemaal uit één wedstrijd:
+
+```
+2023-04-30  AFC Ajax - PSV: stand 7, gevonden 2
+```
+
+De bekerfinale van 2023 eindigde 1-1 en werd met 2-3 beslist na strafschoppen.
+Transfermarkt telt die strafschoppen bij de eindstand op:
+
+```html
+<div class="sb-endstand"> 3:4<div class="sb-halbzeit">n.s.</div></div>
+```
+
+`3:4` als uitslag opschrijven is fout — dat was de wedstrijd niet. De pagina
+draagt een apart blok `#sb-elfmeterscheissen`, en dat is het signaal: staat het
+er, dan is de stand in het veld de doorlopende tussenstand bij het laatste
+doelpunt in `#sb-tore`, en is het verschil de serie. Die komt nu in een eigen
+veld `penalty_shootout` terecht.
+
+De parser corrigeert alleen als de uitkomst klopt: een serie volgt per
+definitie op een gelijkspel, en je kunt er niet minder dan nul benutten. Is dat
+niet zo, dan meldt hij het als `GEMIST` in plaats van door te rekenen op een
+aanname die niet opgaat.
+
+Tien uitgewerkte gevallen staan vast in `--zelftest`.
+
+Deze fout was niet te vinden door naar velden te kijken: `home_score` was
+gevuld, plausibel, en van het juiste type. Hij kwam boven doordat een telling
+van buitenaf niet uitkwam.
+
 ## De vierde stille fout: "Joey Veerman" als competitie
 
 Bij de volledige run van 164 wedstrijden meldde het rapport zes gemiste

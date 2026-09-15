@@ -288,7 +288,39 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         m = re.search(r"(\d+)\s*:\s*(\d+)", eind.get_text(" ", strip=True))
         if m:
             home_score, away_score = int(m.group(1)), int(m.group(2))
-            d.ok("score", f"{home_score}-{away_score}")
+
+    # Bij een strafschoppenserie telt Transfermarkt de benutte strafschoppen
+    # bij de eindstand op: de bekerfinale Ajax - PSV (1-1, penalty's 2-3) staat
+    # er als "3:4 n.s.". Zo'n stand als uitslag opschrijven is fout — de
+    # wedstrijd eindigde 1-1 — en het verklaart precies waarom er vijf
+    # doelpunten meer in de standen zaten dan op spelersnaam.
+    #
+    # Het losse blok #sb-elfmeterscheissen is het signaal; de stand in het veld
+    # staat als doorlopende tussenstand bij het laatste doelpunt in #sb-tore.
+    penalty_shootout = None
+    serie = s.select_one("#sb-elfmeterscheissen")
+    if serie is not None and home_score is not None:
+        veld = (0, 0)   # geen doelpunten betekent 0-0 na verlenging
+        for b in s.select("#sb-tore div.sb-aktion-spielstand b"):
+            m = re.search(r"(\d+)\s*:\s*(\d+)", b.get_text(strip=True))
+            if m:
+                veld = (int(m.group(1)), int(m.group(2)))
+        strafschoppen = (home_score - veld[0], away_score - veld[1])
+        # Een serie volgt per definitie op een gelijkspel, en je kunt er niet
+        # minder dan nul benutten. Klopt dat niet, dan is de aanname onjuist en
+        # laten we de eindstand liever staan dan hem verkeerd te corrigeren.
+        if veld[0] != veld[1] or min(strafschoppen) < 0:
+            d.gemist("score", f"strafschoppenserie, maar veldstand {veld[0]}-{veld[1]} "
+                              f"bij eindstand {home_score}-{away_score}")
+            home_score = None
+        else:
+            penalty_shootout = {"home": strafschoppen[0], "away": strafschoppen[1]}
+            home_score, away_score = veld
+            d.ok("score", f"{home_score}-{away_score} "
+                          f"(strafschoppen {strafschoppen[0]}-{strafschoppen[1]})")
+    elif home_score is not None:
+        d.ok("score", f"{home_score}-{away_score}")
+
     if home_score is None:
         d.gemist("score", "div.sb-endstand")
 
@@ -624,6 +656,7 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         "home_score": home_score,
         "away_score": away_score,
         "half_time": half_time,
+        "penalty_shootout": penalty_shootout,
         "tournament": tournament,
         "tournament_id": tournament_id,
         # Transfermarkt nummert seizoenen op het startjaar: saison_id 2026 = 2026/27.
@@ -1243,6 +1276,95 @@ def haal_id(waarde: str, patroon: str) -> int:
     raise SystemExit(f"  ✗ Kon geen ID halen uit: {waarde}")
 
 
+# ─── Zelftest ────────────────────────────────────────────────────────────────
+
+def _proefpagina(endstand, halbzeit, tore_standen, met_serie):
+    """Bouwt een wedstrijdpagina na, met de opmaak zoals gemeten op TM."""
+    tore = "".join(
+        f'<li class="sb-aktion-heim"><div class="sb-aktion">'
+        f'<div class="sb-aktion-uhr"><span class="sb-sprite-uhr-klein" '
+        f'style="background-position: -36px -144px;"> </span></div>'
+        f'<div class="sb-aktion-spielstand"><b>{st}</b></div>'
+        f'<div class="sb-aktion-aktion">'
+        f'<a class="wichtig" href="/x/leistungsdatendetails/spieler/{i + 1}">Speler{i + 1}</a>'
+        f'</div></div></li>'
+        for i, st in enumerate(tore_standen))
+    serie = ('<div id="sb-elfmeterscheissen"><ul><li>penalty</li></ul></div>'
+             if met_serie else "")
+    return (
+        '<html><head><title>Ajax - PSV, 30 apr. 2023 - KNVB Beker'
+        ' - Wedstrijdverslag | Transfermarkt</title></head><body>'
+        '<div class="sb-spieldaten"><p class="sb-datum hide-for-small"> Finale | '
+        '<a href="/aktuell/waspassiertheute/aktuell/new/datum/2023-04-30">zo, 30-04-23 </a>'
+        ' | 18:00 uur </p><div class="ergebnis-wrap"><div class="sb-ergebnis">'
+        f'<div class="sb-endstand"> {endstand}<div class="sb-halbzeit">{halbzeit}</div>'
+        '</div></div></div><p class="sb-zusatzinfos"><span class="hide-for-small">'
+        '<a href="/stadion/stadion/verein/234/saison_id/2022">De Kuip</a> | '
+        '<strong>40.650 toeschouwers</strong></span><strong>Scheidsrechter:</strong>'
+        '<a href="/x/profil/schiedsrichter/1" title="D. Higler">D. Higler</a></p></div>'
+        f'<div id="sb-tore"><ul>{tore}</ul></div>{serie}</body></html>')
+
+
+def zelftest() -> int:
+    """Rekent de wedstrijdparser na op uitgewerkte gevallen.
+
+    Een gevuld veld is geen bewijs van een correct veld — dat is in dit project
+    vijf keer gebleken. Deze gevallen hebben elk één juist antwoord.
+    """
+    fout = 0
+
+    def check(oms, gekregen, verwacht):
+        nonlocal fout
+        goed = gekregen == verwacht
+        fout += not goed
+        extra = "" if goed else f"   (verwacht {verwacht}, kreeg {gekregen})"
+        print(("  ok  " if goed else "  FOUT"), oms + extra)
+
+    print("── strafschoppenserie ──")
+
+    # De gemeten bekerfinale: TM schrijft "3:4 n.s." voor een wedstrijd die
+    # 1-1 eindigde en met 2-3 strafschoppen werd beslist.
+    r, _ = parse_match(_proefpagina("3:4", "n.s.", ["1:0", "1:1"], True), 4056454)
+    check("bekerfinale: uitslag is de veldstand",
+          (r["home_score"], r["away_score"]), (1, 1))
+    check("strafschoppen apart vastgelegd",
+          r["penalty_shootout"], {"home": 2, "away": 3})
+
+    r, _ = parse_match(_proefpagina("4:5", "n.s.", [], True), 1)
+    check("serie na 0-0: uitslag 0-0", (r["home_score"], r["away_score"]), (0, 0))
+    check("serie na 0-0: strafschoppen 4-5",
+          r["penalty_shootout"], {"home": 4, "away": 5})
+
+    r, _ = parse_match(
+        _proefpagina("4:1", "(2:1)", ["1:0", "2:0", "2:1", "3:1", "4:1"], False), 2)
+    check("gewone wedstrijd: uitslag ongemoeid",
+          (r["home_score"], r["away_score"]), (4, 1))
+    check("gewone wedstrijd: geen strafschoppenveld", r["penalty_shootout"], None)
+
+    r, _ = parse_match(
+        _proefpagina("3:2", "n.v.", ["1:0", "1:1", "1:2", "2:2", "3:2"], False), 3)
+    check("verlenging zonder serie: uitslag ongemoeid",
+          (r["home_score"], r["away_score"]), (3, 2))
+
+    # Een serie volgt op een gelijkspel. Klopt dat niet, dan is de aanname
+    # onjuist en moet de parser dat melden in plaats van door te rekenen.
+    _, diag = parse_match(_proefpagina("3:4", "n.s.", ["1:0", "2:0"], True), 4)
+    check("ongerijmde serie wordt gemeld, niet gecorrigeerd",
+          {rij[0]: rij[1] for rij in diag.rows}.get("score"), "GEMIST")
+
+    print("\n── ruststand ──")
+    r, diag = parse_match(_proefpagina("3:4", "n.s.", ["1:0", "1:1"], True), 5)
+    check("'n.s.' is geen ruststand maar de afwezigheid ervan",
+          {rij[0]: rij[1] for rij in diag.rows}.get("half_time"), "LEEG")
+    r, diag = parse_match(
+        _proefpagina("4:1", "(2:1)", ["1:0", "2:0", "2:1", "3:1", "4:1"], False), 6)
+    check("gewone ruststand wordt gelezen",
+          (r["half_time"]["home"], r["half_time"]["away"]), (2, 1))
+
+    print(f"\n  {'alles goed' if not fout else str(fout) + ' FOUT'}")
+    return fout
+
+
 def main():
     p = argparse.ArgumentParser(
         description="Transfermarkt PoC — laat zien welke velden TM echt levert.")
@@ -1260,6 +1382,10 @@ def main():
                    help="print HTML-fragmenten rond gemiste velden i.p.v. te parsen")
     p.add_argument("--probe", action="store_true",
                    help="test welke endpoints transfers/marktwaarde leveren (alleen --player)")
+    p.add_argument("--zelftest", action="store_true",
+                   help="reken de wedstrijdparser na op uitgewerkte gevallen")
+    if "--zelftest" in sys.argv:
+        raise SystemExit(1 if zelftest() else 0)
     args = p.parse_args()
 
     dump = Path(args.dump) if args.dump else None
