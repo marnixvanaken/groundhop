@@ -14,3 +14,5 @@ data/tm_club_map.json
 data/tm_uitgesteld.json
 data/selected_matches_tm.json
 data/tm_players.json
+data/tm_player_cache/
+data/tm_players_full.json
