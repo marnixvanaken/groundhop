@@ -37,6 +37,7 @@ import argparse
 import json
 import re
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -116,7 +117,20 @@ def fetch(url: str, dump_naar: Path | None = None, naam: str = "page") -> str:
         print("  ! curl_cffi niet geinstalleerd — Cloudflare blokkeert waarschijnlijk.")
         print("    pip install curl_cffi")
     print(f"  → GET {url}")
-    resp = _http.get(url, headers=HEADERS, timeout=30, **_IMPERSONATE)
+    # Een DNS- of verbindingshapering onderweg mag een run van tien minuten niet
+    # weggooien. Netwerkfouten krijgen drie kansen met oplopende wachttijd;
+    # een HTTP-status blijft meteen fataal, want die herhaalt zich toch.
+    resp = None
+    for poging in range(3):
+        try:
+            resp = _http.get(url, headers=HEADERS, timeout=30, **_IMPERSONATE)
+            break
+        except Exception as e:
+            if poging == 2:
+                raise SystemExit(f"  ✗ netwerkfout na 3 pogingen: {e}")
+            pauze = 2 ** (poging + 1)
+            print(f"    ! netwerkfout ({type(e).__name__}), opnieuw over {pauze}s")
+            time.sleep(pauze)
     if resp.status_code != 200:
         raise SystemExit(
             f"  ✗ HTTP {resp.status_code} van Transfermarkt.\n"

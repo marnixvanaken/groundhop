@@ -88,7 +88,12 @@ def haal_wedstrijd(tm_id: int, force: bool = False) -> dict | None:
         print(f"    ✗ ophalen mislukt: {e}")
         return None
 
-    record, diag = parse_match(html, tm_id, lineup_html)
+    try:
+        record, diag = parse_match(html, tm_id, lineup_html)
+    except Exception as e:
+        # Een parserfout op één wedstrijd mag de andere 163 niet meenemen.
+        print(f"    ✗ parsen mislukt: {type(e).__name__}: {e}")
+        return None
     gemist = [r[0] for r in diag.rows if r[1] == "GEMIST"]
     record["_gemist"] = gemist
     pad.write_text(json.dumps(record, ensure_ascii=False, indent=2), "utf-8")
@@ -159,10 +164,17 @@ def main():
             te_doen = te_doen[:args.limit]
             print(f"  beperkt tot {len(te_doen)}")
         print()
+        mislukt = []
         for i, (sofa_id, info) in enumerate(te_doen, 1):
             print(f"  [{i}/{len(te_doen)}] {info['date']}  {info['sofascore_label']}")
-            haal_wedstrijd(info["tm_match_id"], args.force)
+            if haal_wedstrijd(info["tm_match_id"], args.force) is None:
+                mislukt.append(f"{info['date']}  {info['sofascore_label']}")
             wacht()
+        if mislukt:
+            print(f"\n  ▼ {len(mislukt)} wedstrijden niet opgehaald — draai opnieuw,")
+            print(f"    de rest zit in de cache en wordt overgeslagen:")
+            for r in mislukt:
+                print(f"    {r}")
 
     # Alles wat in de cache zit en in de mapping voorkomt, wordt uitvoer.
     wil = {str(v["tm_match_id"]) for v in mapping.values()}
