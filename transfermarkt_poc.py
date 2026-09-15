@@ -125,6 +125,13 @@ class Diag:
 # uit te zitten. Vier pogingen in totaal.
 WACHT_NA_BLOKKADE = (15, 45, 90)
 
+# Statuscodes die vanzelf overgaan. 403/429/503 is Cloudflare die afremt.
+# 502 en 504 zijn Transfermarkt zelf die even niet antwoordt; in de volledige
+# profielrun kwamen die een stuk of twintig keer langs en die spelers vielen
+# meteen af, terwijl een tweede poging ze gewoon had opgeleverd. Een 404 hoort
+# hier niet: die herhaalt zich.
+TIJDELIJKE_STATUS = (403, 429, 502, 503, 504)
+
 def fetch(url: str, dump_naar: Path | None = None, naam: str = "page") -> str:
     """Haal een pagina op met browser-fingerprint. Geeft HTML-tekst terug."""
     if not _IMPERSONATE:
@@ -145,16 +152,14 @@ def fetch(url: str, dump_naar: Path | None = None, naam: str = "page") -> str:
             print(f"    ! netwerkfout ({type(e).__name__}), opnieuw over {pauze}s")
             time.sleep(pauze)
             continue
-        # 403 en 503 zijn Cloudflare die afremt, en 429 is dat met zoveel
-        # woorden. Dat gaat over: even wachten helpt, opgeven niet. Andere
+        # Deze statussen gaan over: even wachten helpt, opgeven niet. Andere
         # statussen (404 bijvoorbeeld) herhalen zich wel en zijn meteen fataal.
-        if resp.status_code not in (403, 429, 503):
+        if resp.status_code not in TIJDELIJKE_STATUS:
             break
         if poging >= len(WACHT_NA_BLOKKADE):
             break
         pauze = WACHT_NA_BLOKKADE[poging]
-        print(f"    ! HTTP {resp.status_code} (Cloudflare remt af), "
-              f"opnieuw over {pauze}s")
+        print(f"    ! HTTP {resp.status_code} (tijdelijk), opnieuw over {pauze}s")
         time.sleep(pauze)
     if resp.status_code != 200:
         raise SystemExit(
@@ -779,13 +784,12 @@ def haal_json(url: str, dump_naar: Path | None = None, naam: str = "data") -> di
         except Exception as e:
             print(f"  ! {type(e).__name__}: {e}")
             return None
-        if resp.status_code not in (403, 429, 503):
+        if resp.status_code not in TIJDELIJKE_STATUS:
             break
         if poging >= len(WACHT_NA_BLOKKADE):
             break
         pauze = WACHT_NA_BLOKKADE[poging]
-        print(f"  ! HTTP {resp.status_code} (Cloudflare remt af), "
-              f"opnieuw over {pauze}s")
+        print(f"  ! HTTP {resp.status_code} (tijdelijk), opnieuw over {pauze}s")
         time.sleep(pauze)
     if resp.status_code != 200:
         print(f"  ! HTTP {resp.status_code}")

@@ -239,6 +239,57 @@ is nagemeten en het is geen regressie:
   een opgeslagen wedstrijd. Een leeg `round` op een opgeslagen record is dus
   nergens zichtbaar.
 
+## De geboortedatum als kruiscontrole, en wat die eerst verkeerd deed
+
+De profielrun haalde 2681 van de 2759 spelers op. Elke ingevulde geboortedatum
+is naast de Sofascore-data gelegd: 2331 waren op naam te vergelijken, 2249
+kwamen overeen, **82 niet**. Dat is 3,5%, en dat is te veel om af te doen als
+ruis — maar te weinig om aan te nemen dat er systematisch verkeerde profielen
+worden opgehaald. Een aantal zonder vorm zegt niets. Dus is er een vorm aan
+gegeven.
+
+**Een naam is geen speler.** De eerste versie nam per naam één geboortedatum
+(`setdefault`) en vergeleek daarmee. In `dashboard_data.json` staan vier namen
+die bij méér dan één speler horen: Danilo (drie data), David López, Ben Davies
+en João Pedro. Voor die namen was een afwijking **gegarandeerd**, ongeacht of
+het profiel klopte — de controle rapporteerde haar eigen aanname als fout. De
+controle verzamelt nu per naam álle bekende data en telt gelijk zodra de datum
+er één van is. Ben Davies (TM 1993-04-24) is daarmee gewoon goed.
+
+Dat is dezelfde fout in een nieuwe gedaante: een gevuld veld is geen goed veld,
+en een controle die zelf een aanname doet, toetst die aanname niet.
+
+**De vorm van het verschil zegt waar het vandaan komt.** `vergelijk()` deelt
+elke afwijking in, van mild naar ernstig:
+
+| vorm | betekenis |
+|---|---|
+| één dag | twee bronnen leggen de datumgrens anders; geen fout in het profiel |
+| twee of drie dagen | idem, of een leesfout aan één kant |
+| dag en maand verwisseld | 1997-04-08 tegen 1997-08-04; een formaatkwestie |
+| alleen het jaar | zelfde dag en maand, ander jaar |
+| geheel anders | **kan een verkeerd profiel zijn** |
+
+Over de vijftien afwijkingen die de run liet zien: 7× één dag (zesmaal staat TM
+een dag later), 2× dag/maand verwisseld, 2× twee dagen, 1× alleen het jaar en
+3× geheel anders, waarvan er één (Ben Davies) een bevestigde naamgenoot is.
+Alleen die laatste categorie is het nakijken waard, en daar staan nu de clubs
+bij: zagen twee bronnen dezelfde naam bij niet-overlappende clubs, dan zijn het
+twee mensen en klopt er niets mis. De club is een getuige die losstaat van de
+geboortedatum — precies wat een kruiscontrole moet zijn.
+
+Draai `python3 transfermarkt_profiles.py --rapport` voor de indeling over alle
+82; dat haalt niets op. `--zelftest` rekent de controle zelf na op twintig
+gevallen waarvan de uitkomst vaststaat, inclusief de naamgenoten.
+
+## 502 en 504 hoorden ook bij de tijdelijke fouten
+
+De retry-lus kende `403`, `429` en `503` — Cloudflare die afremt. In de volle
+profielrun kwamen daarnaast een stuk of twintig `502`/`504` langs: Transfermarkt
+zelf die even niet antwoordt. Die vielen meteen fataal uit en kostten evenzoveel
+spelers, terwijl een tweede poging ze had opgeleverd. Alle vijf staan nu in
+`TIJDELIJKE_STATUS`. Een `404` hoort daar niet bij: die herhaalt zich.
+
 ## Wat nog getest moet worden
 
 Randgevallen uit de eigen dataset: verlenging, strafschoppen, een rode kaart,
