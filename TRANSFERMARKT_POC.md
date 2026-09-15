@@ -161,6 +161,34 @@ controleert daarom nu ook op plausibiliteit (competitienaam die op `N. `
 begint, basisopstelling die niet op 11 uitkomt) in plaats van alleen op
 aanwezigheid.
 
+## De vierde stille fout: "Joey Veerman" als competitie
+
+Bij de volledige run van 164 wedstrijden meldde het rapport zes gemiste
+velden. De ernstigste stond er niet tussen, want het veld was *gevuld*:
+
+```
+tournament    OK    Joey Veerman
+```
+
+PSV – AS Monaco (CL-kwalificatie) heeft geen link naar een seizoenspagina, dus
+viel de parser terug op "elke link met deze competitie-ID". De prestatielinks
+van spelers hebben exact die vorm —
+`/joey-veerman/leistungsdatendetails/spieler/257491/saison/2022/wettbewerb/CLQ`
+— en dragen de spelersnaam als `title`. De terugval slaat spelerlinks nu over.
+
+Daarnaast bleek de plausibiliteitscontrole zélf twee wedstrijden te slopen. Die
+verwierp elke competitienaam die op `N. ` begon, om "6. Speeldag" te vangen.
+Maar "2. Bundesliga" en "3. Liga" beginnen ook zo. De controle kijkt nu of er
+daadwerkelijk een speeldag-woord op het cijfer volgt.
+
+Ten slotte: bij verlenging staat er in het ruststandblok alleen `n.v.` en geen
+score. Dat is geen gemiste selector maar een bron die het cijfer niet geeft —
+nu `LEEG` in plaats van `GEMIST`.
+
+Daarmee staat de teller op **vier stille fouten van de tien gevonden fouten**.
+Alle vier waren gevulde velden met verkeerde inhoud, en alle vier zijn gevonden
+doordat iemand naar de waarde keek in plaats van naar de status.
+
 ## `round`: geen verlies, maar een andere weergave
 
 Het vergelijkingsrapport liet `round` op 1/5 staan tegen 5/5 bij Sofascore. Dat

@@ -289,8 +289,14 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         # Onderscheid "blok ontbreekt" van "blok stond er maar las anders" —
         # bij verlenging/strafschoppen wijkt de notatie af, en dan wil je in het
         # rapport meteen zien wát er stond in plaats van opnieuw te moeten meten.
-        if rust:
-            d.gemist("half_time", f"sb-halbzeit las {rust.get_text(' ', strip=True)!r}")
+        rust_tekst = rust.get_text(" ", strip=True) if rust else ""
+        if rust and not re.search(r"\d", rust_tekst):
+            # Bij verlenging of strafschoppen staat er alleen een markering
+            # ("n.v.", "n.P.") en géén ruststand. De bron heeft hem dan niet;
+            # dat is iets anders dan een selector die misgrijpt.
+            d.leeg("half_time", f"niet vermeld, blok las {rust_tekst!r}")
+        elif rust:
+            d.gemist("half_time", f"sb-halbzeit las {rust_tekst!r}")
         else:
             d.gemist("half_time", "div.sb-halbzeit ontbreekt")
 
@@ -341,7 +347,15 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
     if not tournament and tournament_id:
         # Terugval: navigatielink met dezelfde competitie-ID draagt de naam in
         # title of img-alt.
+        #
+        # Let op: de prestatielinks van spelers hebben DEZELFDE /wettbewerb/-vorm
+        # (/joey-veerman/leistungsdatendetails/spieler/123/saison/2022/wettbewerb/CLQ)
+        # maar dragen de spelersnaam als title. Zonder deze uitsluiting levert
+        # een Europese wedstrijd "Joey Veerman" op als competitienaam — gevuld,
+        # dus het rapport zag er goed uit.
         for a in s.find_all("a", href=re.compile(rf"/wettbewerb/{tournament_id}\b")):
+            if re.search(r"/(?:spieler|leistungsdaten\w*)/", a.get("href", "")):
+                continue
             img = a.find("img")
             naam = a.get("title", "") or (img.get("alt", "") if img else "")
             if naam and not re.match(r"^\d+\.\s", naam):
@@ -407,7 +421,12 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
 
     # "6. Speeldag" als competitienaam is een stille fout: het veld is gevuld,
     # maar met de speelronde. Markeer dat expliciet als gemist.
-    if tournament and re.match(r"^\d+\.\s", tournament):
+    #
+    # De controle mag niet op "begint met een cijfer en een punt" staan: dan
+    # sneuvelen "2. Bundesliga" en "3. Liga", die wél gewoon de competitie zijn.
+    # Alleen een cijfer gevolgd door een speeldag-woord is verdacht.
+    if tournament and re.match(r"^\d+\.\s*(speeldag|spieltag|matchday)\b",
+                               tournament, re.I):
         d.gemist("tournament", f"kreeg speelronde {tournament!r} i.p.v. competitie")
         tournament = ""
     elif tournament:
