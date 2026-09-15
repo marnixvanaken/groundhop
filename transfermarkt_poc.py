@@ -57,6 +57,15 @@ except ImportError:
 
 BASE = "https://www.transfermarkt.nl"
 
+# Eén sessie voor alle verzoeken. Zonder sessie gaat bij elke aanroep de
+# cookiejar overboord — ook de vrijgave die Cloudflare net had afgegeven, dus
+# elk verzoek begint weer van voren af aan. Bij lange runs (duizenden
+# spelersprofielen) leidt dat tot 403's die er niet horen te zijn.
+try:
+    _sessie = _http.Session()
+except Exception:      # oudere requests-versies zonder Session-fabriek
+    _sessie = _http
+
 HEADERS = {
     "User-Agent": (
         "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 "
@@ -111,6 +120,11 @@ class Diag:
 
 # ─── HTTP ────────────────────────────────────────────────────────────────────
 
+# Oplopend wachten na een Cloudflare-blokkade. De eerste twee stappen vangen
+# een korte opstopping; de laatste is lang genoeg om een venster van een minuut
+# uit te zitten. Vier pogingen in totaal.
+WACHT_NA_BLOKKADE = (15, 45, 90)
+
 def fetch(url: str, dump_naar: Path | None = None, naam: str = "page") -> str:
     """Haal een pagina op met browser-fingerprint. Geeft HTML-tekst terug."""
     if not _IMPERSONATE:
@@ -121,16 +135,27 @@ def fetch(url: str, dump_naar: Path | None = None, naam: str = "page") -> str:
     # weggooien. Netwerkfouten krijgen drie kansen met oplopende wachttijd;
     # een HTTP-status blijft meteen fataal, want die herhaalt zich toch.
     resp = None
-    for poging in range(3):
+    for poging in range(len(WACHT_NA_BLOKKADE) + 1):
         try:
-            resp = _http.get(url, headers=HEADERS, timeout=30, **_IMPERSONATE)
-            break
+            resp = _sessie.get(url, headers=HEADERS, timeout=30, **_IMPERSONATE)
         except Exception as e:
-            if poging == 2:
-                raise SystemExit(f"  ✗ netwerkfout na 3 pogingen: {e}")
+            if poging >= 2:
+                raise SystemExit(f"  ✗ netwerkfout na {poging + 1} pogingen: {e}")
             pauze = 2 ** (poging + 1)
             print(f"    ! netwerkfout ({type(e).__name__}), opnieuw over {pauze}s")
             time.sleep(pauze)
+            continue
+        # 403 en 503 zijn Cloudflare die afremt, en 429 is dat met zoveel
+        # woorden. Dat gaat over: even wachten helpt, opgeven niet. Andere
+        # statussen (404 bijvoorbeeld) herhalen zich wel en zijn meteen fataal.
+        if resp.status_code not in (403, 429, 503):
+            break
+        if poging >= len(WACHT_NA_BLOKKADE):
+            break
+        pauze = WACHT_NA_BLOKKADE[poging]
+        print(f"    ! HTTP {resp.status_code} (Cloudflare remt af), "
+              f"opnieuw over {pauze}s")
+        time.sleep(pauze)
     if resp.status_code != 200:
         raise SystemExit(
             f"  ✗ HTTP {resp.status_code} van Transfermarkt.\n"
@@ -745,13 +770,23 @@ CEAPI_MARKTWAARDE = "/ceapi/marketValueDevelopment/graph/{id}"
 def haal_json(url: str, dump_naar: Path | None = None, naam: str = "data") -> dict | None:
     """Haalt een ceapi-endpoint op. Geeft None bij een fout i.p.v. te stoppen."""
     print(f"  → GET {url}")
-    try:
-        resp = _http.get(url, headers={**HEADERS, "Accept": "application/json",
-                                       "X-Requested-With": "XMLHttpRequest"},
-                         timeout=25, **_IMPERSONATE)
-    except Exception as e:
-        print(f"  ! {type(e).__name__}: {e}")
-        return None
+    kop = {**HEADERS, "Accept": "application/json",
+           "X-Requested-With": "XMLHttpRequest"}
+    resp = None
+    for poging in range(len(WACHT_NA_BLOKKADE) + 1):
+        try:
+            resp = _sessie.get(url, headers=kop, timeout=25, **_IMPERSONATE)
+        except Exception as e:
+            print(f"  ! {type(e).__name__}: {e}")
+            return None
+        if resp.status_code not in (403, 429, 503):
+            break
+        if poging >= len(WACHT_NA_BLOKKADE):
+            break
+        pauze = WACHT_NA_BLOKKADE[poging]
+        print(f"  ! HTTP {resp.status_code} (Cloudflare remt af), "
+              f"opnieuw over {pauze}s")
+        time.sleep(pauze)
     if resp.status_code != 200:
         print(f"  ! HTTP {resp.status_code}")
         return None

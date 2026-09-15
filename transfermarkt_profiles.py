@@ -39,7 +39,10 @@ CACHE = Path("data/tm_player_cache")
 UITVOER = Path("data/tm_players_full.json")
 DASHBOARD = Path("data/dashboard_data.json")
 
-MIN_DELAY, MAX_DELAY = 2.0, 4.0
+# Een run van 2759 profielen is een ander soort belasting dan 164 wedstrijden.
+# De wachttijd staat daarom hoger, en is met --pauze te verhogen als Cloudflare
+# alsnog begint af te remmen.
+MIN_DELAY, MAX_DELAY = 3.0, 6.0
 
 
 def wacht():
@@ -166,7 +169,14 @@ def main():
     p.add_argument("--force", action="store_true", help="negeer de cache")
     p.add_argument("--rapport", action="store_true",
                    help="toon de stand en de controle, haal niets op")
+    p.add_argument("--pauze", type=float, metavar="SEC",
+                   help="minimale wachttijd tussen verzoeken (standaard 3)")
     args = p.parse_args()
+
+    if args.pauze:
+        global MIN_DELAY, MAX_DELAY
+        MIN_DELAY, MAX_DELAY = args.pauze, args.pauze * 2
+        print(f"  wachttijd {MIN_DELAY:.0f}-{MAX_DELAY:.0f}s tussen verzoeken")
 
     if not SPELERS.exists():
         raise SystemExit(f"  {SPELERS} ontbreekt — draai eerst transfermarkt_players.py")
@@ -197,8 +207,9 @@ def main():
             te_doen = te_doen[:args.limit]
             print(f"  beperkt tot {len(te_doen)}")
         verzoeken = sum(3 if v else 1 for _, v in te_doen)
+        per = (MIN_DELAY + MAX_DELAY) / 2 + 0.7   # wachttijd plus ophaaltijd
         print(f"  ~{verzoeken} verzoeken, ruw geschat "
-              f"{verzoeken * 3 // 60} minuten\n")
+              f"{int(verzoeken * per) // 60} minuten\n")
         for i, (s, volledig) in enumerate(te_doen, 1):
             print(f"  [{i}/{len(te_doen)}] {s['name']} "
                   f"({s['minutes_played']} min){'  +transfers' if volledig else ''}")
