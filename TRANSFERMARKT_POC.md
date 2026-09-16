@@ -599,3 +599,45 @@ De koppeling zelf is over de échte oude export gehaald, tegen zichzelf: 180 van
 180 wedstrijden gekoppeld, 3016 van 3016 spelers, nul tegenspraken — en dat
 volledig via de zwakste koppelweg, want bij een zelfvergelijking is er geen
 `sofascore_id` en koppelden alle 180 op datum plus clubnamen, zonder één botsing.
+
+### Twee ✗-en die van de vergelijker waren, niet van de data
+
+De eerste echte run gaf 10 punten. Acht ervan waren terecht; twee waren mijn
+fout, en allebei van dezelfde soort — de vergelijker kende maar één van de twee
+schrijfwijzen.
+
+- **"Ajax - PSV: thuisscore 3 → 1, uitscore 4 → 1."** Dat is de bekerfinale van
+  2023: 1-1 na verlenging, met 2-3 beslist. Transfermarkt telt de benutte
+  strafschoppen bij de eindstand op (3:4), de parser haalt ze er weer af en legt
+  ze apart vast; Sofascore zet de opgetelde stand in de uitslag. De vergelijker
+  toetst nu of het verschil in uitslag precies de serie is — is dat zo, dan is
+  het een andere afspraak en geen tegenspraak, en wordt het als zodanig gemeld.
+  De datum blijft wél meetellen.
+
+- **"Transfermarkt: 613 eindstanden, 595 via spelers, 0 eigen doelpunten ✗."**
+  Nul eigen doelpunten in 165 wedstrijden is onmogelijk, en dat was ook precies
+  het signaal: Sofascore markeert een eigen doelpunt als `type: "ownGoal"`, de
+  Transfermarkt-parser als `type: "own"`. Ik toetste alleen op de eerste. Met
+  allebei erin klopt de som: 613 − 18 = 595.
+
+  De Sofascore-export blijft er wél op staan: 662 − 17 = 645 tegen 595 via de
+  spelers. Dat gat van vijftig is echt, en het is precies waarom deze toets in
+  het rapport staat.
+
+### Wat de vertaaltabel liet zien
+
+De naamwissels waren, zoals verwacht, bijna allemaal spelling: 'Gofferstadion' →
+'Goffertstadion', 'Eredivisie 10/11' → 'Eredivisie 2010/11', 43 seizoenen die
+alleen anders geschreven worden. De categorie 'gesplitst' leverde wél iets op,
+en dat is waar die categorie voor bedoeld was:
+
+- **Zes splitsingen zijn winst.** Transfermarkt houdt uit elkaar wat Sofascore
+  samennam: de voorronde van de Champions League is geen Champions League, en de
+  Play-Offs van de Jupiler Pro League zijn een eigen competitie.
+- **Twee splitsingen zijn een probleem.** 'De Kuip' wordt in de nieuwe data zowel
+  'De Kuip' als 'Stadion Feyenoord "De Kuip"', en 'Johan Cruijff Arena' zowel
+  'Amsterdam ArenA' als 'Johan Cruijff ArenA'. Transfermarkt noemt hetzelfde
+  gebouw per wedstrijd anders — bij de ArenA naar de naam van dat seizoen. In de
+  stadionlijst van het dashboard worden dat twee rijen voor één stadion.
+- **Eén splitsing is een fout in een van de bronnen.** Sofascore zag 'Pol van
+  Boekel' bij een wedstrijd waar Transfermarkt 'Bas Nijhuis' noemt.

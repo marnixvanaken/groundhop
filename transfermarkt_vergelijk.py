@@ -130,14 +130,39 @@ HARDE_VELDEN = [("date", "datum"),
                 ("away_score", "uitscore")]
 
 
+def strafschoppen_verklaren(o: dict, n: dict) -> bool:
+    """Of het verschil in uitslag precies de strafschoppenserie is.
+
+    Transfermarkt telt bij een beslissende serie de benutte strafschoppen bij de
+    eindstand op; de parser haalt ze er weer af en legt ze apart vast. Sofascore
+    zet die opgetelde stand in de uitslag. Ajax - PSV 2023 eindigde 1-1 en werd
+    met 2-3 beslist: 'oud 3-4' en 'nieuw 1-1' beschrijven dus hetzelfde duel.
+    Dat is een andere afspraak, geen tegenspraak.
+    """
+    serie = n.get("penalty_shootout")
+    if not serie:
+        return False
+    for kant in ("home", "away"):
+        oud, nieuw = o.get(f"{kant}_score"), n.get(f"{kant}_score")
+        if not isinstance(oud, int) or not isinstance(nieuw, int):
+            return False
+        if oud != nieuw + (serie.get(kant) or 0):
+            return False
+    return True
+
+
 def tegenspraak(o: dict, n: dict) -> list[tuple]:
     """De velden waar de twee bronnen elkaar écht tegenspreken.
 
     Weet één van de twee het niet, dan is dat een gat en geen tegenspraak;
-    gaten staan in de dekkingstabel.
+    gaten staan in de dekkingstabel. En is het verschil in uitslag precies de
+    strafschoppenserie, dan tellen de scores niet mee — de datum wel.
     """
+    serie = strafschoppen_verklaren(o, n)
     uit = []
     for pad, naam in HARDE_VELDEN:
+        if serie and pad in ("home_score", "away_score"):
+            continue
         a, b = veld(o, pad), veld(n, pad)
         if a is None or b is None or a == "" or b == "":
             continue
@@ -235,13 +260,18 @@ def doelpuntsom(export: dict) -> tuple[int, int]:
     return stand, spelers
 
 
+# De twee bronnen markeren een eigen doelpunt anders: Sofascore schrijft
+# type 'ownGoal', de Transfermarkt-parser 'own'. Wie er maar één van toetst,
+# krijgt bij de andere bron nul eigen doelpunten en dus een onterechte ✗.
+EIGEN_SOORTEN = {"own", "ownGoal", "owngoal", "own_goal"}
+
+
 def eigen_doelpunten(export: dict) -> int:
-    """Telt de doelpuntrecords die als eigen doelpunt gemarkeerd staan. De twee
-    bronnen noemen dat veld anders, dus allebei toetsen."""
+    """Telt de doelpuntrecords die als eigen doelpunt gemarkeerd staan."""
     n = 0
     for w in export.get("matches") or []:
         for g in w.get("goals") or []:
-            if g.get("type") == "ownGoal" or g.get("own_goal") is True:
+            if g.get("type") in EIGEN_SOORTEN or g.get("own_goal") is True:
                 n += 1
     return n
 
@@ -325,6 +355,18 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
     # ── 1. tegenspraak ──
     print(f"\n{'─' * 78}\n  1. TEGENSPRAAK — dezelfde wedstrijd, een andere uitkomst\n{'─' * 78}")
     print("  Datum en uitslag. Hier kan maar één van de twee bronnen gelijk hebben.")
+    series = [(o, n) for o, n in paren if strafschoppen_verklaren(o, n)]
+    if series:
+        print(f"\n  ✓ {meervoud(len(series), 'wedstrijd werd', 'wedstrijden werden')} "
+              f"op strafschoppen beslist. Sofascore telt die bij de uitslag op,")
+        print(f"    Transfermarkt houdt de veldstand aan en legt de serie apart vast:")
+        for o, n in sorted(series, key=lambda x: x[0].get("date") or ""):
+            ps = n.get("penalty_shootout") or {}
+            print(f"    {o.get('date')}  {label(o)}: "
+                  f"{o.get('home_score')}-{o.get('away_score')} → "
+                  f"{n.get('home_score')}-{n.get('away_score')} "
+                  f"+ {ps.get('home')}-{ps.get('away')} strafschoppen")
+
     botsing = [(o, n, v) for o, n in paren if (v := tegenspraak(o, n))]
     if botsing:
         fout += len(botsing)
@@ -475,6 +517,24 @@ def zelftest() -> int:
     toets("een ontbrekende uitslag is een gat",
           tegenspraak({**a, "home_score": None}, a), [])
 
+    print("\n── de strafschoppenserie ──")
+    # Ajax - PSV 2023: veldstand 1-1, met 2-3 beslist. Sofascore schreef 3-4 op.
+    veld_ = w(1, "2023-04-30", "AFC Ajax", "PSV", 1, 1)
+    veld_["penalty_shootout"] = {"home": 2, "away": 3}
+    sofa_ = w(9, "2023-04-30", "AFC Ajax", "PSV", 3, 4)
+    toets("de serie verklaart het verschil", strafschoppen_verklaren(sofa_, veld_), True)
+    toets("en is dus geen tegenspraak", tegenspraak(sofa_, veld_), [])
+    toets("een andere datum telt nog steeds wel",
+          tegenspraak({**sofa_, "date": "2023-05-01"}, veld_),
+          [("datum", "2023-05-01", "2023-04-30")])
+    toets("zonder serie is het wel tegenspraak",
+          len(tegenspraak(sofa_, w(9, "2023-04-30", "AFC Ajax", "PSV", 1, 1))), 2)
+    scheef = dict(veld_)
+    scheef["penalty_shootout"] = {"home": 4, "away": 5}
+    toets("een serie die het verschil niet dekt verklaart niets",
+          strafschoppen_verklaren(sofa_, scheef), False)
+    toets("... en blijft dus tegenspraak", len(tegenspraak(sofa_, scheef)), 2)
+
     print("\n── vertaling ──")
     paren = [(w(1, "2024-01-01", "PSV", "Ajax", 1, 0, stadion="Gofferstadion"),
               w(9, "2024-01-01", "PSV", "Ajax", 1, 0, stadion="Goffertstadion")),
@@ -528,9 +588,17 @@ def zelftest() -> int:
                                      {"type": "penalty"}]}],
               "players": [{"name": "A", "goals": 2}]}
     toets("eindstanden en spelers geteld", doelpuntsom(export), (3, 2))
-    toets("eigen doelpunten herkend uit 'type'", eigen_doelpunten(export), 1)
+    toets("eigen doelpunten herkend uit Sofascore's 'ownGoal'",
+          eigen_doelpunten(export), 1)
+    # Transfermarkt schrijft 'own'. Alleen op 'ownGoal' toetsen gaf de nieuwe
+    # export nul eigen doelpunten en dus een onterechte ✗.
+    toets("en uit Transfermarkt's 'own'",
+          eigen_doelpunten({"matches": [{"goals": [{"type": "own"}]}]}), 1)
     toets("en uit 'own_goal'",
           eigen_doelpunten({"matches": [{"goals": [{"own_goal": True}]}]}), 1)
+    toets("een gewoon doelpunt telt niet mee",
+          eigen_doelpunten({"matches": [{"goals": [{"type": "regular"},
+                                                   {"type": "penalty"}]}]}), 0)
     toets("3 min 1 eigen doelpunt is 2 via de spelers: dat klopt",
           doelpuntsom(export)[0] - eigen_doelpunten(export), doelpuntsom(export)[1])
 
