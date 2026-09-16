@@ -1078,7 +1078,7 @@ function PlayerDetail({player:p,onBack}){
           <div style=${{display:'flex',gap:8,alignItems:'center',marginTop:6,flexWrap:'wrap'}}>
             ${p.nationality_alpha2&&html`<${Flag} a2=${p.nationality_alpha2} size=${22} />`}
             <span style=${{fontSize:13,color:T.muted}}>${p.nationality}</span>
-            ${p.position&&html`<span style=${{background:T.bg4,color:T.text,borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>${posLabel[p.position]||p.position}</span>`}
+            ${(p.position_detail||p.position)&&html`<span style=${{background:T.bg4,color:T.text,borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>${p.position_detail||posLabel[p.position]||p.position}</span>`}
           </div>
           ${p.date_of_birth&&html`<div style=${{fontSize:12,color:T.dim,marginTop:6,display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>
             <${Icon} name="cake" size=${13} color=${T.dim} /> ${p.date_of_birth}
@@ -1323,7 +1323,7 @@ function TabStadions({data}){
         </div>
         <div style=${{flex:1,minWidth:0}}>
           <div style=${{fontWeight:700,fontSize:16,color:T.text}}>${v.name}</div>
-          <div style=${{fontSize:13,color:T.muted,marginTop:2}}>${v.city}</div>
+          ${v.city&&html`<div style=${{fontSize:13,color:T.muted,marginTop:2}}>${v.city}</div>`}
           <div style=${{marginTop:8,height:4,background:T.bg3,borderRadius:2,overflow:'hidden'}}>
             <div style=${{width:`${v.matches_count/maxVisits*100}%`,height:'100%',background:`linear-gradient(90deg,${T.blue},${T.purple})`,borderRadius:2}}></div>
           </div>

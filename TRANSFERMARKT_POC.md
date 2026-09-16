@@ -392,3 +392,77 @@ aanvulling na op zeven gevallen (leeg, gelijk, een wees, dezelfde wees dubbel,
 een record zonder id, een lege selectie) en raakt het netwerk niet.
 
 Praktisch betekent dit één speelschema extra ophalen: PSV in 2010/11.
+
+## De ontbrekende schakel: `transfermarkt_dashboard.py`
+
+Het dashboard leest één bestand, `data/dashboard_data.json`, en tot nu toe maakte
+alleen `sofascore_tracker.py` dat. De Transfermarkt-keten liep dus tot aan de
+spelerslaag en hield daar op: wedstrijden en spelers waren compleet, maar niets
+zette ze om naar wat het dashboard opent.
+
+`transfermarkt_dashboard.py` doet dat, en heeft de Sofascore-cache niet nodig —
+de sync en de spelerslaag hebben het rekenwerk al gedaan. Wat hier gebeurt is
+optellen (stadions, clubs, toernooien, scheidsrechters, seizoenen, records) en
+het aanvullen van de spelers met wat alleen uit de combinatie volgt: de
+positieletter, de landcode, en hun leeftijd op elke wedstrijddag. Het schrijft
+naar `data/dashboard_data_tm.json` en laat het origineel met rust.
+
+### Getoetst tegen de oude export, niet tegen zichzelf
+
+`--zelftest` rekent 84 sommen na, maar een zelftest kan alleen bevestigen wat je
+al dacht. De echte proef was de bouwer over de 180 Sofascore-wedstrijden laten
+lopen — hetzelfde schema — en de uitkomst naast die van de tracker leggen. Vier
+getallen weken af. Eén daarvan was mijn fout, drie die van de tracker, en dat
+was alleen te zien door ze allemaal na te lopen.
+
+**Mijn fout: De Kuip telde dubbel.** Ik groepeerde stadions op `id of naam`. De
+Kuip staat in de eigen data drie keer, twee keer met id 612 en één keer zonder —
+en werd zo twee stadions. De sleutelregel is nu: hetzelfde id is hetzelfde ding;
+een record zonder id hoort bij de groep met dezelfde naam als die bestaat; pas
+anders wordt de naam zelf de sleutel. Alleen op naam groeperen kan namelijk óók
+niet: Amsterdam ArenA en Johan Cruijff ArenA zijn hetzelfde gebouw, en alleen het
+id weet dat.
+
+**De tracker sloeg stil over wat geen id had.** Twee scheidsrechters (Brych,
+Schörgenhofer), twee stadions (Amsterdam ArenA, Gofferstadion) en één toernooi
+(International Friendlies) stonden zonder id in de data en vielen daarmee uit de
+telling. Je bent er wel geweest. Die tellen nu mee.
+
+**De tracker telde doelpuntrecords, geen doelpunten.** `total_goals_witnessed`
+was `sum(len(m["goals"]))`: het aantal doelpunten waarvan een record was
+opgehaald. Twee wedstrijden scheelden negen goals — Rot-Weiss Essen - SV Wehen
+Wiesbaden (stand 4, nul records) en de bekerfinale Ajax - PSV (stand 7, twee
+records). De eindstand opgeteld is het eerlijke getal. Bij Transfermarkt is dat
+ook veilig: `parse_match` houdt een strafschoppenserie apart van de uitslag, dus
+een beslissende serie telt niet mee als doelpunten.
+
+**En een keuze, geen fout: de bank telt niet mee.** "Jongste ooit" stond op
+Mees Rensen (16j 45d) en "Oudste ooit" op Remko Pasveer (41j 317d). Allebei zaten
+ze die dag op de bank en speelden ze geen minuut. Dat vak staat in het dashboard
+pal boven de XI, en die XI bestaat uit spelers die gespeeld hebben; een
+zestienjarige in trainingspak heb je niet zien voetballen. De records gaan nu
+over wie er daadwerkelijk op het veld stond — en het rapport noemt er
+uitdrukkelijk bij wie er op de bank nóg jonger of ouder was, zodat het een keuze
+blijft en geen aanname.
+
+### Wat het rapport meldt in plaats van verzwijgt
+
+Twee vertalingen kunnen niet volledig zijn, en allebei melden ze wat ze niet
+konden plaatsen, met aantallen:
+
+- **Positie.** Het dashboard zet spelers in een opstelling op één letter (G, D,
+  M, F); Transfermarkt schrijft de positie voluit en preciezer ("Centrale
+  verdediger"). De letter gaat naar `position`, de volledige omschrijving naar
+  `position_detail` — en het spelersprofiel toont voortaan die, want dat is
+  nauwkeuriger dan "Verdediger". De volgorde van de vertaalregels is de hele
+  truc: "Linkervleugelverdediger" bevat ook "vleugel" en "aanvallende
+  middenvelder" bevat ook "aanval". Wie eerst op de aanvallende woorden toetst,
+  zet halve verdedigingen en het complete middenveld in de spits.
+- **Nationaliteit.** Transfermarkt.nl geeft een Nederlandse landnaam, het
+  dashboard heeft een alpha-2-code nodig. Die vertaling staat al in
+  `dashboard.html`, in `A2_NAMES`, en wordt daar gelezen in plaats van hier
+  overgetypt — zo kan de vlag nooit een ander land aanwijzen dan de naam ernaast.
+  Namen die er niet in staan worden geteld en genoemd.
+
+Een lege plaatsnaam onder een stadion is uit het dashboard gehaald: Transfermarkt
+noemt de stad niet, en een lege regel ziet eruit als een mislukte render.
