@@ -190,22 +190,26 @@ def naamwissels(paren: list[tuple], pad: str) -> dict:
     oude naam wees blijkbaar naar twee verschillende dingen, of de nieuwe bron
     houdt uit elkaar wat de oude samennam. 'samengevoegd' is meestal juist goed
     (Amsterdam ArenA en Johan Cruijff ArenA zijn hetzelfde gebouw).
+
+    Bij een splitsing staan de wedstrijden erbij. Zonder die wedstrijden weet je
+    wel dát 'Pol van Boekel' ook 'Bas Nijhuis' werd, maar niet waar je moet
+    kijken — en dat is nu juist het enige wat je nodig hebt.
     """
-    heen: dict[str, set] = defaultdict(set)
+    heen: dict[str, dict[str, list]] = defaultdict(lambda: defaultdict(list))
     terug: dict[str, set] = defaultdict(set)
     for o, n in paren:
         a, b = veld(o, pad), veld(n, pad)
         if not a or not b:
             continue
-        heen[a].add(b)
+        heen[a][b].append(f"{o.get('date')}  {label(o)}")
         terug[b].add(a)
 
     gelijk, hernoemd, gesplitst, samengevoegd = [], [], [], []
-    for a, bs in heen.items():
-        if len(bs) > 1:
-            gesplitst.append((a, sorted(bs)))
+    for a, takken in heen.items():
+        if len(takken) > 1:
+            gesplitst.append((a, sorted((b, sorted(w)) for b, w in takken.items())))
         else:
-            b = next(iter(bs))
+            b = next(iter(takken))
             if a == b:
                 gelijk.append(a)
             elif len(terug[b]) > 1:
@@ -393,8 +397,16 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
         vink = "▼" if g["gesplitst"] else " "
         print(f"  {naam:<16} {len(g['gelijk']):>8} {len(g['hernoemd']):>9} "
               f"{len(g['samengevoegd']):>10} {len(g['gesplitst']):>10} {vink}")
-        for a, bs in g["gesplitst"]:
-            gesplitst_totaal.append(f"{naam}: {a!r} werd {', '.join(repr(b) for b in bs)}")
+        for a, takken in g["gesplitst"]:
+            gesplitst_totaal.append(f"{naam}: {a!r} werd:")
+            for b, wanneer in takken:
+                # De kleinste tak is de afwijking; die krijgt zijn wedstrijden
+                # erbij, de grote tak alleen een telling.
+                if len(wanneer) <= 3:
+                    for w in wanneer:
+                        gesplitst_totaal.append(f"    {b!r}  —  {w}")
+                else:
+                    gesplitst_totaal.append(f"    {b!r}  —  {len(wanneer)} wedstrijden")
         if g["hernoemd"] or g["samengevoegd"]:
             wissels = ([f"{a!r} → {b!r}" for a, b in g["hernoemd"]] +
                        [f"{a!r} → {b!r}  (samengevoegd)" for a, b in g["samengevoegd"]])
@@ -562,7 +574,11 @@ def zelftest() -> int:
               w(8, "2024-02-01", "A", "B", 0, 0, stadion="Varkenoord"))]
     g = naamwissels(split, "venue.name")
     toets("één oude naam naar twee nieuwe heet gesplitst",
-          g["gesplitst"], [("De Kuip", ["Stadion Feijenoord", "Varkenoord"])])
+          [a for a, _ in g["gesplitst"]], ["De Kuip"])
+    toets("en de wedstrijden staan erbij, zodat je weet waar je moet kijken",
+          g["gesplitst"][0][1],
+          [("Stadion Feijenoord", ["2024-01-01  A - B"]),
+           ("Varkenoord", ["2024-02-01  A - B"])])
     toets("een gesplitste naam telt niet als hernoemd", g["hernoemd"], [])
 
     leeg = [(w(1, "2024-01-01", "A", "B", 0, 0, stadion=""),

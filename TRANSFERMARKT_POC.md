@@ -641,3 +641,63 @@ en dat is waar die categorie voor bedoeld was:
   stadionlijst van het dashboard worden dat twee rijen voor één stadion.
 - **Eén splitsing is een fout in een van de bronnen.** Sofascore zag 'Pol van
   Boekel' bij een wedstrijd waar Transfermarkt 'Bas Nijhuis' noemt.
+
+## De knopen doorgehakt
+
+Vier beslissingen, vier stukken werk. De vijfde — het toevoegen van een
+wedstrijd via Transfermarkt in plaats van Sofascore — is groter en staat nog
+open.
+
+### De officiële naam wint
+
+`STADIONNAMEN` in `transfermarkt_dashboard.py` voegt samen wat Transfermarkt per
+wedstrijd anders schrijft: `Stadion Feyenoord "De Kuip"` wordt `De Kuip`,
+`Amsterdam ArenA` wordt `Johan Cruijff ArenA`. De tabel draait vóór het tellen,
+en dat is het hele punt: na het tellen zou de stadionlijst al twee regels hebben
+en zou de wedstrijd zelf nog steeds de oude naam tonen.
+
+`sleutelmaker` kon dit niet oplossen. Die knoopt namen aan elkaar via een
+gedeeld id, en Transfermarkt geeft stadions geen id — dus zonder tabel zijn het
+twee stadions. De zelftest laat dat ook zien: zonder de tabel twee regels, met
+de tabel één.
+
+Wie liever de historische naam ziet (in 2018 de Amsterdam ArenA, in 2025 de
+Johan Cruijff ArenA) haalt de regel weg; het is één regel.
+
+### De splitsingen noemen hun wedstrijden
+
+`'Pol van Boekel' werd 'Bas Nijhuis', 'Pol van Boekel'` vertelt je dát er iets
+niet klopt, maar niet waar je moet kijken — en dat is nu juist het enige wat je
+nodig hebt. De vergelijker zet de wedstrijden er nu bij; een tak met hooguit
+drie wedstrijden krijgt ze allemaal, een grote tak alleen een telling.
+
+### Een speelschema-cache die weet wat kan veranderen
+
+`--map` haalde alle 56 speelschema's opnieuw op, ook voor één nieuwe wedstrijd.
+Ze staan nu in `data/tm_schema_cache/`, met één regel die het verschil maakt:
+een afgelopen seizoen verandert niet meer en mag voor altijd op schijf, een
+lópend seizoen groeit elke speelronde en wordt altijd opnieuw opgehaald. Juli is
+de grens. Anders mis je precies de wedstrijd waarvoor je het draait.
+
+Lukt het ophalen niet, dan wint een oude cache van een leeg schema: die ene
+ontbrekende wedstrijd is minder erg dan alle andere kwijtraken. `--ververs` gooit
+alles overboord.
+
+### Handmatig koppelen voor wat nergens in staat
+
+De elf oefenduels staan in geen enkel speelschema. `--set-match SOFASCORE_ID
+TM_ID` legt zo'n koppeling vast in `data/tm_match_handmatig.json` — een eigen
+bestand, want `tm_match_map.json` wordt bij elke `--map` opnieuw geschreven en
+wat je met de hand hebt uitgezocht mag daar niet mee weg. Het rapport over
+niet-gekoppelde wedstrijden drukt de commandoregel meteen af, met het id erin.
+
+De vier vrouwenwedstrijden blijven buiten de selectie: die staan naar alle
+waarschijnlijkheid niet op Transfermarkt.
+
+### Andy Little is nagekeken
+
+TM 1989-05-12 is de juiste; Sofascore had de Noord-Ierse naamgenoot. Hij staat nu
+in `NAGEKEKEN`, mét geboortedatum. Die datum is er niet voor de sier: verandert
+hij op Transfermarkt, dan geldt het oordeel van toen niet meer en roept de
+melding vanzelf opnieuw. Een naam daar neerzetten zonder te kijken maakt de hele
+controle waardeloos.

@@ -105,6 +105,20 @@ VORMEN = ("één dag", "twee of drie dagen", "dag en maand verwisseld",
 
 # Twee bronnen kunnen het oneens zijn over een dag, een maand, soms een jaar.
 # Liggen de data jaren uiteen, dan lezen ze niet dezelfde geboortedatum verkeerd
+# Afwijkingen die zijn nagekeken en waarbij Transfermarkt gelijk bleek te
+# hebben. De geboortedatum staat erbij: verandert die op Transfermarkt, dan
+# geldt het oordeel niet meer en roept de melding vanzelf opnieuw. Een naam
+# hier neerzetten zonder te kijken maakt de controle waardeloos.
+NAGEKEKEN = {
+    "Andy Little": "1989-05-12",   # Sofascore had de Noord-Ierse naamgenoot
+}
+
+
+def is_nagekeken(naam: str, tm_datum: str) -> bool:
+    """Of dit geval is nagekeken én de geboortedatum nog dezelfde is."""
+    return NAGEKEKEN.get(naam) == tm_datum
+
+
 # maar beschrijven ze twee mensen. Dat is de enige vorm die een naamgenoot
 # aanwijst ook als beide bronnen dezelfde club noemen.
 VEEL_JAREN = 5 * 366
@@ -299,6 +313,13 @@ def controleer(profielen: list[dict]) -> None:
         print(f"  {vorm:<26}{tellen[vorm]:>5}{extra}{merk}")
 
     ver = [r for r in echt if r[3] == "meer dan vijf jaar"]
+    nagekeken = [r for r in ver if is_nagekeken(r[0], r[1])]
+    ver = [r for r in ver if r not in nagekeken]
+    if nagekeken:
+        print(f"\n  ✓ {len(nagekeken)} daarvan zijn nagekeken; het Transfermarkt-profiel")
+        print(f"    is het goede en Sofascore had de verkeerde speler:")
+        for naam, tm, sofa, _, _ in nagekeken:
+            print(f"    {naam}: TM {tm} (juist) / Sofascore {sofa}")
     if ver:
         print(f"\n  ! Zoveel jaar ertussen is geen leesverschil maar een andere")
         print(f"    speler. Deze horen niet bij elkaar:")
@@ -376,6 +397,14 @@ def zelftest() -> int:
     eis("geheel anders", vergelijk("1993-04-24", "1995-08-11")[0], "geheel anders")
     eis("vijftien jaar ertussen",
         vergelijk("1989-05-12", "1974-10-03")[0], "meer dan vijf jaar")
+    eis("een nagekeken geval wordt herkend",
+        is_nagekeken("Andy Little", "1989-05-12"), True)
+    # Verandert de datum op Transfermarkt, dan is het oordeel van toen niet meer
+    # geldig en hoort de melding terug te komen.
+    eis("maar alleen bij dezelfde geboortedatum",
+        is_nagekeken("Andy Little", "1974-10-03"), False)
+    eis("en een naam die er niet in staat blijft gewoon melden",
+        is_nagekeken("Danny Lafferty", "1989-05-18"), False)
     eis("vier jaar is nog geen naamgenoot",
         vergelijk("1989-05-12", "1993-10-03")[0], "geheel anders")
     eis("alleen het jaar blijft dat, ook ver uiteen",

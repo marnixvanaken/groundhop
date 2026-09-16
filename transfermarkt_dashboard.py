@@ -245,6 +245,36 @@ def tel_clubs(wedstrijden: list[dict]) -> list[dict]:
     return sorted(clubs.values(), key=lambda c: (-c["matches_count"], c["name"]))
 
 
+# Transfermarkt noemt hetzelfde gebouw per wedstrijd anders: bij de ArenA naar
+# de naam van dat seizoen, bij De Kuip nu eens kort en dan eens voluit. Zonder
+# deze tabel staan die stadions twee keer in de lijst. De officiële naam van nu
+# wint — dat is de afspraak; wie liever de historische naam ziet (in 2018 de
+# Amsterdam ArenA, in 2025 de Johan Cruijff ArenA) haalt de regel hier weg.
+#
+# Alleen namen die écht hetzelfde gebouw zijn horen hier. Een stadion dat is
+# vervangen door nieuwbouw op dezelfde plek is een ander stadion.
+STADIONNAMEN = {
+    'Stadion Feyenoord "De Kuip"': "De Kuip",
+    "Amsterdam ArenA": "Johan Cruijff ArenA",
+}
+
+
+def hernoem_stadions(wedstrijden: list[dict]) -> list[dict]:
+    """Zet de stadionnamen om naar de naam die wint, vóór er geteld wordt.
+
+    Vóór het tellen, want anders telt de stadionlijst twee bezoeken aan één
+    gebouw als twee stadions — en na het tellen zou de wedstrijd zelf nog steeds
+    de oude naam tonen. De wedstrijden zelf blijven ongemoeid; er gaat een kopie
+    doorheen.
+    """
+    uit = []
+    for w in wedstrijden:
+        v = w.get("venue") or {}
+        nieuw = STADIONNAMEN.get(v.get("name"))
+        uit.append({**w, "venue": {**v, "name": nieuw}} if nieuw else w)
+    return uit
+
+
 def tel_stadions(wedstrijden: list[dict]) -> list[dict]:
     """Elk stadion, met bezoeken, eerste en laatste keer, en het volste huis."""
     wedstrijden = op_datum(wedstrijden)
@@ -461,6 +491,7 @@ def verrijk_spelers(spelers: list[dict], tabel: dict[str, str]) -> tuple[list[di
 def bouw(wedstrijden: list[dict], spelers: list[dict],
          tabel: dict[str, str]) -> tuple[dict, dict]:
     """Zet wedstrijden en spelers om naar het schema dat het dashboard leest."""
+    wedstrijden = hernoem_stadions(wedstrijden)
     spelers, ongewoon = verrijk_spelers(spelers, tabel)
     data = sorted(w.get("date") for w in wedstrijden if w.get("date"))
     goals = [doelpunten(w) for w in wedstrijden]
@@ -687,6 +718,43 @@ def zelftest() -> int:
     st = tel_stadions(arena)
     toets("twee namen onder één id blijven één stadion", len(st), 1)
     toets("de nieuwste naam wint", st[0]["name"], "Johan Cruijff ArenA")
+
+    print("\n── de officiële naam wint ──")
+    # Zonder id kan sleutelmaker twee namen niet aan elkaar knopen; de
+    # aliastabel doet dat vóór het tellen. Transfermarkt geeft stadions geen id,
+    # dus hier staat het op None — precies zoals in de echte data.
+    tm = [_w(41, "2018-09-06", "A", "B", 0, 0,
+             venue={"name": "Amsterdam ArenA", "city": "Amsterdam", "id": None}),
+          _w(42, "2025-09-21", "A", "B", 0, 0,
+             venue={"name": "Johan Cruijff ArenA", "city": "Amsterdam", "id": None})]
+    toets("zonder de tabel zijn het twee stadions", len(tel_stadions(tm)), 2)
+    st = tel_stadions(hernoem_stadions(tm))
+    toets("met de tabel is het er één", len(st), 1)
+    toets("onder de officiële naam", st[0]["name"], "Johan Cruijff ArenA")
+    toets("en met beide bezoeken", st[0]["matches_count"], 2)
+
+    kuip_tm = [_w(43, "2023-04-30", "A", "B", 0, 0,
+                  venue={"name": 'Stadion Feyenoord "De Kuip"', "city": "Rotterdam",
+                         "id": None}),
+               _w(44, "2025-09-17", "A", "B", 0, 0,
+                  venue={"name": "De Kuip", "city": "Rotterdam", "id": None})]
+    st = tel_stadions(hernoem_stadions(kuip_tm))
+    toets("De Kuip idem", (len(st), st[0]["name"], st[0]["matches_count"]),
+          (1, "De Kuip", 2))
+
+    toets("de wedstrijd zelf toont de nieuwe naam ook",
+          (hernoem_stadions(kuip_tm)[0]["venue"]["name"]), "De Kuip")
+    toets("de stad blijft staan",
+          hernoem_stadions(kuip_tm)[0]["venue"]["city"], "Rotterdam")
+    toets("de oorspronkelijke wedstrijd blijft ongemoeid",
+          kuip_tm[0]["venue"]["name"], 'Stadion Feyenoord "De Kuip"')
+    onbekend = [_w(45, "2020-01-01", "A", "B", 0, 0,
+                   venue={"name": "Philips Stadion", "city": "Eindhoven", "id": None})]
+    toets("een stadion dat niet in de tabel staat blijft zoals het was",
+          hernoem_stadions(onbekend)[0]["venue"]["name"], "Philips Stadion")
+    toets("een wedstrijd zonder stadion geeft geen fout",
+          hernoem_stadions([_w(46, "2020-01-01", "A", "B", 0, 0, venue={})]
+                           )[0]["venue"], {})
 
     # Een naam die nergens een id heeft blijft een eigen regel.
     los = [_w(31, "2020-01-01", "A", "B", 0, 0,

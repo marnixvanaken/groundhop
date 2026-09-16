@@ -45,6 +45,7 @@ import re
 import sys
 import time
 import unicodedata
+from datetime import date
 from pathlib import Path
 
 from transfermarkt_poc import (BASE, HEADERS, _IMPERSONATE, _datum_nl, _http,
@@ -55,6 +56,8 @@ CLUB_MAP = Path("data/tm_club_map.json")
 DASHBOARD = Path("data/dashboard_data.json")
 MATCH_MAP = Path("data/tm_match_map.json")
 UITGESTELD = Path("data/tm_uitgesteld.json")
+SCHEMA_CACHE = Path("data/tm_schema_cache")
+HANDMATIG = Path("data/tm_match_handmatig.json")
 
 SPIELBERICHT_RE = re.compile(r"/spielbericht/index/spielbericht/(\d+)")
 VEREIN_RE = re.compile(r"/verein/(\d+)")
@@ -298,6 +301,44 @@ def _thuis_of_uit(rij) -> str | None:
     return None
 
 
+def huidig_seizoen(vandaag: date | None = None) -> int:
+    """Het startjaar van het seizoen dat nu loopt. Juli is de grens."""
+    d = vandaag or date.today()
+    return d.year if d.month >= 7 else d.year - 1
+
+
+def speelschema_gecachet(club_id: int, saison: int,
+                         ververs: bool = False) -> tuple[list[dict], str]:
+    """Het speelschema, uit de cache als dat mag. Geeft (wedstrijden, herkomst).
+
+    Een afgelopen seizoen verandert niet meer, dus dat mag voor altijd op schijf.
+    Een lópend seizoen groeit elke speelronde en wordt dus altijd opnieuw
+    opgehaald — anders mis je precies de wedstrijd waarvoor je dit draait.
+
+    Lukt het ophalen niet, dan is een oude cache beter dan een leeg schema: die
+    ene ontbrekende wedstrijd is minder erg dan alle andere kwijtraken.
+    """
+    pad = SCHEMA_CACHE / f"{club_id}-{saison}.json"
+    op_schijf = None
+    if pad.exists():
+        try:
+            op_schijf = json.loads(pad.read_text("utf-8"))
+        except (OSError, ValueError):
+            op_schijf = None
+
+    if op_schijf and not ververs and saison < huidig_seizoen():
+        return op_schijf, "cache"
+
+    ws = speelschema(club_id, saison)
+    if ws:
+        SCHEMA_CACHE.mkdir(parents=True, exist_ok=True)
+        pad.write_text(json.dumps(ws, ensure_ascii=False), "utf-8")
+        return ws, "opgehaald"
+    if op_schijf:
+        return op_schijf, "cache (ophalen mislukte)"
+    return [], "leeg"
+
+
 def speelschema(club_id: int, saison: int, toon: bool = False) -> list[dict]:
     """
     Haalt het speelschema van een club voor één seizoen op.
@@ -531,6 +572,70 @@ def zet_club(naam: str, club_id: int):
     print(f"  ✓ {naam!r} → {club_id} vastgelegd in {CLUB_MAP}")
 
 
+def lees_handmatig() -> dict:
+    """De handmatig vastgelegde koppelingen, als {sofascore_id: tm_match_id}."""
+    if not HANDMATIG.exists():
+        return {}
+    try:
+        return {str(k): v for k, v in json.loads(HANDMATIG.read_text("utf-8")).items()}
+    except (OSError, ValueError):
+        print(f"  ! {HANDMATIG} is onleesbaar en wordt genegeerd")
+        return {}
+
+
+def pas_handmatig_toe(mapping: dict, ongekoppeld: list, handmatig: dict) -> int:
+    """Voegt de handmatige koppelingen toe en haalt ze uit de restlijst.
+
+    Met de hand uitgezocht wint van wat het speelschema zegt: jij hebt de pagina
+    gezien, een datumtreffer niet. Past de twee meegegeven verzamelingen aan en
+    geeft terug hoeveel er met de hand bij kwamen.
+    """
+    met_hand = 0
+    for m in list(ongekoppeld):
+        vast = handmatig.get(str(m["id"]))
+        if not vast:
+            continue
+        mapping[str(m["id"])] = {
+            "tm_match_id": vast["tm_match_id"], "date": m.get("date"),
+            "sofascore_label": f"{m['home_team']['name']} - {m['away_team']['name']}",
+            "tm_clubs": [], "naam_bevestigd": True, "handmatig": True,
+        }
+        ongekoppeld.remove(m)
+        met_hand += 1
+    return met_hand
+
+
+def zet_wedstrijd(sofa_id: int, tm_id: int):
+    """Koppelt één wedstrijd met de hand.
+
+    Voor de duels die in geen enkel speelschema staan — oefenduels vooral. Deze
+    koppelingen staan in een eigen bestand en niet in tm_match_map.json, want
+    die laatste wordt bij elke --map opnieuw geschreven; wat je met de hand hebt
+    uitgezocht mag daar niet mee weg.
+    """
+    bekend = lees_handmatig()
+    label = ""
+    for pad in (SELECTED, DASHBOARD):
+        if not pad.exists():
+            continue
+        data = json.loads(pad.read_text("utf-8"))
+        rijen = data.get("matches", data) if isinstance(data, dict) else data
+        for m in rijen:
+            if m.get("id") == sofa_id:
+                label = (f"{m.get('date')} {m['home_team']['name']} - "
+                         f"{m['away_team']['name']}")
+                break
+        if label:
+            break
+
+    bekend[str(sofa_id)] = {"tm_match_id": tm_id, "label": label}
+    HANDMATIG.parent.mkdir(exist_ok=True)
+    HANDMATIG.write_text(json.dumps(bekend, ensure_ascii=False, indent=2), "utf-8")
+    print(f"  ✓ {sofa_id} → Transfermarkt {tm_id} vastgelegd in {HANDMATIG}")
+    print(f"    {label or '(wedstrijd niet in de export gevonden — id klopt wel?)'}")
+    print(f"    Draai nu: python3 transfermarkt_map.py --map")
+
+
 def extra_uit_export(matches: list[dict], export: list[dict]) -> list[dict]:
     """Wat staat er in de dashboard-export dat niet in de selectie staat?"""
     bekend = {m.get("id") for m in matches if m.get("id") is not None}
@@ -572,7 +677,7 @@ def te_koppelen_wedstrijden() -> list[dict]:
     return matches + extra
 
 
-def koppel_alles():
+def koppel_alles(ververs: bool = False):
     """Koppelt elke geziene wedstrijd aan een TM-match-ID."""
     matches = te_koppelen_wedstrijden()
 
@@ -606,8 +711,9 @@ def koppel_alles():
             mislukt.append((club, saison, "club-ID onbekend"))
             continue
         print(f"  [{i}/{len(paren)}] {club} {saison}/{str(saison+1)[-2:]}", end="")
-        ws = speelschema(info["id"], saison)
-        print(f" — {len(ws)} wedstrijden")
+        ws, herkomst = speelschema_gecachet(info["id"], saison, ververs)
+        print(f" — {len(ws)} wedstrijden"
+              + ("" if herkomst == "opgehaald" else f"  ({herkomst})"))
         if not ws:
             # Een leeg speelschema betekent vrijwel altijd een verkeerd club-ID,
             # niet een club die dat seizoen niet speelde.
@@ -615,7 +721,8 @@ def koppel_alles():
                             f"leeg — club-ID {info['id']} ({info['name']}) klopt wrsch. niet"))
         for w in ws:
             index.setdefault((club, w["date"]), []).append(w)
-        wacht()
+        if herkomst.startswith("opgehaald") or herkomst == "leeg":
+            wacht()
 
     # Stap 4: koppelen op datum.
     print(f"\n{'=' * 78}\n  KOPPELRESULTAAT\n{'=' * 78}")
@@ -671,8 +778,12 @@ def koppel_alles():
         else:
             ongekoppeld.append(m)
 
+    met_hand = pas_handmatig_toe(mapping, ongekoppeld, lees_handmatig())
+
     n = len(matches)
     print(f"  bruikbaar gekoppeld : {len(mapping)} / {n} ({100 * len(mapping) // n}%)")
+    if met_hand:
+        print(f"    waarvan met de hand: {met_hand}")
     print(f"  afgekeurd (naam)    : {len(twijfel)} — datum klopt, club niet")
     print(f"  niet gekoppeld      : {len(ongekoppeld)}")
 
@@ -700,7 +811,10 @@ def koppel_alles():
         for reden, groep in sorted(groepen.items(), key=lambda x: -len(x[1])):
             print(f"\n    [{len(groep)}x] {reden}")
             for m in groep[:6]:
-                print(f"       {m['date']}  {m['home_team']['name']} - {m['away_team']['name']}")
+                print(f"       {m['date']}  {m['home_team']['name']} - "
+                      f"{m['away_team']['name']}")
+                print(f"         zelf koppelen: python3 transfermarkt_map.py "
+                      f"--set-match {m['id']} TM_ID")
             if len(groep) > 6:
                 print(f"       ... en nog {len(groep) - 6}")
 
@@ -753,6 +867,23 @@ def _w(mid, thuis="NEC Nijmegen", uit="PSV Eindhoven", datum="2011-03-13"):
             "home_team": {"name": thuis}, "away_team": {"name": uit}}
 
 
+def _zelftest_cache(toets):
+    """De cachebeslissing: welk seizoen mag op schijf blijven staan."""
+    toets("augustus hoort bij het seizoen dat dan begint",
+          huidig_seizoen(date(2025, 8, 1)), 2025)
+    toets("juli ook — juli is de grens", huidig_seizoen(date(2025, 7, 1)), 2025)
+    toets("juni hoort nog bij het vorige seizoen",
+          huidig_seizoen(date(2025, 6, 30)), 2024)
+    toets("januari hoort bij het seizoen dat vorig jaar begon",
+          huidig_seizoen(date(2026, 1, 15)), 2025)
+    # De regel die het uitmaakt: een afgelopen seizoen mag uit de cache, een
+    # lopend seizoen niet — dat groeit elke speelronde.
+    nu = huidig_seizoen(date(2026, 1, 15))
+    toets("een afgelopen seizoen mag uit de cache", 2023 < nu, True)
+    toets("het lopende seizoen niet", nu < nu, False)
+    toets("en een seizoen dat nog moet komen ook niet", nu + 1 < nu, False)
+
+
 def zelftest() -> int:
     """Rekent na of de export-aanvulling precies de wezen oplevert."""
     gevallen = [
@@ -779,6 +910,39 @@ def zelftest() -> int:
         if not goed:
             print(f"       verwacht {verwacht}, kreeg {uit}")
             fout += 1
+    def toets(naam, kreeg, verwacht):
+        nonlocal fout
+        goed = kreeg == verwacht
+        print(f"  {'ok  ' if goed else 'FOUT'} {naam}")
+        if not goed:
+            print(f"       verwacht {verwacht!r}, kreeg {kreeg!r}")
+            fout += 1
+
+    print("\n── handmatige koppeling ──")
+    def _m(mid, thuis="A", uit="B"):
+        return {"id": mid, "date": "2023-07-26",
+                "home_team": {"name": thuis}, "away_team": {"name": uit}}
+
+    mapping, rest = {}, [_m(1), _m(2), _m(3)]
+    n = pas_handmatig_toe(mapping, rest, {"2": {"tm_match_id": 999}})
+    toets("één handmatige koppeling toegepast", n, 1)
+    toets("hij staat in de mapping", mapping["2"]["tm_match_id"], 999)
+    toets("en is als handmatig gemerkt", mapping["2"]["handmatig"], True)
+    toets("de rest blijft ongekoppeld", [m["id"] for m in rest], [1, 3])
+
+    mapping, rest = {}, [_m(1)]
+    toets("zonder handmatige koppelingen verandert er niets",
+          (pas_handmatig_toe(mapping, rest, {}), mapping, len(rest)), (0, {}, 1))
+    # Een koppeling voor een wedstrijd die al automatisch gevonden is staat niet
+    # in de restlijst en doet dus niets — dat is de bedoeling.
+    mapping, rest = {"5": {"tm_match_id": 111}}, []
+    toets("een koppeling voor een al gevonden wedstrijd doet niets",
+          (pas_handmatig_toe(mapping, rest, {"5": {"tm_match_id": 999}}),
+           mapping["5"]["tm_match_id"]), (0, 111))
+
+    print("\n── speelschema-cache ──")
+    _zelftest_cache(toets)
+
     print("\n  alles goed" if not fout else f"\n  {fout} fout")
     return 1 if fout else 0
 
@@ -794,17 +958,24 @@ def main():
     g.add_argument("--map", action="store_true", help="volledige koppeling")
     g.add_argument("--probe-fixtures", type=int, metavar="CLUB_ID",
                    help="test welke URL het speelschema levert")
+    g.add_argument("--set-match", nargs=2, metavar=("SOFASCORE_ID", "TM_ID"),
+                   help="koppel één wedstrijd met de hand")
     g.add_argument("--set-club", nargs=2, metavar=("NAAM", "ID"),
                    help="leg een clubkoppeling handmatig vast")
     g.add_argument("--zelftest", action="store_true",
                    help="reken de export-aanvulling na, zonder netwerk")
     p.add_argument("--season", type=int, help="seizoen (startjaar)")
+    p.add_argument("--ververs", action="store_true",
+                   help="negeer de speelschema-cache en haal alles opnieuw op")
     p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     args = p.parse_args()
 
     if args.zelftest:
         raise SystemExit(zelftest())
 
+    if args.set_match:
+        zet_wedstrijd(int(args.set_match[0]), int(args.set_match[1]))
+        return
     if args.set_club:
         zet_club(args.set_club[0], int(args.set_club[1]))
     elif args.search:
@@ -824,7 +995,7 @@ def main():
         print(f"  {len(namen)} unieke clubs\n")
         los_clubs_op(namen)
     else:
-        koppel_alles()
+        koppel_alles(args.ververs)
 
 
 if __name__ == "__main__":
