@@ -372,3 +372,23 @@ De koppeling die er toch al lag lost het op. `transfermarkt_sync.py` schrijft nu
 per wedstrijd het bijbehorende Sofascore-ID mee als `sofascore_id`, als herkomst
 en niet als sleutel, en het dashboard bouwt zijn verzameling uit beide nummers.
 Een wedstrijd zonder koppeling krijgt het veld niet en valt netjes weg.
+
+## De wedstrijd die alleen in de export bestond
+
+`data/dashboard_data.json` telt 180 wedstrijden, `data/selected_matches.json`
+179. Het verschil is NEC Nijmegen - PSV van 13 maart 2011, met stand, stadion,
+scheidsrechter, doelpunten, kaarten, wissels en opstelling — compleet, alleen
+niet in de selectie. Hoe dat zo gekomen is weet niemand meer.
+
+Dat is geen schoonheidsfout. De export leest de selectie, dus de eerstvolgende
+keer dat er geëxporteerd wordt, wordt die wedstrijd overschreven door een
+bestand waar hij niet in staat. Zonder melding, zonder spoor, en alleen te
+merken door vooraf te weten dat hij er hoorde te zijn.
+
+`transfermarkt_map.py` koppelt nu de vereniging van beide bestanden: de selectie
+plus wat alleen in de export staat. De aanvulling wordt genoemd bij elke run —
+stilzwijgend bijtrekken is precies hoe hij zoekraakte. `--zelftest` rekent de
+aanvulling na op zeven gevallen (leeg, gelijk, een wees, dezelfde wees dubbel,
+een record zonder id, een lege selectie) en raakt het netwerk niet.
+
+Praktisch betekent dit één speelschema extra ophalen: PSV in 2010/11.

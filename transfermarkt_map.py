@@ -52,6 +52,7 @@ from transfermarkt_poc import (BASE, HEADERS, _IMPERSONATE, _datum_nl, _http,
 
 SELECTED = Path("data/selected_matches.json")
 CLUB_MAP = Path("data/tm_club_map.json")
+DASHBOARD = Path("data/dashboard_data.json")
 MATCH_MAP = Path("data/tm_match_map.json")
 UITGESTELD = Path("data/tm_uitgesteld.json")
 
@@ -530,10 +531,50 @@ def zet_club(naam: str, club_id: int):
     print(f"  ✓ {naam!r} → {club_id} vastgelegd in {CLUB_MAP}")
 
 
-def koppel_alles():
-    """Koppelt elke wedstrijd in selected_matches.json aan een TM-match-ID."""
+def extra_uit_export(matches: list[dict], export: list[dict]) -> list[dict]:
+    """Wat staat er in de dashboard-export dat niet in de selectie staat?"""
+    bekend = {m.get("id") for m in matches if m.get("id") is not None}
+    gezien, extra = set(), []
+    for m in export:
+        mid = m.get("id")
+        # Zonder id valt een wedstrijd nergens aan te koppelen, en dan hoort
+        # hij ook hier niet ongemerkt binnen te glippen.
+        if mid is None or mid in bekend or mid in gezien:
+            continue
+        gezien.add(mid)
+        extra.append(m)
+    return extra
+
+
+def te_koppelen_wedstrijden() -> list[dict]:
+    """
+    De wedstrijden die gekoppeld moeten worden: selected_matches.json, plus wat
+    alleen nog in de dashboard-export zit.
+
+    Die twee horen gelijk te lopen en doen dat niet. NEC - PSV van 13 maart 2011
+    staat wel in de export en niet in de selectie. Hoe dat zo gekomen is doet er
+    niet meer toe; wat telt is dat de volgende export de selectie als bron neemt
+    en die wedstrijd dan zonder één melding verdwijnt. De export is het
+    feitelijke register van wat er gezien is, dus telt hij mee — en wordt
+    gemeld, want stilzwijgend bijtrekken is precies hoe hij zoekraakte.
+    """
     matches = json.loads(SELECTED.read_text("utf-8"))
     print(f"  {len(matches)} wedstrijden in {SELECTED}")
+    if not DASHBOARD.exists():
+        return matches
+    export = json.loads(DASHBOARD.read_text("utf-8")).get("matches") or []
+    extra = extra_uit_export(matches, export)
+    if extra:
+        print(f"  {len(extra)} staan alleen in {DASHBOARD} en tellen mee:")
+        for m in extra:
+            print(f"    {m.get('date', '?')}  {m['home_team']['name']} - "
+                  f"{m['away_team']['name']}")
+    return matches + extra
+
+
+def koppel_alles():
+    """Koppelt elke geziene wedstrijd aan een TM-match-ID."""
+    matches = te_koppelen_wedstrijden()
 
     # Stap 1: welke (club, seizoen)-paren moeten opgehaald worden?
     paren = {}
@@ -705,6 +746,45 @@ def koppel_alles():
           f"({100 * len(mapping) // len(matches)}%)")
 
 
+# ─── Zelftest ────────────────────────────────────────────────────────────────
+
+def _w(mid, thuis="NEC Nijmegen", uit="PSV Eindhoven", datum="2011-03-13"):
+    return {"id": mid, "date": datum,
+            "home_team": {"name": thuis}, "away_team": {"name": uit}}
+
+
+def zelftest() -> int:
+    """Rekent na of de export-aanvulling precies de wezen oplevert."""
+    gevallen = [
+        ("lege export levert niets",
+         [_w(1), _w(2)], [], []),
+        ("export gelijk aan de selectie levert niets",
+         [_w(1), _w(2)], [_w(1), _w(2)], []),
+        ("een wees in de export telt mee",
+         [_w(1)], [_w(1), _w(9)], [9]),
+        ("dezelfde wees twee keer telt één keer",
+         [_w(1)], [_w(9), _w(9)], [9]),
+        ("een record zonder id blijft buiten",
+         [_w(1)], [_w(None), _w(9)], [9]),
+        ("lege selectie neemt de hele export over",
+         [], [_w(4), _w(5)], [4, 5]),
+        ("een selectie-record zonder id maakt niets bekend",
+         [_w(None)], [_w(7)], [7]),
+    ]
+    fout = 0
+    for naam, selectie, export, verwacht in gevallen:
+        uit = [m["id"] for m in extra_uit_export(selectie, export)]
+        goed = uit == verwacht
+        print(f"  {'ok  ' if goed else 'FOUT'} {naam}")
+        if not goed:
+            print(f"       verwacht {verwacht}, kreeg {uit}")
+            fout += 1
+    print("\n  alles goed" if not fout else f"\n  {fout} fout")
+    return 1 if fout else 0
+
+
+# ─── CLI ─────────────────────────────────────────────────────────────────────
+
 def main():
     p = argparse.ArgumentParser(description="Koppel wedstrijden aan Transfermarkt-ID's")
     g = p.add_mutually_exclusive_group(required=True)
@@ -716,9 +796,14 @@ def main():
                    help="test welke URL het speelschema levert")
     g.add_argument("--set-club", nargs=2, metavar=("NAAM", "ID"),
                    help="leg een clubkoppeling handmatig vast")
+    g.add_argument("--zelftest", action="store_true",
+                   help="reken de export-aanvulling na, zonder netwerk")
     p.add_argument("--season", type=int, help="seizoen (startjaar)")
     p.add_argument("--dump", help="map om opgehaalde HTML in te bewaren")
     args = p.parse_args()
+
+    if args.zelftest:
+        raise SystemExit(zelftest())
 
     if args.set_club:
         zet_club(args.set_club[0], int(args.set_club[1]))
@@ -734,7 +819,7 @@ def main():
             sys.exit("  --fixtures vereist ook --season <startjaar>")
         speelschema(args.fixtures, args.season, toon=True)
     elif args.clubs:
-        matches = json.loads(SELECTED.read_text("utf-8"))
+        matches = te_koppelen_wedstrijden()
         namen = sorted({m.get("source_team") or m["home_team"]["name"] for m in matches})
         print(f"  {len(namen)} unieke clubs\n")
         los_clubs_op(namen)
