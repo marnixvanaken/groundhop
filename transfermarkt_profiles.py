@@ -540,9 +540,18 @@ def main():
                 samengevoegd[k] = v
         samen.append(samengevoegd)
 
+    # Twee getallen die niet hetzelfde tellen: hoeveel spelers een profiel hébben,
+    # en hoeveel er een geboortedatum in staat. Bij een enkeling noemt Transfermarkt
+    # die niet. Zet je ze op één regel, dan klopt de aftrekking niet en gaat een
+    # lezer een fout zoeken die er niet is.
+    opgehaald = len(samen) - zonder
     met_profiel = [s for s in samen if s.get("date_of_birth")]
-    print(f"\n  {len(met_profiel)} van {len(samen)} spelers met profiel"
+    print(f"\n  {opgehaald} van {len(samen)} spelers met profiel"
           f"{f', {zonder} nog zonder' if zonder else ''}")
+    if len(met_profiel) != opgehaald:
+        ontbreekt = opgehaald - len(met_profiel)
+        print(f"  daarvan {len(met_profiel)} met geboortedatum; "
+              f"bij {ontbreekt} noemt Transfermarkt die niet")
 
     controleer(met_profiel)
 
