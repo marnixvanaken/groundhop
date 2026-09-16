@@ -186,7 +186,20 @@ def main():
 
     rapporteer(records, mapping, origineel)
 
-    schoon = [{k: v for k, v in r.items() if not k.startswith("_")} for r in records]
+    # Het zoektabblad in het dashboard zoekt bij Sofascore en markeert een
+    # resultaat als "al opgeslagen" door het event-ID te vergelijken met de
+    # opgeslagen wedstrijden. Een Transfermarkt-record draagt een TM-ID, dus dat
+    # zou na de overstap op niets meer matchen en zou elke wedstrijd die je al
+    # hebt opnieuw aanbieden. De koppeling die we toch al hebben lost dat op:
+    # we schrijven het Sofascore-ID mee, als herkomst, niet als sleutel.
+    tm_naar_sofa = {str(v["tm_match_id"]): int(k) for k, v in mapping.items()}
+    schoon = []
+    for r in records:
+        rec = {k: v for k, v in r.items() if not k.startswith("_")}
+        sofa = tm_naar_sofa.get(str(r["id"]))
+        if sofa is not None:
+            rec["sofascore_id"] = sofa
+        schoon.append(rec)
     UITVOER.write_text(json.dumps(schoon, ensure_ascii=False, indent=2), "utf-8")
     print(f"\n  ✓ {UITVOER} geschreven ({len(schoon)} wedstrijden)")
     print(f"    {SELECTED} is ongewijzigd — vergelijk eerst, vervang daarna.")

@@ -334,3 +334,41 @@ python3 transfermarkt_poc.py --match <id> --dump html_dump/
 ```
 
 en bekijk of er `GEMIST`-regels verschijnen.
+
+## Het dashboard ontdaan van wat Transfermarkt niet levert
+
+Sofascore gaf per speler een cijfer, een xG en een rij aanvallende en
+verdedigende tellingen. Transfermarkt geeft die niet, en gaat ze ook niet geven.
+Een hokje dat voor altijd `—` toont is geen lege waarde maar een verbroken
+belofte: het zegt de lezer dat er een getal hóórt te staan. Daarom zijn ze uit
+`dashboard.html` gehaald in plaats van leeg gelaten.
+
+Weg zijn: het cijferbadge (`RatingBadge`) met zijn kleurschaal, de sorteringen
+op cijfer en op xG, het cijferblok in het spelersprofiel, de xG per wedstrijd,
+en acht statistiekhokjes — xG, passnauwkeurigheid, schoten, schoten op doel,
+duels gewonnen en verloren, tackles en intercepties. De opmaakhulpjes `fXg`,
+`fRating` en `rBg` hadden daarna geen werk meer.
+
+Wat overblijft in het profiel komt uit de opstelling en het wedstrijdverslag —
+basis, invaller, bank, minuten, goals, assists, geel, rood — en dat levert
+Transfermarkt wél, voor alle 164 wedstrijden in plaats van de twee waarvoor
+Sofascore doelpunten had.
+
+Een paar velden stonden al nergens in beeld: `key_passes`, `fouls_committed`,
+`team_stats`, `shotmap` en het record `highest_xg_match` werden wel geëxporteerd
+maar nooit getoond. Die zijn met rust gelaten; ze verdwijnen vanzelf met de
+bron.
+
+## "Al opgeslagen" vergeleek nummers uit twee verschillende stelsels
+
+Het zoektabblad zoekt bij Sofascore en zet achter een resultaat dat je al hebt
+`al opgeslagen`, door het event-ID te vergelijken met de opgeslagen wedstrijden
+(`dashboard.html`, `reloadSavedIds`). Een uit Transfermarkt gehaalde wedstrijd
+draagt een TM-ID. Na de overstap zou die vergelijking dus op niets meer matchen
+en zou het dashboard elke wedstrijd die je al hebt opnieuw als nieuw aanbieden —
+stil, zonder foutmelding, en alleen te merken door het te weten.
+
+De koppeling die er toch al lag lost het op. `transfermarkt_sync.py` schrijft nu
+per wedstrijd het bijbehorende Sofascore-ID mee als `sofascore_id`, als herkomst
+en niet als sleutel, en het dashboard bouwt zijn verzameling uit beide nummers.
+Een wedstrijd zonder koppeling krijgt het veld niet en valt netjes weg.

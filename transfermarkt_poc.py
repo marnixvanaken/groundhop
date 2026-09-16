@@ -1273,19 +1273,26 @@ def probe_player(pid: int, dump_naar: Path | None = None):
 
 # ─── Wat Transfermarkt structureel NIET heeft ────────────────────────────────
 
+# De derde kolom zegt waar het veld stónd toen de migratie begon, en wat ermee
+# gebeurd is. "verwijderd" betekent: uit dashboard.html gehaald, want het veld
+# bestaat niet op Transfermarkt en er viel dus niets meer te vullen — een hokje
+# dat eeuwig "—" toont is geen informatie maar een belofte die niet nagekomen
+# wordt. De velden die al nergens in beeld stonden zijn ongemoeid gelaten; die
+# zitten alleen in de Sofascore-export en verdwijnen vanzelf met de bron.
 ONTBREEKT_OP_TM = [
-    ("avg_rating",          "1855 spelers (62%)", "10 render-plekken + RatingBadge"),
-    ("xg_total / xg",       "522 spelers (17%)",  "6 plekken + record highest_xg_match"),
-    ("total_shots",         "1011 spelers (34%)", "PlayerDetail"),
-    ("shots_on_target",     "1011 spelers (34%)", "PlayerDetail"),
-    ("pass_accuracy_pct",   "—",                  "PlayerDetail"),
+    ("avg_rating",          "1855 spelers (62%)", "kaart, profiel, sortering — verwijderd"),
+    ("xg_total / xg",       "522 spelers (17%)",  "kaart, profiel, sortering — verwijderd"),
+    ("total_shots",         "1011 spelers (34%)", "PlayerDetail — verwijderd"),
+    ("shots_on_target",     "1011 spelers (34%)", "PlayerDetail — verwijderd"),
+    ("pass_accuracy_pct",   "—",                  "PlayerDetail — verwijderd"),
     ("key_passes",          "—",                  "alleen in data"),
-    ("tackles",             "—",                  "PlayerDetail"),
-    ("interceptions",       "—",                  "PlayerDetail"),
-    ("duels_won / lost",    "—",                  "PlayerDetail"),
+    ("tackles",             "—",                  "PlayerDetail — verwijderd"),
+    ("interceptions",       "—",                  "PlayerDetail — verwijderd"),
+    ("duels_won / lost",    "—",                  "PlayerDetail — verwijderd"),
     ("fouls_committed",     "—",                  "alleen in data"),
-    ("team_stats",          "180 wedstrijden",    "balbezit e.d."),
-    ("shotmap",             "—",                  "niet in dashboard"),
+    ("team_stats",          "180 wedstrijden",    "alleen in data"),
+    ("highest_xg_match",    "record",             "alleen in data"),
+    ("shotmap",             "—",                  "alleen in data"),
 ]
 
 
@@ -1293,7 +1300,7 @@ def toon_gat():
     print(f"\n{'=' * 78}")
     print("  STRUCTUREEL GAT — deze velden bestaan niet op Transfermarkt")
     print(f"{'=' * 78}")
-    print(f"  {'veld':<22} {'dekking nu':<20} gebruikt in")
+    print(f"  {'veld':<22} {'dekking nu':<20} stond in het dashboard")
     print(f"  {'-' * 22} {'-' * 20} {'-' * 30}")
     for veld, dekking, waar in ONTBREEKT_OP_TM:
         print(f"  {veld:<22} {dekking:<20} {waar}")

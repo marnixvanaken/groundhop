@@ -126,14 +126,11 @@ const MND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','de
 const fDate=d=>{if(!d)return'';const[y,m,day]=d.split('-');return`${parseInt(day)} ${MND[parseInt(m)-1]} ${y}`;};
 const fAge=(y,d)=>`${y}j ${d}d`;
 const fNum=n=>n!=null?n.toLocaleString('nl-NL'):'—';
-const fXg=n=>n!=null?parseFloat(n).toFixed(2):'—';
-const fRating=n=>n?parseFloat(n).toFixed(1):'—';
 const fMarket=v=>{if(!v)return'—';if(v>=1000000)return`€${(v/1000000).toFixed(1).replace('.0','')}M`;if(v>=1000)return`€${Math.round(v/1000)}K`;return`€${v}`;};
 const pImg=id=>`/img/player/${id}`;
 const tImg=id=>`/img/team/${id}`;
 const FLAG_FIX={'en':'gb-eng','sx':'gb-sct','nx':'gb-nir','wl':'gb-wls','wa':'gb-wls'};
 const fFlag=a2=>{if(!a2)return null;const c=FLAG_FIX[a2.toLowerCase()]||a2.toLowerCase();return`https://flagcdn.com/w40/${c}.png`;};
-const rBg=r=>{if(!r)return T.bg4;const v=parseFloat(r);return v>=8.5?'#248a3d':v>=7.5?'#34c759':v>=6.5?'#ff9f0a':'#ff3b30';};
 const goalLabel=t=>t==='penalty'?' (pen)':t==='ownGoal'?' (eg)':'';
 const posLabel={G:'Keeper',D:'Verdediger',M:'Middenvelder',F:'Aanvaller'};
 
@@ -312,11 +309,6 @@ function StatBox({label,value,color,sub}){
     <div style=${{fontSize:10,color:T.muted,marginTop:3,textTransform:'uppercase',letterSpacing:'0.06em'}}>${label}</div>
     ${sub&&html`<div style=${{fontSize:11,color:T.muted,marginTop:2}}>${sub}</div>`}
   </div>`;
-}
-
-function RatingBadge({rating}){
-  if(!rating)return null;
-  return html`<div style=${{background:rBg(rating),color:'#fff',borderRadius:10,padding:'3px 9px',fontSize:13,fontWeight:800,flexShrink:0}}>${fRating(rating)}</div>`;
 }
 
 function SectionTitle({children,right,icon}){
@@ -887,7 +879,7 @@ function MiniMatchRow({match:m}){
 // ─── TAB: SPELERS ──────────────────────────────────────────────────────────
 const SORTS=[
   {k:'matches_seen',l:'Gezien'},{k:'goals',l:'Doelpunten'},{k:'assists',l:'Assists'},
-  {k:'xg_total',l:'xG'},{k:'avg_rating',l:'Cijfer'},{k:'minutes_played',l:'Minuten'},
+  {k:'minutes_played',l:'Minuten'},
   {k:'yellow_cards',l:'Geel'},{k:'red_cards',l:'Rood'},{k:'age_asc',l:'Jongste'},{k:'age_desc',l:'Oudste'},
   {k:'age_span',l:'Spanne'},{k:'clubs',l:'Clubs'},{k:'height_desc',l:'Grootste'},{k:'height_asc',l:'Kleinste'},
   {k:'max_transfer_fee',l:'Transfersom'},{k:'national_team_caps',l:'Interlands'},
@@ -1006,8 +998,6 @@ function PlayerCard({player:p,onClick,rank,sort}){
   const lead=(()=>{
     if(sort==='goals') return{val:p.goals||0,lbl:'goals',color:T.green};
     if(sort==='assists') return{val:p.assists||0,lbl:'assists',color:T.blue};
-    if(sort==='xg_total') return{val:fXg(p.xg_total),lbl:'xG',color:T.orange};
-    if(sort==='avg_rating') return{val:fRating(p.avg_rating),lbl:'cijfer',color:rBg(p.avg_rating)};
     if(sort==='minutes_played') return{val:fNum(p.minutes_played),lbl:'min',color:T.teal};
     if(sort==='yellow_cards') return{val:p.yellow_cards||0,lbl:'geel',color:T.yellow};
     if(sort==='red_cards') return{val:p.red_cards||0,lbl:'rood',color:T.red};
@@ -1060,7 +1050,6 @@ function PlayerCard({player:p,onClick,rank,sort}){
       <div style=${{fontSize:11,color:T.muted,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${(p.teams_seen_for||[]).join(' · ')}${pos?` · ${pos}`:''}</div>
       <div style=${{display:'flex',gap:6,marginTop:5,alignItems:'center',flexWrap:'nowrap',overflow:'hidden'}}>
         ${apps.length>0&&html`<span style=${{fontSize:10,color:T.dim}}>${apps.join(' · ')}</span>`}
-        ${p.avg_rating&&sort!=='avg_rating'&&html`<${RatingBadge} rating=${p.avg_rating} />`}
         ${(p.goals||0)>0&&sort!=='goals'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:700}}>${p.goals}G</span>`}
         ${(p.assists||0)>0&&sort!=='assists'&&html`<span style=${{fontSize:10,color:T.blue,fontWeight:700}}>${p.assists}A</span>`}
         ${p.height_cm&&(sort==='height_desc'||sort==='height_asc')&&html`<span style=${{fontSize:10,color:T.dim}}>${p.height_cm}cm</span>`}
@@ -1098,10 +1087,6 @@ function PlayerDetail({player:p,onBack}){
           </div>`}
           <div style=${{fontSize:12,color:T.dim,marginTop:2}}>${(p.teams_seen_for||[]).length} club${(p.teams_seen_for||[]).length!==1?'s':''}: ${(p.teams_seen_for||[]).join(', ')}</div>
         </div>
-        ${p.avg_rating&&html`<div style=${{background:rBg(p.avg_rating),borderRadius:10,padding:'8px 12px',textAlign:'center',flexShrink:0}}>
-          <div style=${{fontSize:22,fontWeight:800,color:'#fff'}}>${fRating(p.avg_rating)}</div>
-          <div style=${{fontSize:9,color:'rgba(255,255,255,0.8)',textTransform:'uppercase'}}>Cijfer</div>
-        </div>`}
       </div>
     </${Card}>
 
@@ -1113,14 +1098,6 @@ function PlayerDetail({player:p,onBack}){
         <${StatBox} label="Minuten" value=${fNum(p.minutes_played)} />
         <${StatBox} label="Goals" value=${p.goals} color=${T.green} />
         <${StatBox} label="Assists" value=${p.assists} color=${T.blue} />
-        <${StatBox} label="xG" value=${fXg(p.xg_total)} color=${T.orange} />
-        <${StatBox} label="Passes%" value=${p.pass_accuracy_pct?`${Math.round(p.pass_accuracy_pct)}%`:'—'} />
-        <${StatBox} label="Schoten" value=${p.total_shots||0} />
-        <${StatBox} label="Op doel" value=${p.shots_on_target||0} color=${T.green} />
-        <${StatBox} label="Duels W" value=${p.duels_won||0} color=${T.blue} />
-        <${StatBox} label="Duels V" value=${p.duels_lost||0} color=${T.red} />
-        <${StatBox} label="Tackles" value=${p.tackles||0} />
-        <${StatBox} label="Intercept" value=${p.interceptions||0} />
         <${StatBox} label="Geel" value=${p.yellow_cards||0} color=${T.yellow} />
         <${StatBox} label="Rood" value=${p.red_cards||0} color=${T.red} />
       </div>
@@ -1162,12 +1139,9 @@ function PlayerDetail({player:p,onBack}){
       <${SectionTitle} icon="list" right=${`${details.length} duels`}>Per wedstrijd</${SectionTitle}>
       <div style=${{display:'flex',flexDirection:'column',gap:6}}>
         ${details.map(d=>html`<div key=${d.match_id} style=${{background:T.bg3,borderRadius:10,padding:'10px 12px'}}>
-          <div style=${{display:'flex',gap:8,justifyContent:'space-between',alignItems:'flex-start'}}>
-            <div style=${{flex:1,minWidth:0}}>
-              <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${d.match_label}</div>
-              <div style=${{fontSize:11,color:T.muted}}>${fDate(d.date)} · ${d.starter?'Basisspeler':(`invaller ${d.minutes}'`)}</div>
-            </div>
-            <${RatingBadge} rating=${d.rating} />
+          <div style=${{minWidth:0}}>
+            <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${d.match_label}</div>
+            <div style=${{fontSize:11,color:T.muted}}>${fDate(d.date)} · ${d.starter?'Basisspeler':(`invaller ${d.minutes}'`)}</div>
           </div>
           <div style=${{display:'flex',gap:10,marginTop:6,fontSize:12,flexWrap:'wrap'}}>
             ${d.goals>0&&html`<span style=${{color:T.green,display:'flex',alignItems:'center',gap:3}}><${Icon} name="ball" size=${12} color=${T.green} sw=${2}/> ${d.goals}</span>`}
@@ -1175,7 +1149,6 @@ function PlayerDetail({player:p,onBack}){
             ${d.yellow>0&&html`<span style=${{display:'inline-flex',alignItems:'center',gap:3}}><div style=${{width:8,height:12,background:T.yellow,borderRadius:1.5,flexShrink:0}}></div></span>`}
             ${d.red>0&&html`<span style=${{display:'inline-flex',alignItems:'center',gap:3}}><div style=${{width:8,height:12,background:T.red,borderRadius:1.5,flexShrink:0}}></div></span>`}
             ${d.minutes>0&&html`<span style=${{color:T.dim,display:'flex',alignItems:'center',gap:3}}><${Icon} name="clock" size=${12} color=${T.dim}/> ${d.minutes}'</span>`}
-            ${d.xg>0&&html`<span style=${{color:T.orange}}>xG ${fXg(d.xg)}</span>`}
             ${d.age_years>0&&html`<span style=${{color:T.dim}}>(${fAge(d.age_years,d.age_days)})</span>`}
           </div>
         </div>`)}
@@ -1831,7 +1804,14 @@ function App(){
 
   // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
   const reloadSavedIds=useCallback(()=>{
-    apiFetch('/data/selected_matches.json').then(ms=>{if(ms)setSavedIds(new Set(ms.map(m=>m.id)));});
+    // Een wedstrijd kan onder twee nummers bekend zijn: het eigen id van de
+    // bron waaruit hij komt, en — bij een uit Transfermarkt gehaalde wedstrijd —
+    // het Sofascore-id van de koppeling. Het zoektabblad zoekt bij Sofascore,
+    // dus zonder dat tweede nummer zou het elke al opgehaalde wedstrijd
+    // opnieuw als nieuw aanbieden.
+    apiFetch('/data/selected_matches.json').then(ms=>{
+      if(ms)setSavedIds(new Set(ms.flatMap(m=>[m.id,m.sofascore_id]).filter(id=>id!=null)));
+    });
   },[]);
 
   const handleCountryClick=useCallback((a2)=>{
