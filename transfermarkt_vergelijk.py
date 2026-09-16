@@ -3,27 +3,30 @@
 Transfermarkt vergelijk — leg de nieuwe export naast de oude, record voor record
 ================================================================================
 
-transfermarkt_dashboard.py telt aan het eind op hoeveel wedstrijden, spelers en
-stadions er in beide bestanden zitten. Dat zegt of de aantallen kloppen, niet of
-de inhoud klopt. 165 wedstrijden kunnen er 165 zijn met de verkeerde uitslagen.
+De eerste versie van deze module noemde 1020 punten om naar te kijken. Bijna
+allemaal onzin: 'Gofferstadion' tegen 'Goffertstadion', 'PSV Eindhoven' tegen
+'PSV', 'Eredivisie 10/11' tegen 'Eredivisie 2010/11'. Twee bronnen die dezelfde
+wedstrijd beschrijven spellen alles anders — dat is geen tegenspraak, dat is
+vertaling. En de regel "niets mag omhoog" klopte niet: de oude export mist bij
+179 van de 180 wedstrijden de opstelling, dus zijn de minuten daar onvolledig.
+Méér minuten in de nieuwe data is winst, geen dubbeltelling.
 
-Deze module legt de twee exports record voor record naast elkaar en zoekt naar
-het enige wat echt fout kan zijn: een wedstrijd die in beide bestanden staat maar
-waar de twee bronnen het oneens zijn. Een andere uitslag, een ander stadion, een
-andere scheidsrechter. Dat is geen migratie meer, dat is een fout — in de oude
-data of in de nieuwe, maar een van de twee heeft het mis.
+Wat overblijft is wél de moeite waard, en deze module scheidt het in vieren:
 
-Wat géén fout is, en apart wordt gerapporteerd:
+  1. TEGENSPRAAK — dezelfde wedstrijd, een andere datum of een andere uitslag.
+     Hier kan maar één van de twee gelijk hebben. Dit zijn de enige regels waar
+     je echt naar moet kijken.
 
-  * de 15 wedstrijden uit data/tm_uitgesteld.json staan alleen in de oude export.
-    Dat is bekend en bewust. De module vinkt ze af tegen dat bestand, zodat een
-    wedstrijd die om een ándere reden verdwijnt niet in die stapel wegvalt.
-  * de spelers, stadions en clubs die alleen bij die 15 wedstrijden hoorden.
-  * lagere aantallen in de nieuwe export. Minder wedstrijden is minder van alles.
+  2. VERTALING — dezelfde zaak, een andere naam. Afgeleid uit de gekoppelde
+     wedstrijden zelf: als in wedstrijd X het stadion vroeger 'Gofferstadion'
+     heette en nu 'Goffertstadion', dan is dat één naamwissel, geen fout. Wat
+     hier wél opvalt: een oude naam die in twee nieuwe namen uiteenvalt.
 
-Eén regel geldt overal: de nieuwe export is een deelverzameling van de oude, dus
-niets mag omhóóg. Een speler met meer doelpunten in 165 wedstrijden dan in 180
-telt iets dubbel. Die regel vangt meer dan een steekproef ooit zou vangen.
+  3. DEKKING — wat de nieuwe bron erbij heeft, en wat hij kwijtraakt.
+
+  4. SPELERS — hoeveel er vervallen, hoeveel erbij komen, en of de doelpunten
+     van de spelers optellen tot de eindstanden. Dat laatste is de echte proef
+     op de som: een export waarin die twee niet kloppen telt iets verkeerd.
 
 Deze module schrijft niets. Hij leest twee bestanden en praat.
 
@@ -38,6 +41,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from collections import defaultdict
 from pathlib import Path
 
 OUD = Path("data/dashboard_data.json")
@@ -89,9 +93,8 @@ def koppel_wedstrijden(oud: list[dict], nieuw: list[dict]) -> tuple[list, list, 
 
 
 def koppel_op_naam(oud: list[dict], nieuw: list[dict]) -> tuple[list, list, list]:
-    """Voor spelers, stadions, clubs en scheidsrechters. De ids verschillen per
-    bron, de namen niet — op één ding na: dezelfde naam kan twee mensen zijn.
-    Dubbele namen koppelen op volgorde, en worden apart geteld."""
+    """Voor spelers. De ids verschillen per bron, de namen niet — op één ding na:
+    dezelfde naam kan twee mensen zijn. Dubbele namen koppelen op volgorde."""
     per_naam: dict[str, list] = {}
     for o in oud:
         per_naam.setdefault(o.get("name", ""), []).append(o)
@@ -107,7 +110,7 @@ def koppel_op_naam(oud: list[dict], nieuw: list[dict]) -> tuple[list, list, list
     return paren, alleen_oud, alleen_nieuw
 
 
-# ─── vergelijken ─────────────────────────────────────────────────────────────
+# ─── 1. tegenspraak ──────────────────────────────────────────────────────────
 
 def veld(w: dict, pad: str):
     """Haalt 'venue.name' uit een record, en geeft None als iets onderweg mist."""
@@ -119,46 +122,149 @@ def veld(w: dict, pad: str):
     return huidig
 
 
-# Alleen velden die allebei de bronnen zouden moeten weten. Publiek bijvoorbeeld
-# niet: Transfermarkt geeft dat lang niet altijd, en een ontbrekend publiek is
-# geen tegenspraak.
-WEDSTRIJDVELDEN = [("date", "datum"),
-                   ("home_score", "thuisscore"),
-                   ("away_score", "uitscore"),
-                   ("venue.name", "stadion"),
-                   ("referee.name", "scheidsrechter"),
-                   ("tournament", "toernooi"),
-                   ("season", "seizoen")]
+# Alleen velden waar 'anders' ook echt 'fout' betekent. Een stadionnaam hoort
+# hier niet bij: twee bronnen mogen hetzelfde gebouw anders noemen. Een uitslag
+# niet: 2-1 en 3-1 kunnen niet allebei waar zijn.
+HARDE_VELDEN = [("date", "datum"),
+                ("home_score", "thuisscore"),
+                ("away_score", "uitscore")]
 
 
-def verschillen(o: dict, n: dict) -> list[tuple]:
-    """De velden waar de twee bronnen elkaar tegenspreken.
+def tegenspraak(o: dict, n: dict) -> list[tuple]:
+    """De velden waar de twee bronnen elkaar écht tegenspreken.
 
-    Tegenspreken, niet verschillen: als één van de twee niets weet is dat geen
-    tegenspraak maar een gat, en gaten staan al in het dashboard-rapport.
+    Weet één van de twee het niet, dan is dat een gat en geen tegenspraak;
+    gaten staan in de dekkingstabel.
     """
     uit = []
-    for pad, naam in WEDSTRIJDVELDEN:
+    for pad, naam in HARDE_VELDEN:
         a, b = veld(o, pad), veld(n, pad)
-        if a in (None, "") or b in (None, ""):
+        if a is None or b is None or a == "" or b == "":
             continue
         if a != b:
             uit.append((naam, a, b))
     return uit
 
 
-# Velden die alleen omlaag mogen: de nieuwe export heeft minder wedstrijden.
-OMHOOG_KAN_NIET = ["matches_seen", "goals", "assists", "yellow_cards", "red_cards",
-                   "starter_appearances", "sub_appearances", "minutes_played"]
+# ─── 2. vertaling ────────────────────────────────────────────────────────────
+
+# Namen die per wedstrijd te vergelijken zijn. Verschilt er één, dan is dat een
+# naamwissel — tenzij dezelfde oude naam in twee verschillende nieuwe uiteenvalt.
+NAAMVELDEN = [("venue.name", "stadion"),
+              ("referee.name", "scheidsrechter"),
+              ("tournament", "toernooi"),
+              ("season", "seizoen"),
+              ("home_team.name", "thuisclub"),
+              ("away_team.name", "uitclub")]
 
 
-def gestegen(o: dict, n: dict, velden: list[str]) -> list[tuple]:
-    """Velden die in de nieuwe export hóger zijn dan in de oude."""
+def naamwissels(paren: list[tuple], pad: str) -> dict:
+    """Leidt uit de gekoppelde wedstrijden af hoe namen zijn veranderd.
+
+    Geeft vier groepen terug. 'gesplitst' is de enige verontrustende: dezelfde
+    oude naam wees blijkbaar naar twee verschillende dingen, of de nieuwe bron
+    houdt uit elkaar wat de oude samennam. 'samengevoegd' is meestal juist goed
+    (Amsterdam ArenA en Johan Cruijff ArenA zijn hetzelfde gebouw).
+    """
+    heen: dict[str, set] = defaultdict(set)
+    terug: dict[str, set] = defaultdict(set)
+    for o, n in paren:
+        a, b = veld(o, pad), veld(n, pad)
+        if not a or not b:
+            continue
+        heen[a].add(b)
+        terug[b].add(a)
+
+    gelijk, hernoemd, gesplitst, samengevoegd = [], [], [], []
+    for a, bs in heen.items():
+        if len(bs) > 1:
+            gesplitst.append((a, sorted(bs)))
+        else:
+            b = next(iter(bs))
+            if a == b:
+                gelijk.append(a)
+            elif len(terug[b]) > 1:
+                samengevoegd.append((a, b))
+            else:
+                hernoemd.append((a, b))
+    return {"gelijk": sorted(gelijk), "hernoemd": sorted(hernoemd),
+            "gesplitst": sorted(gesplitst), "samengevoegd": sorted(samengevoegd)}
+
+
+# ─── 3. dekking ──────────────────────────────────────────────────────────────
+
+def gevuld(w: dict, pad: str) -> bool:
+    """Of dit veld iets bevat. Een lege lijst en een lege string tellen niet."""
+    waarde = veld(w, pad)
+    if waarde is None or waarde == "" or waarde == [] or waarde == {}:
+        return False
+    return True
+
+
+DEKKINGSVELDEN = [("venue.name", "stadion"),
+                  ("referee.name", "scheidsrechter"),
+                  ("attendance", "publiek"),
+                  ("goals", "doelpunten"),
+                  ("cards", "kaarten"),
+                  ("substitutions", "wissels"),
+                  ("lineup", "opstelling"),
+                  ("half_time", "ruststand"),
+                  ("round", "ronde")]
+
+
+def dekking(paren: list[tuple]) -> list[tuple]:
+    """Per veld: bij hoeveel gekoppelde wedstrijden staat het in de oude en in
+    de nieuwe export."""
     uit = []
-    for f in velden:
-        a, b = o.get(f), n.get(f)
-        if isinstance(a, (int, float)) and isinstance(b, (int, float)) and b > a:
-            uit.append((f, a, b))
+    for pad, naam in DEKKINGSVELDEN:
+        a = sum(1 for o, _ in paren if gevuld(o, pad))
+        b = sum(1 for _, n in paren if gevuld(n, pad))
+        uit.append((naam, a, b))
+    return uit
+
+
+# ─── 4. spelers ──────────────────────────────────────────────────────────────
+
+def doelpuntsom(export: dict) -> tuple[int, int]:
+    """De doelpunten op twee manieren geteld: uit de eindstanden, en uit de
+    spelers. Die twee horen op de eigen doelpunten na gelijk te zijn — dat is
+    de scherpste controle die er op een export bestaat."""
+    stand = sum((w.get("home_score") or 0) + (w.get("away_score") or 0)
+                for w in export.get("matches") or [])
+    spelers = sum(p.get("goals") or 0 for p in export.get("players") or [])
+    return stand, spelers
+
+
+def eigen_doelpunten(export: dict) -> int:
+    """Telt de doelpuntrecords die als eigen doelpunt gemarkeerd staan. De twee
+    bronnen noemen dat veld anders, dus allebei toetsen."""
+    n = 0
+    for w in export.get("matches") or []:
+        for g in w.get("goals") or []:
+            if g.get("type") == "ownGoal" or g.get("own_goal") is True:
+                n += 1
+    return n
+
+
+BEWEGING = ["goals", "assists", "yellow_cards", "red_cards", "matches_seen"]
+
+
+def beweging(paren: list[tuple]) -> dict:
+    """Per veld: hoeveel spelers gelijk blijven, dalen, stijgen."""
+    uit = {}
+    for f in BEWEGING:
+        gelijk = omlaag = omhoog = 0
+        for o, n in paren:
+            a, b = o.get(f), n.get(f)
+            if not isinstance(a, (int, float)) or not isinstance(b, (int, float)):
+                continue
+            if b == a:
+                gelijk += 1
+            elif b < a:
+                omlaag += 1
+            else:
+                omhoog += 1
+        uit[f] = (gelijk, omlaag, omhoog)
     return uit
 
 
@@ -186,7 +292,9 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
     print(f"\n  {len(paren)} wedstrijden in beide bestanden, "
           f"{len(alleen_oud)} alleen in de oude, {len(alleen_nieuw)} alleen in de nieuwe")
 
-    # ── de wedstrijden die alleen in de oude export staan ──
+    fout = 0
+
+    # ── welke wedstrijden vallen weg ──
     bekend = {u["id"]: u for u in uitgesteld}
     verwacht = [o for o in alleen_oud if o.get("id") in bekend]
     onverwacht = [o for o in alleen_oud if o.get("id") not in bekend]
@@ -196,74 +304,97 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
               f"in {UITGESTELD.name}, met reden:")
         per_reden: dict[str, int] = {}
         for o in verwacht:
-            per_reden[bekend[o["id"]]["reden"]] = per_reden.get(
-                bekend[o["id"]]["reden"], 0) + 1
+            reden = bekend[o["id"]]["reden"]
+            per_reden[reden] = per_reden.get(reden, 0) + 1
         for reden, n in sorted(per_reden.items(), key=lambda x: -x[1]):
             print(f"    {n:>3}× {reden}")
 
     if onverwacht:
+        fout += len(onverwacht)
         print(f"\n  ▼ {meervoud(len(onverwacht), 'wedstrijd verdwijnt', 'wedstrijden verdwijnen')} "
               f"zonder dat {UITGESTELD.name} zegt waarom:")
         toon_lijst([f"{o.get('date')}  {label(o)}" for o in
                     sorted(onverwacht, key=lambda x: x.get("date") or "")], alles)
 
     if alleen_nieuw:
+        fout += len(alleen_nieuw)
         print(f"\n  ▼ {meervoud(len(alleen_nieuw), 'wedstrijd staat', 'wedstrijden staan')} "
               f"alleen in de nieuwe export — die horen er niet bij te komen:")
         toon_lijst([f"{n.get('date')}  {label(n)}" for n in alleen_nieuw], alles)
 
-    # ── de wedstrijden die in allebei staan ──
-    tegenspraak = [(o, n, v) for o, n in paren if (v := verschillen(o, n))]
-    if tegenspraak:
-        print(f"\n  ▼ {len(tegenspraak)} van de {len(paren)} gekoppelde wedstrijden "
-              f"worden door de twee bronnen anders verteld:")
+    # ── 1. tegenspraak ──
+    print(f"\n{'─' * 78}\n  1. TEGENSPRAAK — dezelfde wedstrijd, een andere uitkomst\n{'─' * 78}")
+    print("  Datum en uitslag. Hier kan maar één van de twee bronnen gelijk hebben.")
+    botsing = [(o, n, v) for o, n in paren if (v := tegenspraak(o, n))]
+    if botsing:
+        fout += len(botsing)
+        print(f"\n  ▼ {meervoud(len(botsing), 'wedstrijd', 'wedstrijden')} van de "
+              f"{len(paren)}:")
         regels = []
-        for o, n, v in sorted(tegenspraak, key=lambda x: x[0].get("date") or ""):
+        for o, n, v in sorted(botsing, key=lambda x: x[0].get("date") or ""):
             regels.append(f"{o.get('date')}  {label(o)}")
             regels += [f"  {naam}: {a!r} → {b!r}" for naam, a, b in v]
         toon_lijst(regels, alles)
     else:
-        print(f"\n  ✓ alle {len(paren)} gekoppelde wedstrijden vertellen "
-              f"hetzelfde verhaal: uitslag, stadion, scheidsrechter, toernooi, seizoen")
+        print(f"\n  ✓ alle {len(paren)} gekoppelde wedstrijden hebben dezelfde datum "
+              f"en dezelfde uitslag")
 
-    # ── de doelpunten, op de gekoppelde wedstrijden ──
-    def score(w):
-        h, u = w.get("home_score"), w.get("away_score")
-        return (h + u) if isinstance(h, int) and isinstance(u, int) else 0
-    oud_goals = sum(score(o) for o, _ in paren)
-    nieuw_goals = sum(score(n) for _, n in paren)
-    vink = "✓" if oud_goals == nieuw_goals else "▼"
-    print(f"\n  {vink} doelpunten in de gekoppelde wedstrijden: "
-          f"{oud_goals} oud, {nieuw_goals} nieuw")
+    # ── 2. vertaling ──
+    print(f"\n{'─' * 78}\n  2. VERTALING — dezelfde zaak, een andere naam\n{'─' * 78}")
+    print("  Afgeleid uit de gekoppelde wedstrijden. Een andere spelling is geen fout;")
+    print("  een oude naam die in twee nieuwe uiteenvalt wél.")
+    print(f"\n  {'':<16} {'gelijk':>8} {'hernoemd':>9} {'samengev.':>10} {'gesplitst':>10}")
+    print(f"  {'-' * 16} {'-' * 8} {'-' * 9} {'-' * 10} {'-' * 10}")
+    gesplitst_totaal = []
+    for pad, naam in NAAMVELDEN:
+        g = naamwissels(paren, pad)
+        vink = "▼" if g["gesplitst"] else " "
+        print(f"  {naam:<16} {len(g['gelijk']):>8} {len(g['hernoemd']):>9} "
+              f"{len(g['samengevoegd']):>10} {len(g['gesplitst']):>10} {vink}")
+        for a, bs in g["gesplitst"]:
+            gesplitst_totaal.append(f"{naam}: {a!r} werd {', '.join(repr(b) for b in bs)}")
+        if g["hernoemd"] or g["samengevoegd"]:
+            wissels = ([f"{a!r} → {b!r}" for a, b in g["hernoemd"]] +
+                       [f"{a!r} → {b!r}  (samengevoegd)" for a, b in g["samengevoegd"]])
+            toon_lijst(wissels, alles, wit=6)
 
-    # ── de afgeleide lijsten ──
-    fout = len(onverwacht) + len(alleen_nieuw) + len(tegenspraak)
-    fout += 0 if oud_goals == nieuw_goals else 1
+    if gesplitst_totaal:
+        fout += len(gesplitst_totaal)
+        print(f"\n  ▼ {meervoud(len(gesplitst_totaal), 'naam valt', 'namen vallen')} uiteen "
+              f"— dat is geen spelling maar een andere indeling:")
+        toon_lijst(gesplitst_totaal, alles)
 
-    print(f"\n  ── de afgeleide lijsten ──")
-    for sleutel, naam, velden in (
-            ("players", "spelers", OMHOOG_KAN_NIET),
-            ("venues", "stadions", ["matches_count"]),
-            ("teams_visited", "clubs", ["matches_count", "as_home", "as_away"]),
-            ("referees", "scheidsrechters", ["matches_count"]),
-            ("tournaments", "toernooien", ["matches_count"]),
-            ("seasons", "seizoenen", ["matches_count"])):
-        p, a_oud, a_nieuw = koppel_op_naam(oud.get(sleutel) or [],
-                                           nieuw.get(sleutel) or [])
-        stijgers = [(o, n, g) for o, n in p if (g := gestegen(o, n, velden))]
-        fout += len(a_nieuw) + len(stijgers)
-        staat = (f"{len(p):>5} in beide, {len(a_oud):>4} vervallen, "
-                 f"{len(a_nieuw):>3} nieuw")
-        vink = "✓" if not a_nieuw and not stijgers else "▼"
-        print(f"  {vink} {naam:<16} {staat}")
-        if a_nieuw:
-            print(f"      ▼ nieuw terwijl er niets bij kon komen:")
-            toon_lijst([n.get("name", "?") for n in a_nieuw], alles, wit=8)
-        if stijgers:
-            print(f"      ▼ {len(stijgers)} gestegen in een kleinere dataset:")
-            toon_lijst([f"{o.get('name', '?')}: " +
-                        ", ".join(f"{f} {a}→{b}" for f, a, b in g)
-                        for o, n, g in stijgers], alles, wit=8)
+    # ── 3. dekking ──
+    print(f"\n{'─' * 78}\n  3. DEKKING — wat de nieuwe bron erbij heeft, over dezelfde "
+          f"{len(paren)} wedstrijden\n{'─' * 78}")
+    print(f"  {'':<16} {'Sofascore':>10} {'Transfermarkt':>14}")
+    print(f"  {'-' * 16} {'-' * 10} {'-' * 14}")
+    for naam, a, b in dekking(paren):
+        pijl = "↑" if b > a else ("↓" if b < a else " ")
+        print(f"  {naam:<16} {a:>10} {b:>13} {pijl}")
+
+    # ── 4. spelers ──
+    print(f"\n{'─' * 78}\n  4. SPELERS\n{'─' * 78}")
+    p, a_oud, a_nieuw = koppel_op_naam(oud.get("players") or [],
+                                       nieuw.get("players") or [])
+    print(f"  {len(p)} op naam gekoppeld, {len(a_oud)} vervallen, {len(a_nieuw)} nieuw")
+    print(f"  ({len(a_nieuw)} 'nieuw' hoort bij een wedstrijd die de oude export wel had")
+    print(f"   maar zonder opstelling — daar kende Sofascore de bank niet.)")
+    print(f"\n  {'':<16} {'gelijk':>8} {'lager':>8} {'hoger':>8}")
+    print(f"  {'-' * 16} {'-' * 8} {'-' * 8} {'-' * 8}")
+    for f, (gelijk, omlaag, omhoog) in beweging(p).items():
+        print(f"  {f:<16} {gelijk:>8} {omlaag:>8} {omhoog:>8}")
+
+    print(f"\n  ── tellen de doelpunten op? ──")
+    print(f"  {'':<16} {'eindstanden':>12} {'via spelers':>12} {'eigen doelp.':>13}")
+    print(f"  {'-' * 16} {'-' * 12} {'-' * 12} {'-' * 13}")
+    for naam, export in (("Sofascore", oud), ("Transfermarkt", nieuw)):
+        stand, via = doelpuntsom(export)
+        eigen = eigen_doelpunten(export)
+        klopt = "✓" if stand - eigen == via else "✗"
+        print(f"  {naam:<16} {stand:>12} {via:>12} {eigen:>13}   {klopt}")
+    print(f"  Eindstanden min eigen doelpunten hoort gelijk te zijn aan de som")
+    print(f"  van de spelers. Klopt dat niet, dan mist die export doelpunten.")
 
     print(f"\n{'=' * 78}")
     if fout:
@@ -271,19 +402,21 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
               f"vóór de omwisseling.")
     else:
         print(f"  Geen tegenspraak. De nieuwe export is de oude min de "
-              f"{meervoud(len(verwacht), 'uitgestelde wedstrijd', 'uitgestelde wedstrijden')}.")
+              f"{meervoud(len(verwacht), 'uitgestelde wedstrijd', 'uitgestelde wedstrijden')},"
+              f" in andere bewoordingen.")
     print(f"{'=' * 78}")
     return fout
 
 
 # ─── zelftest ────────────────────────────────────────────────────────────────
 
-def w(mid, datum, thuis, uit, hs, as_, stadion="X", ref="R", sofa=None, toernooi="Eredivisie"):
+def w(mid, datum, thuis, uit, hs, as_, stadion="X", ref="R", sofa=None,
+      toernooi="Eredivisie", seizoen="23/24"):
     r = {"id": mid, "date": datum,
          "home_team": {"name": thuis}, "away_team": {"name": uit},
          "home_score": hs, "away_score": as_,
          "venue": {"name": stadion}, "referee": {"name": ref},
-         "tournament": toernooi, "season": "23/24"}
+         "tournament": toernooi, "season": seizoen}
     if sofa is not None:
         r["sofascore_id"] = sofa
     return r
@@ -311,94 +444,141 @@ def zelftest() -> int:
     toets("twee koppelingen via sofascore_id", len(p), 2)
     toets("de niet-gekoppelde blijft over", [o["id"] for o in ao], [2])
     toets("niets komt er alleen in de nieuwe bij", an, [])
-    toets("de paren horen bij elkaar", [(o["id"], n["id"]) for o, n in p],
-          [(1, 900), (3, 901)])
 
     print("\n── koppelen zonder id ──")
-    # De wedstrijd die alleen in de export bestond: geen sofascore_id, wel
-    # dezelfde datum en dezelfde clubs.
-    p, ao, an = koppel_wedstrijden(oud, [w(902, "2024-02-01", "NEC", "Feyenoord", 0, 0)])
+    p, _, _ = koppel_wedstrijden(oud, [w(902, "2024-02-01", "NEC", "Feyenoord", 0, 0)])
     toets("koppelt alsnog op datum en clubs", [(o["id"], n["id"]) for o, n in p],
           [(2, 902)])
-    p, ao, an = koppel_wedstrijden(oud, [w(903, "2024-02-01", "NEC", "Vitesse", 0, 0)])
+    p, _, an = koppel_wedstrijden(oud, [w(903, "2024-02-01", "NEC", "Vitesse", 0, 0)])
     toets("andere tegenstander koppelt niet", (len(p), len(an)), (0, 1))
-    p, _, _ = koppel_wedstrijden(oud, [w(904, "2024-01-02", "PSV", "Ajax", 2, 1)])
-    toets("andere datum koppelt niet", len(p), 0)
-
-    print("\n── geen twee keer dezelfde ──")
-    # Twee nieuwe records die op dezelfde oude wijzen: de tweede is een dubbele,
-    # geen koppeling. Anders zou een dubbel gekoppelde wedstrijd onzichtbaar zijn.
     p, ao, an = koppel_wedstrijden([w(1, "2024-01-01", "PSV", "Ajax", 2, 1)],
                                    [w(900, "2024-01-01", "PSV", "Ajax", 2, 1, sofa=1),
                                     w(901, "2024-01-01", "PSV", "Ajax", 2, 1, sofa=1)])
-    toets("de tweede wijst nergens heen", (len(p), len(an)), (1, 1))
+    toets("een dubbele nieuwe wijst nergens heen", (len(p), len(an)), (1, 1))
 
-    print("\n── tegenspraak ──")
+    print("\n── tegenspraak: alleen datum en uitslag ──")
     a = w(1, "2024-01-01", "PSV", "Ajax", 2, 1, stadion="Philips", ref="Higler")
-    toets("gelijk is gelijk", verschillen(a, dict(a)), [])
-    toets("een andere uitslag valt op",
-          verschillen(a, {**a, "home_score": 3}), [("thuisscore", 2, 3)])
-    toets("een ander stadion valt op",
-          verschillen(a, {**a, "venue": {"name": "De Kuip"}}),
-          [("stadion", "Philips", "De Kuip")])
-    toets("twee verschillen tegelijk",
-          len(verschillen(a, {**a, "home_score": 3, "referee": {"name": "Nijhuis"}})), 2)
-    toets("een ontbrekende scheidsrechter is een gat, geen tegenspraak",
-          verschillen(a, {**a, "referee": {"name": ""}}), [])
-    toets("een ontbrekend stadion aan de oude kant ook",
-          verschillen({**a, "venue": {}}, a), [])
+    toets("gelijk is gelijk", tegenspraak(a, dict(a)), [])
+    toets("een andere uitslag is tegenspraak",
+          tegenspraak(a, {**a, "home_score": 3}), [("thuisscore", 2, 3)])
+    toets("een andere datum ook",
+          tegenspraak(a, {**a, "date": "2024-01-02"}),
+          [("datum", "2024-01-01", "2024-01-02")])
+    # Dit is de kern van de herziening: een andere stadionnaam is géén fout meer.
+    toets("een ander stadion is geen tegenspraak",
+          tegenspraak(a, {**a, "venue": {"name": "De Kuip"}}), [])
+    toets("een andere toernooinaam evenmin",
+          tegenspraak(a, {**a, "tournament": "Oefeninterlands"}), [])
     toets("0-0 is een uitslag, geen gat",
-          verschillen({**a, "home_score": 0}, {**a, "home_score": 1}),
+          tegenspraak({**a, "home_score": 0}, {**a, "home_score": 1}),
           [("thuisscore", 0, 1)])
+    toets("een ontbrekende uitslag is een gat",
+          tegenspraak({**a, "home_score": None}, a), [])
 
-    print("\n── koppelen op naam ──")
-    p, ao, an = koppel_op_naam(
-        [{"name": "Jan", "goals": 3}, {"name": "Piet", "goals": 1}],
-        [{"name": "Jan", "goals": 2}, {"name": "Kees", "goals": 9}])
-    toets("Jan koppelt", [(o["goals"], n["goals"]) for o, n in p], [(3, 2)])
-    toets("Piet vervalt", [o["name"] for o in ao], ["Piet"])
-    toets("Kees is nieuw", [n["name"] for n in an], ["Kees"])
+    print("\n── vertaling ──")
+    paren = [(w(1, "2024-01-01", "PSV", "Ajax", 1, 0, stadion="Gofferstadion"),
+              w(9, "2024-01-01", "PSV", "Ajax", 1, 0, stadion="Goffertstadion")),
+             (w(2, "2024-02-01", "PSV", "Ajax", 1, 0, stadion="Philips"),
+              w(8, "2024-02-01", "PSV", "Ajax", 1, 0, stadion="Philips"))]
+    g = naamwissels(paren, "venue.name")
+    toets("gelijke naam telt als gelijk", g["gelijk"], ["Philips"])
+    toets("een spelfout telt als hernoemd", g["hernoemd"],
+          [("Gofferstadion", "Goffertstadion")])
+    toets("niets gesplitst", g["gesplitst"], [])
 
-    dubbel = [{"name": "Jan", "goals": 3}, {"name": "Jan", "goals": 5}]
-    p, ao, an = koppel_op_naam(dubbel, [{"name": "Jan", "goals": 3}])
-    toets("van twee naamgenoten koppelt er één", (len(p), len(ao), len(an)), (1, 1, 0))
+    samen = [(w(1, "2024-01-01", "A", "B", 0, 0, stadion="Amsterdam ArenA"),
+              w(9, "2024-01-01", "A", "B", 0, 0, stadion="Johan Cruijff ArenA")),
+             (w(2, "2024-02-01", "A", "B", 0, 0, stadion="Johan Cruijff ArenA"),
+              w(8, "2024-02-01", "A", "B", 0, 0, stadion="Johan Cruijff ArenA"))]
+    g = naamwissels(samen, "venue.name")
+    toets("twee oude namen naar één nieuwe heet samengevoegd",
+          g["samengevoegd"], [("Amsterdam ArenA", "Johan Cruijff ArenA")])
+    toets("de gelijkgebleven naam telt niet dubbel", g["gelijk"],
+          ["Johan Cruijff ArenA"])
 
-    print("\n── stijgen kan niet ──")
-    toets("gelijk is geen stijging",
-          gestegen({"goals": 3}, {"goals": 3}, ["goals"]), [])
-    toets("dalen mag", gestegen({"goals": 3}, {"goals": 1}, ["goals"]), [])
-    toets("stijgen niet", gestegen({"goals": 3}, {"goals": 4}, ["goals"]),
-          [("goals", 3, 4)])
-    toets("een ontbrekend veld telt niet mee",
-          gestegen({"goals": 3}, {}, ["goals", "assists"]), [])
-    toets("tekst telt niet mee",
-          gestegen({"goals": "3"}, {"goals": "9"}, ["goals"]), [])
+    split = [(w(1, "2024-01-01", "A", "B", 0, 0, stadion="De Kuip"),
+              w(9, "2024-01-01", "A", "B", 0, 0, stadion="Stadion Feijenoord")),
+             (w(2, "2024-02-01", "A", "B", 0, 0, stadion="De Kuip"),
+              w(8, "2024-02-01", "A", "B", 0, 0, stadion="Varkenoord"))]
+    g = naamwissels(split, "venue.name")
+    toets("één oude naam naar twee nieuwe heet gesplitst",
+          g["gesplitst"], [("De Kuip", ["Stadion Feijenoord", "Varkenoord"])])
+    toets("een gesplitste naam telt niet als hernoemd", g["hernoemd"], [])
 
-    print("\n── velden uitlezen ──")
-    toets("geneste naam", veld(a, "venue.name"), "Philips")
-    toets("plat veld", veld(a, "date"), "2024-01-01")
-    toets("ontbrekend pad geeft None", veld(a, "venue.city"), None)
-    toets("pad door niets geeft None, geen fout",
-          veld({"venue": None}, "venue.name"), None)
+    leeg = [(w(1, "2024-01-01", "A", "B", 0, 0, stadion=""),
+             w(9, "2024-01-01", "A", "B", 0, 0, stadion="Philips"))]
+    g = naamwissels(leeg, "venue.name")
+    toets("een leeg veld levert geen naamwissel op",
+          (g["gelijk"], g["hernoemd"]), ([], []))
+
+    print("\n── dekking ──")
+    o1 = w(1, "2024-01-01", "A", "B", 0, 0)
+    o1["goals"], o1["lineup"] = [], []
+    n1 = w(9, "2024-01-01", "A", "B", 0, 0)
+    n1["goals"], n1["lineup"] = [{"player": "X"}], [{"player": "Y"}]
+    d = dict((naam, (a, b)) for naam, a, b in dekking([(o1, n1)]))
+    toets("een lege lijst telt niet als gevuld", d["doelpunten"], (0, 1))
+    toets("een gevulde opstelling telt wel", d["opstelling"], (0, 1))
+    toets("een ontbrekend veld telt als leeg", d["publiek"], (0, 0))
+    toets("stadion staat in allebei", d["stadion"], (1, 1))
+
+    print("\n── doelpunten optellen ──")
+    export = {"matches": [{"home_score": 2, "away_score": 1,
+                           "goals": [{"type": "regular"}, {"type": "ownGoal"},
+                                     {"type": "penalty"}]}],
+              "players": [{"name": "A", "goals": 2}]}
+    toets("eindstanden en spelers geteld", doelpuntsom(export), (3, 2))
+    toets("eigen doelpunten herkend uit 'type'", eigen_doelpunten(export), 1)
+    toets("en uit 'own_goal'",
+          eigen_doelpunten({"matches": [{"goals": [{"own_goal": True}]}]}), 1)
+    toets("3 min 1 eigen doelpunt is 2 via de spelers: dat klopt",
+          doelpuntsom(export)[0] - eigen_doelpunten(export), doelpuntsom(export)[1])
+
+    print("\n── beweging ──")
+    b = beweging([({"goals": 3}, {"goals": 3}), ({"goals": 3}, {"goals": 1}),
+                  ({"goals": 3}, {"goals": 4}), ({"goals": 3}, {})])
+    toets("gelijk, lager, hoger apart geteld; ontbrekend telt niet mee",
+          b["goals"], (1, 1, 1))
 
     print("\n── het hele rapport ──")
     oud_export = {"matches": oud,
-                  "players": [{"name": "Jan", "goals": 3, "matches_seen": 3}],
-                  "venues": [{"name": "X", "matches_count": 3}]}
+                  "players": [{"name": "Jan", "goals": 3, "matches_seen": 3}]}
     nieuw_export = {"matches": [w(900, "2024-01-01", "PSV", "Ajax", 2, 1, sofa=1),
                                 w(901, "2024-03-01", "Twente", "AZ", 1, 1, sofa=3)],
-                    "players": [{"name": "Jan", "goals": 2, "matches_seen": 2}],
-                    "venues": [{"name": "X", "matches_count": 2}]}
-    uit = [{"id": 2, "date": "2024-02-01", "reden": "oefenduel — niet in het speelschema"}]
+                    "players": [{"name": "Jan", "goals": 2, "matches_seen": 2}]}
+    uit = [{"id": 2, "date": "2024-02-01", "reden": "oefenduel"}]
     toets("een schone migratie geeft nul punten",
           rapport(oud_export, nieuw_export, uit, alles=True), 0)
+    toets("een wedstrijd die zomaar verdwijnt telt wel",
+          rapport(oud_export, nieuw_export, [], alles=True), 1)
 
-    zonder_reden = rapport(oud_export, nieuw_export, [], alles=True)
-    toets("een wedstrijd die zomaar verdwijnt telt wel", zonder_reden, 1)
+    andere_stand = {**nieuw_export,
+                    "matches": [w(900, "2024-01-01", "PSV", "Ajax", 3, 1, sofa=1),
+                                w(901, "2024-03-01", "Twente", "AZ", 1, 1, sofa=3)]}
+    toets("een andere uitslag telt wel",
+          rapport(oud_export, andere_stand, uit, alles=True), 1)
 
-    stijger = {**nieuw_export,
-               "players": [{"name": "Jan", "goals": 4, "matches_seen": 2}]}
-    toets("een speler die stijgt telt ook", rapport(oud_export, stijger, uit, True), 1)
+    # Elke wedstrijd een eigen stadion: anders wijst de oude naam 'X' straks
+    # naar twee nieuwe namen, en dat is terecht een splitsing.
+    oud_stadions = {"matches": [w(1, "2024-01-01", "PSV", "Ajax", 2, 1, stadion="Philips"),
+                                w(2, "2024-02-01", "NEC", "Feyenoord", 0, 0, stadion="Goffert"),
+                                w(3, "2024-03-01", "Twente", "AZ", 1, 1, stadion="Grolsch")],
+                    "players": []}
+    andere_naam = {"matches": [w(900, "2024-01-01", "PSV", "Ajax", 2, 1, sofa=1,
+                                 stadion="Philips Stadion"),
+                               w(901, "2024-03-01", "Twente", "AZ", 1, 1, sofa=3,
+                                 stadion="Grolsch")],
+                   "players": []}
+    toets("een andere stadionnaam telt niet",
+          rapport(oud_stadions, andere_naam, uit, alles=True), 0)
+
+    twee_kanten = {"matches": [w(900, "2024-01-01", "PSV", "Ajax", 2, 1, sofa=1,
+                                 stadion="Philips Stadion"),
+                               w(901, "2024-03-01", "Twente", "AZ", 1, 1, sofa=3,
+                                 stadion="Philips Stadion")],
+                   "players": []}
+    toets("maar twee stadions die één worden is samenvoegen, ook geen fout",
+          rapport(oud_stadions, twee_kanten, uit, alles=True), 0)
 
     print(f"\n  alles goed ({goed})" if not fout else f"\n  {fout} van {goed + fout} fout")
     return 1 if fout else 0

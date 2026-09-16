@@ -523,59 +523,79 @@ melding bedoeld was:
   zetten geeft één speler een Schotse vlag, en een verkeerde vlag is erger dan
   geen vlag.
 
-## `transfermarkt_vergelijk.py`: de tegenspraak opzoeken, niet de aantallen
+## `transfermarkt_vergelijk.py`: eerst verkeerd gebouwd, toen pas goed
 
-De bouwer telt aan het eind op wat er in beide exports zit: 165 wedstrijden tegen
-180, 2785 spelers tegen 3016. Dat zegt of de aantallen kloppen, niet of de inhoud
-klopt. 165 wedstrijden kunnen er 165 zijn met de verkeerde uitslagen, en geen
-enkele telling zou dat merken.
+De bouwer telt aan het eind op wat er in beide exports zit: 165 wedstrijden
+tegen 180, 2785 spelers tegen 3016. Dat zegt of de aantallen kloppen, niet of de
+inhoud klopt. 165 wedstrijden kunnen er 165 zijn met de verkeerde uitslagen, en
+geen enkele telling zou dat merken.
 
-`transfermarkt_vergelijk.py` legt de twee exports daarom record voor record naast
-elkaar en zoekt naar het enige wat écht fout kan zijn: een wedstrijd die in beide
-bestanden staat, waar de twee bronnen het oneens zijn over de uitslag, het
-stadion, de scheidsrechter, het toernooi of het seizoen. Dat is geen migratie
-meer — dan heeft een van de twee bronnen het mis.
+De eerste versie van de vergelijker legde de twee exports daarom record voor
+record naast elkaar en vergeleek per wedstrijd de uitslag, het stadion, de
+scheidsrechter, het toernooi en het seizoen. Hij meldde **1020 punten om naar te
+kijken**, en daarmee was hij waardeloos. Wat hij vond:
 
-Drie keuzes die het verschil maken tussen een bruikbaar en een luidruchtig
-rapport:
+    stadion: 'Gofferstadion' → 'Goffertstadion'
+    scheidsrechter: 'Jack Van Hulten' → 'Jack van Hulten'
+    seizoen: 'Eredivisie 10/11' → 'Eredivisie 2010/11'
+    toernooi: 'International Friendlies' → 'Oefeninterlands'
 
-- **Koppelen op `sofascore_id`, met de datum als terugval.** De sync schrijft
-  `sofascore_id` mee als herkomst, dus de meeste wedstrijden koppelen daarop. De
-  wedstrijd die alleen in de export bestond heeft dat niet, en koppelt op datum
-  plus beide clubnamen: twee bronnen kunnen andere ids geven aan dezelfde
-  wedstrijd, maar niet een andere datum aan dezelfde twee clubs. Een oude
-  wedstrijd kan maar één keer gekoppeld worden — anders zou een nieuwe wedstrijd
-  die dubbel voorkomt onzichtbaar blijven.
+Dat is geen tegenspraak, dat is vertaling. Twee bronnen die dezelfde wedstrijd
+beschrijven spellen alles anders, en dat had ik moeten verwachten voordat ik
+"velden die allebei de bronnen zouden moeten weten" ging vergelijken. Beide
+bronnen wéten het stadion; ze noemen het alleen anders.
 
-- **Een gat is geen tegenspraak.** Als één van de twee bronnen een veld niet
-  weet, wordt het overgeslagen. Ontbrekende velden staan al in het rapport van de
-  bouwer; ze hier nóg eens melden zou de echte tegenspraken wegdrukken. Publiek
-  staat helemaal niet in de vergelijking: Transfermarkt geeft dat lang niet
-  altijd, en dat is een bekend gat, geen twist.
+De tweede fout zat in de regel "niets mag omhoog". Die leek sterk — de nieuwe
+export heeft vijftien wedstrijden minder, dus is hij een deelverzameling — maar
+hij gaat uit van twee bronnen die even volledig zijn. Dat zijn ze niet: de oude
+export heeft bij 179 van de 180 wedstrijden gèèn opstelling. Sofascore kende de
+bank niet, dus zijn de minuten daar onvolledig. Cody Gakpo die van 2451 naar
+2625 minuten gaat is winst, geen dubbeltelling. Er kwamen 336 "stijgers" uit, en
+alle 336 waren goed nieuws.
 
-- **Niets mag omhóóg.** De nieuwe export is de oude min vijftien wedstrijden, dus
-  is hij een deelverzameling. Een speler met méér doelpunten in 165 wedstrijden
-  dan in 180 telt iets dubbel; een stadion met een hogere `matches_count` ook.
-  Die ene regel — toegepast op spelers, stadions, clubs, scheidsrechters,
-  toernooien en seizoenen — vangt meer dan een steekproef ooit zou vangen, en
-  vraagt geen enkele aanname over hoeveel het precies had moeten zijn.
+### Wat er wél toe doet
+
+De herziene module scheidt vier dingen die niet door elkaar mogen lopen:
+
+1. **Tegenspraak** — alleen de datum en de uitslag. Daar kan maar één van de
+   twee bronnen gelijk hebben. 2-1 en 3-1 kunnen niet allebei waar zijn; De Kuip
+   en Stadion Feijenoord wel.
+
+2. **Vertaling** — dezelfde zaak, een andere naam, afgeleid uit de gekoppelde
+   wedstrijden zelf. Stond in wedstrijd X het stadion vroeger als
+   'Gofferstadion' en nu als 'Goffertstadion', dan is dat één naamwissel en geen
+   165 fouten. De uitkomst is een vertaaltabel in plaats van een foutenlijst, en
+   die is bruikbaar: je ziet in één oogopslag hoe de bronnen elkaars namen
+   schrijven.
+
+   Eén geval is hier wél verdacht: een oude naam die in twéé nieuwe namen
+   uiteenvalt. Dan hield de ene bron uit elkaar wat de andere samennam, of
+   andersom. Twee oude namen die één nieuwe worden is juist goed — Amsterdam
+   ArenA en Johan Cruijff ArenA zijn hetzelfde gebouw.
+
+3. **Dekking** — per veld hoeveel van de gekoppelde wedstrijden het hebben, in
+   de oude en in de nieuwe export. Hier hoort de winst thuis, niet in de
+   foutenlijst.
+
+4. **Spelers** — hoeveel er vervallen, hoeveel erbij komen, en of de doelpunten
+   optellen. Dat laatste is de scherpste controle die er op een export bestaat:
+   de som van de eindstanden min de eigen doelpunten hoort gelijk te zijn aan de
+   som van de doelpunten van alle spelers. De Transfermarkt-export doorstaat die
+   toets (613 − 18 = 595). De Sofascore-export niet: 662 − 17 = 645 tegen 595 via
+   de spelers, een gat van vijftig.
 
 De vijftien uitgestelde wedstrijden worden afgevinkt tegen `tm_uitgesteld.json`,
 niet tegen hun aantal. Zou er een zestiende verdwijnen om een heel andere reden,
 dan valt die niet in die stapel weg maar komt hij er als onverklaard uit.
 
-De module schrijft niets. Hij leest twee bestanden en praat.
-
 ### Zichzelf nagerekend
 
-Naast 31 zelftoetsen is de vergelijker over de échte oude export gehaald, tegen
-zichzelf: 180 van 180 wedstrijden gekoppeld, 3016 van 3016 spelers, nul
-tegenspraken. Dat is de strengste proef die zonder de nieuwe data te doen is,
-en hij liep volledig via de zwakste koppelweg — bij een zelfvergelijking is er
-geen `sofascore_id`, dus alle 180 koppelden op datum plus clubnamen, zonder één
-botsing.
+35 zelftoetsen, waarvan de helft precies over het onderscheid gaat dat de eerste
+versie miste: een ander stadion is géén tegenspraak, een andere uitslag wél; een
+spelfout is hernoemen, twee namen die één worden is samenvoegen, en één naam die
+twee wordt is het enige dat een melding verdient.
 
-Hij bevestigde onderweg ook de onderteling van eerder, zonder daarnaar te
-zoeken: 662 doelpunten volgens de eindstanden, tegen de 653 die als
-`total_goals_witnessed` in het oude bestand staan. Negen doelpunten, precies de
-strafschoppen en eigen doelpunten die de oude teller als één record zag.
+De koppeling zelf is over de échte oude export gehaald, tegen zichzelf: 180 van
+180 wedstrijden gekoppeld, 3016 van 3016 spelers, nul tegenspraken — en dat
+volledig via de zwakste koppelweg, want bij een zelfvergelijking is er geen
+`sofascore_id` en koppelden alle 180 op datum plus clubnamen, zonder één botsing.
