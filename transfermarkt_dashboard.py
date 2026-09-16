@@ -52,7 +52,10 @@ UITVOER = Path("data/dashboard_data_tm.json")
 # verdedigingen en het complete middenveld in de spits.
 POSITIEREGELS = [
     ("G", ("doelman", "keeper", "goalkeeper")),
-    ("D", ("verdediger", "back", "defender", "libero", "vrije verdediger")),
+    # "verdediging" staat er los naast "verdediger": op "verdedig" toetsen zou
+    # korter zijn, maar dan valt "verdedigende middenvelder" ook in deze regel
+    # en staat het halve middenveld achterin.
+    ("D", ("verdediger", "verdediging", "back", "defender", "libero")),
     ("M", ("middenvelder", "midden", "half", "midfield")),
     ("F", ("spits", "aanval", "buiten", "vleugel", "forward", "striker",
            "winger", "attack")),
@@ -101,6 +104,25 @@ def landcodes(html_pad: Path = DASHBOARD_HTML) -> dict[str, str]:
     return {(enkel or dubbel): a2 for a2, enkel, dubbel in paren}
 
 
+# Transfermarkt spelt een handvol landen anders dan de tabel in het dashboard.
+# Dit is geen tweede landenlijst maar een lijst verschillen, opgesteld uit wat
+# de run als onbekend meldde — en dat is precies waar dat rapport voor is.
+#
+# Sint Maarten staat er niet bij en krijgt dus geen vlag. Zijn ISO-code is `sx`,
+# maar in de tabel van het dashboard is `sx` Schotland (zo noemt Sofascore het).
+# Hem toch op `sx` zetten zou één speler een Schotse vlag geven, en een verkeerde
+# vlag is erger dan geen vlag.
+SPELWIJZE = {
+    "Democratische Republiek Congo": "cd",
+    "Republiek Congo": "cg",
+    "Bosnië en Herzegovina": "ba",
+    "Trinidad en Tobago": "tt",
+    "Haiti": "ht",
+    "Wit-Rusland": "by",
+    "Benin": "bj",
+}
+
+
 def alpha2(nationaliteit: str | None, tabel: dict[str, str]) -> str | None:
     """Zoekt de alpha-2-code bij een landnaam, hoofdletterongevoelig."""
     if not nationaliteit:
@@ -108,7 +130,10 @@ def alpha2(nationaliteit: str | None, tabel: dict[str, str]) -> str | None:
     naam = nationaliteit.strip()
     if naam in tabel:
         return tabel[naam]
+    if naam in SPELWIJZE:
+        return SPELWIJZE[naam]
     klein = {k.lower(): v for k, v in tabel.items()}
+    klein.update({k.lower(): v for k, v in SPELWIJZE.items()})
     return klein.get(naam.lower())
 
 
@@ -209,12 +234,14 @@ def tel_clubs(wedstrijden: list[dict]) -> list[dict]:
                 continue
             c = clubs.setdefault(sleutel(t.get("id"), t.get("name")), {
                 "id": t.get("id"), "name": t.get("name", ""),
-                "slug": t.get("slug", ""), "matches_count": 0,
+                "slug": t.get("slug", ""), "logo_url": "", "matches_count": 0,
                 "as_home": 0, "as_away": 0,
             })
             c["matches_count"] += 1
             c[veld] += 1
             c["name"], c["id"] = t.get("name", c["name"]), t.get("id") or c["id"]
+            if t.get("logo_url"):
+                c["logo_url"] = t["logo_url"]
     return sorted(clubs.values(), key=lambda c: (-c["matches_count"], c["name"]))
 
 
@@ -483,9 +510,14 @@ def rapporteer(export: dict, ongewoon: dict):
     met_positie = sum(1 for s in p if s.get("position"))
     met_vlag = sum(1 for s in p if s.get("nationality_alpha2"))
     met_leeftijd = sum(1 for s in p if s.get("youngest_age_seen"))
+    clubs = export["teams_visited"]
+    met_foto = sum(1 for s in p if s.get("photo_url"))
+    met_wapen = sum(1 for c in clubs if c.get("logo_url"))
     print(f"\n  {met_positie} van {len(p)} spelers in een linie (nodig voor de XI)")
     print(f"  {met_vlag} van {len(p)} met een landcode")
     print(f"  {met_leeftijd} van {len(p)} met een leeftijd op de wedstrijddag")
+    print(f"  {met_foto} van {len(p)} met een portretfoto")
+    print(f"  {met_wapen} van {len(clubs)} clubs met een wapen")
 
     for kop, telling, gevolg in (
             ("posities", ongewoon["posities"], "deze spelers vallen buiten de XI"),
@@ -560,10 +592,20 @@ def zelftest() -> int:
             ("Hangende spits", "F"),
             ("Goalkeeper", "G"), ("Centre-Back", "D"), ("Right Winger", "F"),
             ("  SPITS  ", "F"),                 # hoofdletters en spaties
+            ("Verdediging", "D"),            # groepskop, geen aparte positie
+            ("Verdedigende middenvelder", "M"),  # mag niet door "verdedig" heen vallen
             ("Trainer", None), ("", None), (None, None)]:
         toets(f"{ruw!r} → {verwacht}", positieletter(ruw), verwacht)
 
     print("\n── landcode ──")
+    for ruw, verwacht in [("Democratische Republiek Congo", "cd"),
+                          ("Republiek Congo", "cg"),
+                          ("Bosnië en Herzegovina", "ba"),
+                          ("Trinidad en Tobago", "tt"),
+                          ("Wit-Rusland", "by"),
+                          ("Benin", "bj"),
+                          ("Sint Maarten", None)]:
+        toets(f"{ruw} → {verwacht}", alpha2(ruw, landcodes()), verwacht)
     tabel = landcodes()
     toets("A2_NAMES uit dashboard.html gelezen", len(tabel) > 150, True)
     toets("Nederland → nl", alpha2("Nederland", tabel), "nl")

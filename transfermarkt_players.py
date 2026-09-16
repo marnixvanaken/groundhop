@@ -87,7 +87,8 @@ def minuten_per_speler(wedstrijd: dict) -> dict[int, dict]:
             pid = p.get("player_id")
             if pid:
                 uit_lineup[pid] = {"name": p.get("player", ""), "team": ploeg,
-                                   "starter": bool(p.get("starter"))}
+                                   "starter": bool(p.get("starter")),
+                                   "photo": p.get("photo_url") or ""}
     # Staat er een opstelling? Dan is die volledig, en is iemand die er niet in
     # voorkomt geen basisspeler maar een gat in de data. Hem 90 minuten geven
     # zou een gok als feit opschrijven; zijn doelpunt telt wel gewoon mee.
@@ -188,6 +189,8 @@ def bouw_spelers(wedstrijden: list[dict]) -> list[dict]:
             })
             if info["name"] and not s["name"]:
                 s["name"] = info["name"]
+            if info.get("photo") and not s.get("photo_url"):
+                s["photo_url"] = info["photo"]
             s["matches_seen"] += 1
             s["goals"] += doelpunten[pid]
             s["assists"] += assists[pid]
@@ -353,6 +356,27 @@ def zelftest() -> int:
     check("twee wedstrijden opgeteld", s[1]["minutes_played"], 180)
     check("twee clubs onthouden", sorted(s[1]["teams_seen_for"]), ["PSV", "VVV-Venlo"])
     check("nieuwste wedstrijd bovenaan", s[1]["matches_detail"][0]["date"], "2025-02-01")
+
+    print("\n── portretfoto ──")
+    foto = "https://img.a.transfermarkt.technology/portrait/small/9-1.jpg"
+    w = _wedstrijd([{"player_id": 9, "player": "Speler9", "starter": True,
+                     "photo_url": foto}])
+    s = {x["id"]: x for x in bouw_spelers([w])}
+    check("foto uit de opstelling overgenomen", s[9].get("photo_url"), foto)
+
+    # Een speler die in meer wedstrijden voorkomt houdt de eerste foto die we
+    # zagen; een latere wedstrijd zonder foto mag hem niet wissen.
+    w2 = _wedstrijd([{"player_id": 9, "player": "Speler9", "starter": True,
+                      "photo_url": ""}])
+    w2["id"], w2["date"] = 2, "2025-02-01"
+    s = {x["id"]: x for x in bouw_spelers([w, w2])}
+    check("een wedstrijd zonder foto wist hem niet", s[9].get("photo_url"), foto)
+
+    # Wie alleen in een doelpunt opduikt staat niet in de opstelling en heeft
+    # dus geen foto; dat mag geen fout geven.
+    w3 = _wedstrijd([], goals=[{"player_id": 7, "player": "Speler7", "team": "PSV"}])
+    s = {x["id"]: x for x in bouw_spelers([w3])}
+    check("speler buiten de opstelling heeft geen foto", s[7].get("photo_url"), None)
 
     print(f"\n  {'alles goed' if not fout else str(fout) + ' FOUT'}")
     return fout

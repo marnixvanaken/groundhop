@@ -15,7 +15,7 @@ import subprocess
 import threading
 from pathlib import Path
 from http.server import ThreadingHTTPServer, SimpleHTTPRequestHandler
-from urllib.parse import urlparse, unquote
+from urllib.parse import urlparse, unquote, parse_qs
 
 # Zorg dat werkdirectory altijd de map van dit script is (ook bij scheduled tasks)
 os.chdir(Path(__file__).parent)
@@ -78,6 +78,24 @@ def sf_get(url):
                 k, v = part.split("=", 1)
                 cookie_dict[k.strip()] = v.strip()
     return _session.get(url, cookies=cookie_dict, timeout=20)
+
+
+# Alleen deze hosts mogen door de beeldproxy. Zonder die grens is /img/ext een
+# open proxy: iedereen die het dashboard kan bereiken zou er willekeurige URL's
+# mee kunnen ophalen vanaf deze machine.
+BEELDHOSTS = {"api.sofascore.app", "tmssl.akamaized.net"}
+BEELDDOMEIN = ".transfermarkt.technology"
+
+
+def toegestane_afbeelding(url: str) -> str | None:
+    """Geeft de URL terug als hij van een toegestane beeldhost komt, anders None."""
+    if not url:
+        return None
+    u = urlparse(url)
+    if u.scheme != "https":
+        return None
+    host = (u.hostname or "").lower()
+    return url if (host in BEELDHOSTS or host.endswith(BEELDDOMEIN)) else None
 
 if sys.platform == "win32":
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
@@ -159,11 +177,22 @@ class Handler(SimpleHTTPRequestHandler):
 
         # ─── Image proxy (player/team foto's via server — werkt op mobiel) ──
         if path.startswith("/img/"):
-            parts = path.split("/")  # ['', 'img', 'player'|'team', '<id>']
+            parts = path.split("/")  # ['', 'img', 'player'|'team'|'ext', '<id>']
+            img_url = None
             if len(parts) >= 4 and parts[2] in ("player", "team"):
                 img_url = f"https://api.sofascore.app/api/v1/{parts[2]}/{parts[3]}/image"
+            elif parts[2:3] == ["ext"]:
+                # Transfermarkt zet de foto-URL in de pagina zelf; die komt hier
+                # binnen zodat het plaatje net als de rest via deze server gaat
+                # en niet rechtstreeks uit de browser — dat laatste werkte op
+                # mobiel niet, en daarvoor staat deze proxy er.
+                img_url = toegestane_afbeelding(parse_qs(parsed.query).get("u", [""])[0])
+            if img_url:
                 try:
-                    resp = sf_get(img_url)
+                    # Sofascore wil de cookies; een plaatje van Transfermarkt
+                    # heeft daar niets mee te maken en krijgt ze dus ook niet.
+                    resp = (sf_get(img_url) if "sofascore" in img_url
+                            else _session.get(img_url, timeout=20))
                     ct = resp.headers.get("Content-Type", "image/png")
                     body = resp.content
                     self.send_response(200)

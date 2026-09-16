@@ -466,3 +466,59 @@ konden plaatsen, met aantallen:
 
 Een lege plaatsnaam onder een stadion is uit het dashboard gehaald: Transfermarkt
 noemt de stad niet, en een lege regel ziet eruit als een mislukte render.
+
+## Foto's en clubwapens: uit de pagina, niet uit een geraden URL
+
+Het dashboard haalde spelersfoto's en clublogo's op via `/img/player/{id}` en
+`/img/team/{id}`, een proxy in `server.py` die Sofascore om een plaatje vraagt
+bij een Sofascore-ID. Met een Transfermarkt-ID levert dat niets op, dus na de
+overstap zou je overal initialen en afkortingen zien.
+
+Transfermarkt zet beide plaatjes gewoon in de HTML die we toch al ophalen. De
+opstellingspagina toont elke speler twee keer — eerst het portret zonder tekst,
+dan de naamlink — en alleen die eerste draagt de foto-URL; het wedstrijdblok
+bevat het clubwapen. Geen extra verzoeken, en geen geconstrueerd URL-patroon:
+dat zou stil breken zodra Transfermarkt zijn CDN verlegt, en dan zie je alleen
+lege plekken zonder te weten waarom.
+
+De URL's reizen mee door de keten: `parse_lineup` → `minuten_per_speler` →
+`bouw_spelers` → `photo_url` per speler, en `parse_match` → `logo_url` per club.
+Een speler die alleen in een doelpunt opduikt en niet in de opstelling staat,
+heeft geen foto; dat is geen fout en wordt ook niet als fout behandeld.
+
+### Waarom ze alsnog langs de proxy gaan
+
+De eerste versie zette de URL rechtstreeks in de `<img src>`. Dat leek korter
+maar sloopt iets: de Sofascore-export dráágt `photo_url` al, en die wijst naar
+precies wat de proxy ophaalt. Rechtstreeks laden zou dus voor de oude data de
+proxy omzeilen — en die staat er juist omdat het anders op mobiel niet werkt.
+
+`/img/ext?u=<url>` haalt nu elke opgegeven afbeelding op, maar alleen van
+`api.sofascore.app`, `tmssl.akamaized.net` en `*.transfermarkt.technology`.
+Zonder die grens zou het een open proxy zijn waarmee iedereen die het dashboard
+kan bereiken willekeurige URL's vanaf die machine kan ophalen. De toets weigert
+ook `http`, en `transfermarkt.technology.iets-anders.nl` — een achtervoegsel dat
+op het goede domein lijkt is geen goed domein. Sofascore krijgt zijn cookies
+mee, Transfermarkt niet; die heeft er niets mee te maken.
+
+Het rapport telt voortaan hoeveel spelers een portret hebben en hoeveel clubs
+een wapen, zodat de volgende run laat zien of het ook echt gelukt is.
+
+## Twee kleinigheden die de eerste echte run opleverde
+
+De bouwer meldde wat hij niet kon plaatsen, en dat was precies waarvoor die
+melding bedoeld was:
+
+- **Eén onbekende positie: "Verdediging".** Dat is de groepskop boven de
+  verdedigers. Toegevoegd als eigen woord, niet door op "verdedig" te toetsen —
+  dan valt "verdedigende middenvelder" er ook in en staat het halve middenveld
+  achterin.
+- **Acht landnamen die Transfermarkt anders spelt**, samen 37 spelers:
+  "Democratische Republiek Congo", "Republiek Congo", "Bosnië en Herzegovina",
+  "Trinidad en Tobago", "Haiti", "Wit-Rusland" en "Benin" staan nu in een lijst
+  vérschillen — geen tweede landenlijst.
+
+  Sint Maarten staat er niet bij. Zijn ISO-code is `sx`, maar in de tabel van
+  het dashboard is `sx` Schotland, zoals Sofascore het noemt. Hem toch op `sx`
+  zetten geeft één speler een Schotse vlag, en een verkeerde vlag is erger dan
+  geen vlag.

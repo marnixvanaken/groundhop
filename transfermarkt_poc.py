@@ -298,12 +298,18 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
             links = s.select("a.sb-vereinslink")
             link = links[0] if (kant == "heim" and links) else (links[-1] if links else None)
         if not link:
-            return {"name": "", "id": None, "slug": ""}
+            return {"name": "", "id": None, "slug": "", "logo_url": ""}
         href = link.get("href", "")
+        # Het clubwapen staat als afbeelding in hetzelfde blok. We nemen de URL
+        # die de pagina zelf noemt in plaats van er een te construeren: een
+        # geraden patroon breekt stil zodra Transfermarkt zijn CDN verlegt, en
+        # dan zie je alleen lege plekken zonder te weten waarom.
+        wapen = blok.select_one("img") if blok else None
         return {
             "name": link.get_text(strip=True),
             "id": club_id(href),
             "slug": href.strip("/").split("/")[0] if href else "",
+            "logo_url": (wapen.get("src") or "") if wapen else "",
         }
 
     home_team = team("heim")
@@ -731,8 +737,18 @@ def parse_lineup(html: str, d: Diag) -> dict:
             continue
         kant = "home" if tellers[soort] == 0 else "away"
         tellers[soort] += 1
-        # Elke speler staat twee keer in de box (portret + naamlink), dus ontdubbel
-        # op speler-ID en houd de link met een leesbare naam aan.
+        # Elke speler staat twee keer in de box: eerst als portret zonder tekst,
+        # daarna als naamlink. Die portretlink is de enige plek waar de foto-URL
+        # staat, dus die halen we eerst op en zetten we straks bij de naam.
+        portret: dict[int, str] = {}
+        for link in box.find_all("a", href=_SPELER_RE):
+            pid = speler_id(link.get("href"))
+            img = link.find("img")
+            bron = img.get("src") if img else None
+            if pid and bron and pid not in portret:
+                portret[pid] = bron
+
+        # Ontdubbel op speler-ID en houd de link met een leesbare naam aan.
         for link in box.find_all("a", href=_SPELER_RE):
             naam = link.get_text(strip=True)
             pid = speler_id(link.get("href"))
@@ -740,7 +756,9 @@ def parse_lineup(html: str, d: Diag) -> dict:
                 continue
             if any(p["player_id"] == pid for p in lineup[kant]):
                 continue
-            lineup[kant].append({"player": naam, "player_id": pid, "starter": not is_bank})
+            lineup[kant].append({"player": naam, "player_id": pid,
+                                 "starter": not is_bank,
+                                 "photo_url": portret.get(pid, "")})
 
     n_thuis, n_uit = len(lineup["home"]), len(lineup["away"])
     s_thuis = sum(1 for p in lineup["home"] if p["starter"])
@@ -1406,6 +1424,34 @@ def zelftest() -> int:
         _proefpagina("4:1", "(2:1)", ["1:0", "2:0", "2:1", "3:1", "4:1"], False), 6)
     check("gewone ruststand wordt gelezen",
           (r["half_time"]["home"], r["half_time"]["away"]), (2, 1))
+
+    print("\n── afbeeldingen ──")
+
+    # De opstellingspagina zet elke speler twee keer neer: eerst het portret
+    # zonder tekst, dan de naamlink. Alleen de eerste draagt de foto-URL.
+    foto = "https://img.a.transfermarkt.technology/portrait/small/255294-168.jpg?lm=4711"
+    lineup_html = (
+        '<html><body><div class="box"><h2>Basisopstelling</h2>'
+        f'<a href="/x/profil/spieler/255294"><img src="{foto}"/></a>'
+        '<a class="wichtig" href="/x/leistungsdatendetails/spieler/255294/s">Kastenmeier</a>'
+        '</div><div class="box"><h2>Basisopstelling</h2>'
+        '<a class="wichtig" href="/y/leistungsdatendetails/spieler/999/s">Zonderfoto</a>'
+        '</div></body></html>')
+    lu = parse_lineup(lineup_html, Diag())
+    check("portret bij de juiste speler", lu["home"][0].get("photo_url"), foto)
+    check("de naam blijft leesbaar", lu["home"][0]["player"], "Kastenmeier")
+    check("één regel per speler, niet twee", len(lu["home"]), 1)
+    check("speler zonder portret geeft lege foto, geen fout",
+          lu["away"][0].get("photo_url"), "")
+
+    # Het clubwapen komt uit het wedstrijdblok zelf, niet uit een geraden URL.
+    wapen = "https://tmssl.akamaized.net/images/wappen/head/383.png"
+    blok = (f'<div class="sb-team sb-heim"><img src="{wapen}"/>'
+            f'<a class="sb-vereinslink" href="/psv/spielplan/verein/383">PSV</a></div>')
+    html = _proefpagina("1:0", "(1:0)", ["1:0"], False).replace(
+        '<div id="sb-tore">', blok + '<div id="sb-tore">', 1)
+    r, _ = parse_match(html, 1)
+    check("clubwapen overgenomen", r["home_team"].get("logo_url"), wapen)
 
     print(f"\n  {'alles goed' if not fout else str(fout) + ' FOUT'}")
     return fout
