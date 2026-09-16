@@ -701,3 +701,20 @@ in `NAGEKEKEN`, mét geboortedatum. Die datum is er niet voor de sier: verandert
 hij op Transfermarkt, dan geldt het oordeel van toen niet meer en roept de
 melding vanzelf opnieuw. Een naam daar neerzetten zonder te kijken maakt de hele
 controle waardeloos.
+
+### Wat de scheidsrechters leerden over de grens van deze methode
+
+De splitsing `'Pol van Boekel' werd 'Bas Nijhuis', 'Pol van Boekel'` bleek
+NEC - PSV van 30 maart 2024 te zijn: Transfermarkt heeft het goed, Sofascore had
+de verkeerde man. Precies waarvoor die categorie bedoeld was.
+
+Maar bij het opzoeken kwam er iets anders boven. PSV - Vitesse van 14 september
+2019 werd geleid door Allard Lindhout, en beide bronnen schrijven die wedstrijd
+aan Pol van Boekel toe — anders was het een derde tak in die splitsing geweest.
+
+Twee bronnen die dezelfde fout maken vindt geen enkele vergelijking. Alles in
+`transfermarkt_vergelijk.py` werkt op het verschil tussen de twee; waar ze het
+eens zijn is er niets te zien, of ze samen gelijk hebben of samen ongelijk. Dat
+is geen gebrek dat te repareren is, het is wat een vergelijking ís. Het is wel
+goed om te weten wat de groene vinkjes in dat rapport betekenen: de twee bronnen
+spreken elkaar niet tegen, niet dat de data waar is.
