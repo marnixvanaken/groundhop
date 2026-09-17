@@ -31,11 +31,13 @@ from collections import defaultdict
 from datetime import date, datetime
 from pathlib import Path
 
-WEDSTRIJDEN = Path("data/selected_matches_tm.json")
+import transfermarkt_paden as paden
+
+WEDSTRIJDEN = paden.wedstrijden()
 SPELERS = Path("data/tm_players_full.json")
 DASHBOARD_HTML = Path("dashboard.html")
 OUD = Path("data/dashboard_data.json")
-UITVOER = Path("data/dashboard_data_tm.json")
+UITVOER = paden.dashboard()
 
 
 # ─── Positie ─────────────────────────────────────────────────────────────────
@@ -551,7 +553,10 @@ def rapporteer(export: dict, ongewoon: dict):
              ("clubs", len(export["teams_visited"]), len(oud.get("teams_visited") or [])),
              ("toernooien", len(export["tournaments"]), len(oud.get("tournaments") or [])),
              ("seizoenen", len(export["seasons"]), len(oud.get("seasons") or []))]
-    print(f"  {'':<18} {'Transfermarkt':>14}   {'was (Sofascore)':>16}")
+    # Vóór de omwisseling staat er Sofascore naast; erna is 'oud' de vorige
+    # Transfermarkt-run. Even bruikbaar, maar het label moet wel kloppen.
+    kop = "vorige run" if paden.omgewisseld() else "was (Sofascore)"
+    print(f"  {'':<18} {'Transfermarkt':>14}   {kop:>16}")
     print(f"  {'-' * 18} {'-' * 14}   {'-' * 16}")
     for naam, nieuw, was in rijen:
         pijl = "  " if was in (None, 0) else ("↑" if nieuw > was else
@@ -908,7 +913,11 @@ def main():
     uit = Path(args.uitvoer) if args.uitvoer else UITVOER
     uit.write_text(json.dumps(export, ensure_ascii=False), "utf-8")
     print(f"\n  ✓ {uit} geschreven ({uit.stat().st_size / 1e6:.1f} MB)")
-    print(f"    {OUD} is ongewijzigd — vergelijk eerst, vervang daarna.")
+    if uit == OUD:
+        print(f"    Dit is het bestand dat het dashboard leest; de vorige stand "
+              f"is overschreven.")
+    else:
+        print(f"    {OUD} is ongewijzigd — vergelijk eerst, vervang daarna.")
 
 
 if __name__ == "__main__":

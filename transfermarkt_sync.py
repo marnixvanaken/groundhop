@@ -31,13 +31,16 @@ import time
 from pathlib import Path
 
 from transfermarkt_poc import BASE, fetch, parse_match
+import transfermarkt_paden as paden
 from transfermarkt_selectie import SELECTIE, lees as lees_selectie
 
 SELECTED = Path("data/selected_matches.json")
 MATCH_MAP = Path("data/tm_match_map.json")
 UITGESTELD = Path("data/tm_uitgesteld.json")
 CACHE = Path("data/tm_match_cache")
-UITVOER = Path("data/selected_matches_tm.json")
+# Vóór de omwisseling naast de Sofascore-lijst, erna de lijst zelf. Twee
+# wedstrijdlijsten die uit elkaar lopen is erger dan één die overschreven wordt.
+UITVOER = paden.wedstrijden()
 
 MIN_DELAY, MAX_DELAY = 2.0, 4.0
 

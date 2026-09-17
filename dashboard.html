@@ -1364,6 +1364,19 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
   const [fout,setFout]=useState('');
   const [bron,setBron]=useState('');
   const [dashboardBron,setDashboardBron]=useState(null);
+  const [selectie,setSelectie]=useState(null);
+
+  // Of je een wedstrijd al hebt staat in de selectie, niet in de opgehaalde
+  // wedstrijden: die loopt erachteraan zolang het ophalen bezig is. Vandaar dat
+  // het paneel de selectie aanhoudt en op de lijst van het dashboard terugvalt
+  // zolang die er nog niet is.
+  const herlaadSelectie=useCallback(()=>{
+    apiFetch('/api/tm/selectie').then(d=>{
+      if(d&&Array.isArray(d.ids)) setSelectie(new Set(d.ids));
+    });
+  },[]);
+  useEffect(herlaadSelectie,[]);
+  const alBinnen=id=>selectie?selectie.has(id):savedIds.has(id);
 
   // Toevoegen werkt pas als het dashboard zelf uit Transfermarkt leest. Dat
   // hier tonen in plaats van het pas bij opslaan te melden scheelt een hele
@@ -1424,7 +1437,7 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     setChecked(s);
   }
   function toggleAll(){
-    const nieuwe=events.filter(e=>!savedIds.has(e.match_id)).map(e=>e.match_id);
+    const nieuwe=events.filter(e=>!alBinnen(e.match_id)).map(e=>e.match_id);
     if(checked.size===nieuwe.length) setChecked(new Set());
     else setChecked(new Set(nieuwe));
   }
@@ -1446,6 +1459,7 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
       ? `${result.added} wedstrijd${result.added===1?'':'en'} toegevoegd (totaal: ${result.total}). De gegevens worden nu opgehaald — dat duurt even.`
       : `Die ${result.already===1?'wedstrijd stond':'wedstrijden stonden'} er al in.`);
     if(onSaved) onSaved();
+    herlaadSelectie();
     setChecked(new Set());
     if(onMatchesAdded) onMatchesAdded();
   }
@@ -1533,14 +1547,14 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
       <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
         <div style=${{fontSize:13,color:T.muted}}>${events.length} wedstrijden gevonden · ${checked.size} geselecteerd</div>
         <button onClick=${toggleAll} style=${{background:T.bg3,border:'none',borderRadius:8,padding:'4px 12px',color:T.blue,fontSize:12,cursor:'pointer',fontWeight:600}}>
-          ${checked.size===events.filter(e=>!savedIds.has(e.match_id)).length?'Geen':'Alle'}
+          ${checked.size===events.filter(e=>!alBinnen(e.match_id)).length?'Geen':'Alle'}
         </button>
       </div>
       <div style=${{display:'flex',flexDirection:'column',gap:6}}>
         ${events.map(e=>{
           const {thuis,uit}=opstelling(e);
           const isChecked=checked.has(e.match_id);
-          const alreadySaved=savedIds.has(e.match_id);
+          const alreadySaved=alBinnen(e.match_id);
           return html`<div key=${e.match_id} onClick=${()=>!alreadySaved&&toggleMatch(e.match_id)} style=${{
             background:T.bg2,
             border:`1px solid ${isChecked?T.blue:T.border}`,

@@ -27,7 +27,9 @@ import json
 from collections import defaultdict
 from pathlib import Path
 
-WEDSTRIJDEN = Path("data/selected_matches_tm.json")
+import transfermarkt_paden as paden
+
+WEDSTRIJDEN = paden.wedstrijden()
 UITVOER = Path("data/tm_players.json")
 
 REGULIER, VERLENGING = 90, 120

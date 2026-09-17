@@ -49,6 +49,9 @@ page.on('pageerror', e => fouten.push('pageerror: ' + e.message));
 let opgeslagen = null;
 await page.route('**/tm/zoek/**', r => r.fulfill({ json: CLUBS }));
 await page.route('**/tm/club/**', r => r.fulfill({ json: SCHEMA }));
+// Eén van de drie staat al in de selectie; die hoort niet opnieuw aangeboden
+// te worden, ook al staat hij niet in de opgehaalde wedstrijden.
+await page.route('**/api/tm/selectie', r => r.fulfill({ json: { ids: [3210002] } }));
 await page.route('**/api/tm/toevoegen', async r => {
   opgeslagen = JSON.parse(r.request().postData());
   await r.fulfill({ json: { added: opgeslagen.length, already: 0, total: 166, fetching: true } });
@@ -113,6 +116,14 @@ fout += toets('er gaat alleen id, datum en naam naar de server', opgeslagen,
   [{ match_id: 3210001, date: '2019-09-14', label: 'PSV Eindhoven - Vitesse' }]);
 fout += toets('en het paneel meldt het',
   await page.getByText(/1 wedstrijd toegevoegd/).isVisible(), true);
+
+// De selectie beslist wat 'al opgeslagen' is, niet de opgehaalde wedstrijden:
+// tussen toevoegen en ophalen zit tijd, en zolang zou het paneel liegen.
+const azRegel = await page.locator('div').filter({ hasText: /^PSV Eindhoven 0:4 AZ Alkmaar/ }).first().textContent();
+fout += toets('een wedstrijd uit de selectie heet al opgeslagen',
+  /al opgeslagen/.test(azRegel), true);
+const vitesseRegel = await page.locator('div').filter({ hasText: /^PSV Eindhoven 5:0 Vitesse/ }).first().textContent();
+fout += toets('een wedstrijd die er niet in staat niet', /al opgeslagen/.test(vitesseRegel), false);
 
 fout += toets('geen enkele javascriptfout', fouten, []);
 console.log(fout ? `\n  ${fout} fout` : '\n  alles goed');

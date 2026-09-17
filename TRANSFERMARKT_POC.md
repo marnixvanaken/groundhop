@@ -874,3 +874,33 @@ echt, met Transfermarkt onderschept. Dertien toetsen, in dezelfde geest als de
 `--zelftest` van de Python-modules: dat een uitwedstrijd de tegenstander links
 zet, dat er alleen een nummer, een datum en een naam naar de server gaan, en dat
 er geen javascriptfout valt.
+
+## Na de omwisseling viel de steiger niet vanzelf weg
+
+De omwisseling was gedaan en geseed, en toen bleek de keten nog steeds naar
+`selected_matches_tm.json` te schrijven. Dat achtervoegsel was de hele afspraak
+van de migratie — de Sofascore-data blijft staan tot er vergeleken is — maar
+zodra `selected_matches.json` de Transfermarkt-lijst ís, keert die bescherming
+zich om: het dashboard leest de ene lijst, de keten vult de andere, en een net
+toegevoegde wedstrijd staat in de verkeerde. Twee bestanden die allebei de
+waarheid claimen, precies de fout die deze migratie moest oplossen.
+
+`transfermarkt_paden.py` laat de steiger vallen zodra hij niet meer nodig is.
+Eén plek zegt of de omwisseling gebeurd is — te zien aan de export zelf, die
+zijn herkomst meeschrijft in `source` — en `sync`, `players` en `dashboard`
+voegen zich daarnaar. Vóór de omwisseling schrijven ze naast Sofascore, erna
+schrijven ze de echte bestanden. Er is niets om om te zetten.
+
+Twee meldingen werden daarmee onwaar en zijn meegegaan. De kolom "was
+(Sofascore)" heet na de omwisseling "vorige run", want dat is wat er dan naast
+staat. En "dashboard_data.json is ongewijzigd — vergelijk eerst, vervang daarna"
+gold niet meer op het moment dat de export precies dat bestand schrijft.
+
+## "Al opgeslagen" hoort de selectie te volgen
+
+Het paneel merkte een wedstrijd als al opgeslagen aan de hand van de opgehaalde
+wedstrijden. Tussen toevoegen en opgehaald zijn zitten seconden tot minuten — zo
+lang zou het paneel een wedstrijd die je net hebt toegevoegd opnieuw aanbieden.
+De selectie is het eerlijke antwoord op "heb ik deze al?": die is waar op het
+moment dat je hem toevoegt. `/api/tm/selectie` geeft hem, en het paneel valt
+terug op de oude lijst zolang die route nog niets heeft opgeleverd.

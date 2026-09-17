@@ -369,6 +369,12 @@ class Handler(SimpleHTTPRequestHandler):
         elif path == "/api/bron":
             self.send_json({"bron": huidige_bron()})
 
+        elif path == "/api/tm/selectie":
+            # De selectie is het eerlijke antwoord op "heb ik deze al?": hij is
+            # waar zodra je hem toevoegt, niet pas als het rapport binnen is.
+            import transfermarkt_selectie as tsel
+            self.send_json({"ids": tsel.ids(tsel.lees())})
+
         elif path == "/api/cookie-status":
             has = COOKIES_FILE.exists()
             self.send_json({"has_cookies": has, "file": str(COOKIES_FILE)})
