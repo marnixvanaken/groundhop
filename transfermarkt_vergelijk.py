@@ -43,6 +43,7 @@ import argparse
 import contextlib
 import io
 import json
+from datetime import datetime
 from collections import defaultdict
 from pathlib import Path
 
@@ -51,6 +52,14 @@ NIEUW = Path("data/dashboard_data_tm.json")
 UITGESTELD = Path("data/tm_uitgesteld.json")
 
 TOON = 15  # regels per lijst, tenzij --alles
+
+# Wat er bij de omwisseling van plaats verandert, en waar het oude heen gaat.
+# Archiveren en niet overschrijven: de Sofascore-export is de enige kopie van
+# wat die bron ooit zei, en zodra hij weg is valt de vergelijking niet meer over
+# te doen.
+OMWISSELING = [(Path("data/selected_matches.json"), Path("data/selected_matches_tm.json")),
+               (Path("data/dashboard_data.json"), Path("data/dashboard_data_tm.json"))]
+ARCHIEF = Path("data/sofascore_archief")
 
 
 # ─── koppelen ────────────────────────────────────────────────────────────────
@@ -599,6 +608,65 @@ def zelftest() -> int:
            ("Varkenoord", ["2024-02-01  A - B"])])
     toets("een gesplitste naam telt niet als hernoemd", g["hernoemd"], [])
 
+    print("\n── omwisselen ──")
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        oud_a, nieuw_a = tmp / "selected.json", tmp / "selected_tm.json"
+        oud_b, nieuw_b = tmp / "dash.json", tmp / "dash_tm.json"
+        for f, inhoud in ((oud_a, "OUD-A"), (nieuw_a, "NIEUW-A"),
+                          (oud_b, "OUD-B"), (nieuw_b, "NIEUW-B")):
+            f.write_text(inhoud)
+        arch = tmp / "archief"
+        paren = [(oud_a, nieuw_a), (oud_b, nieuw_b)]
+
+        stappen, bezwaren = omwisselplan(paren, arch, "2026-09-17")
+        toets("een volledig plan heeft geen bezwaren", bezwaren, [])
+        toets("en één stap per paar", len(stappen), 2)
+        toets("het plan verandert nog niets", oud_a.read_text(), "OUD-A")
+
+        wissel_om(stappen)
+        toets("de nieuwe export staat nu op de plek van de oude",
+              (oud_a.read_text(), oud_b.read_text()), ("NIEUW-A", "NIEUW-B"))
+        toets("de oude staat in het archief",
+              (arch / "selected.2026-09-17.json").read_text(), "OUD-A")
+        toets("en de bron blijft liggen", nieuw_a.read_text(), "NIEUW-A")
+
+        # Nog eens op dezelfde dag zou de archiefkopie overschrijven met data
+        # die inmiddels Transfermarkt ís — dan is het origineel weg.
+        _, bezwaren = omwisselplan(paren, arch, "2026-09-17")
+        toets("twee keer op één dag wordt geweigerd", len(bezwaren), 2)
+        toets("en levert geen halve omwisseling op",
+              omwisselplan(paren, arch, "2026-09-17")[1][0].endswith(
+                  "bestaat al — er is vandaag al omgewisseld"), True)
+
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        oud_a, nieuw_a = tmp / "a.json", tmp / "a_tm.json"
+        oud_b, nieuw_b = tmp / "b.json", tmp / "b_tm.json"
+        oud_a.write_text("OUD-A")
+        oud_b.write_text("OUD-B")
+        nieuw_a.write_text("NIEUW-A")          # b_tm.json ontbreekt
+        stappen, bezwaren = omwisselplan([(oud_a, nieuw_a), (oud_b, nieuw_b)],
+                                         tmp / "arch", "2026-09-17")
+        toets("een ontbrekende nieuwe export is een bezwaar", len(bezwaren), 1)
+        toets("bij een bezwaar blijft alles staan",
+              (oud_a.read_text(), oud_b.read_text()), ("OUD-A", "OUD-B"))
+
+        # Archiveren gaat vóór overschrijven: struikelt het halverwege, dan is
+        # er van elk overschreven bestand al een kopie.
+        arch = tmp / "arch2"
+        stappen, _ = omwisselplan([(oud_a, nieuw_a)], arch, "2026-09-17")
+        gedaan = wissel_om(stappen)
+        toets("bewaren staat vóór zetten",
+              [r.split()[0] for r in gedaan], ["bewaard", "gezet"])
+
+        ontbreekt = tmp / "nooit.json"
+        stappen, _ = omwisselplan([(ontbreekt, nieuw_a)], tmp / "arch3", "2026-09-17")
+        wissel_om(stappen)
+        toets("een eerste keer zonder oud bestand werkt gewoon",
+              ontbreekt.read_text(), "NIEUW-A")
+
     print("\n── blokken tonen ──")
     # Een splitsing beslaat meerdere regels. Die regels tellen als één punt,
     # anders loopt de eindstand op zodra het rapport uitvoeriger wordt.
@@ -707,6 +775,73 @@ def zelftest() -> int:
 
 # ─── CLI ─────────────────────────────────────────────────────────────────────
 
+def omwisselplan(paren: list[tuple[Path, Path]], archief: Path,
+                 stempel: str) -> tuple[list[tuple[Path, Path, Path]], list[str]]:
+    """Wat er zou gebeuren, zonder dat er iets gebeurt.
+
+    Geeft (stappen, bezwaren) terug. Elke stap is (oud, nieuw, archiefpad). Een
+    bezwaar is een reden om niets te doen; zolang er één is gaat de omwisseling
+    niet door, ook de stappen niet die op zichzelf wel kunnen.
+    """
+    stappen, bezwaren = [], []
+    for oud, nieuw in paren:
+        if not nieuw.exists():
+            bezwaren.append(f"{nieuw} ontbreekt — draai eerst transfermarkt_dashboard.py")
+            continue
+        doel = archief / f"{oud.stem}.{stempel}{oud.suffix}"
+        if doel.exists():
+            bezwaren.append(f"{doel} bestaat al — er is vandaag al omgewisseld")
+        stappen.append((oud, nieuw, doel))
+    return stappen, bezwaren
+
+
+def wissel_om(stappen: list[tuple[Path, Path, Path]]) -> list[str]:
+    """Voert het plan uit: eerst alles archiveren, dan pas iets overschrijven.
+
+    In die volgorde, want een omwisseling die halverwege struikelt mag nooit een
+    oud bestand hebben weggegooid waar nog geen kopie van lag.
+    """
+    regels = []
+    for oud, _, doel in stappen:
+        if oud.exists():
+            doel.parent.mkdir(parents=True, exist_ok=True)
+            doel.write_bytes(oud.read_bytes())
+            regels.append(f"  bewaard   {oud}  →  {doel}")
+        else:
+            regels.append(f"  (er was nog geen {oud} om te bewaren)")
+    for oud, nieuw, _ in stappen:
+        oud.write_bytes(nieuw.read_bytes())
+        regels.append(f"  gezet     {nieuw}  →  {oud}")
+    return regels
+
+
+def vervang(ja: bool) -> int:
+    """De tweede helft van 'vergelijk eerst, vervang daarna'."""
+    stempel = datetime.now().strftime("%Y-%m-%d")
+    stappen, bezwaren = omwisselplan(OMWISSELING, ARCHIEF, stempel)
+    print(f"\n{'=' * 78}\n  OMWISSELEN — Transfermarkt wordt de bron van het dashboard"
+          f"\n{'=' * 78}")
+    if bezwaren:
+        for b in bezwaren:
+            print(f"  ✗ {b}")
+        print("\n  Er is niets gewijzigd.")
+        return 1
+    for oud, nieuw, doel in stappen:
+        print(f"  {nieuw.name}  wordt  {oud.name}")
+        print(f"      de huidige {oud.name} gaat naar {doel}")
+    if not ja:
+        print("\n  Dit overschrijft de bestanden waar het dashboard uit leest.")
+        if input("  Doorgaan? typ 'ja': ").strip().lower() != "ja":
+            print("  Niets gewijzigd.")
+            return 1
+    print()
+    for r in wissel_om(stappen):
+        print(r)
+    print(f"\n  Klaar. De Sofascore-export staat in {ARCHIEF}/ — daarmee is deze "
+          f"vergelijking\n  later nog over te doen. Zonder die kopie niet.")
+    return 0
+
+
 def main():
     p = argparse.ArgumentParser(
         description="Leg de Transfermarkt-export naast de Sofascore-export")
@@ -714,10 +849,18 @@ def main():
                    help="toon elke regel, niet de eerste 15 per lijst")
     p.add_argument("--zelftest", action="store_true",
                    help="reken de vergelijking zelf na, zonder bestanden te lezen")
+    p.add_argument("--vervang", action="store_true",
+                   help="wissel de Transfermarkt-export in voor de Sofascore-export, "
+                        "met de oude in het archief")
+    p.add_argument("--ja", action="store_true",
+                   help="bij --vervang: niet eerst om bevestiging vragen")
     args = p.parse_args()
 
     if args.zelftest:
         raise SystemExit(zelftest())
+
+    if args.vervang:
+        raise SystemExit(vervang(args.ja))
 
     for pad in (OUD, NIEUW):
         if not pad.exists():

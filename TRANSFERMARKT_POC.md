@@ -764,3 +764,48 @@ rapport zet het eronder:
 `✗` betekent: die regel doet niets. `·` betekent: hij hernoemt wel, maar de
 telling blijft gelijk — precies het verschil tussen 41 en 39. Welke van de drie
 het is, zegt de volgende run.
+
+## De tweede helft: vervangen
+
+`vergelijk eerst, vervang daarna` stond overal, maar de vervanging bestond niet
+— die was met de hand, en met de hand overschrijf je een keer het verkeerde
+bestand. `--vervang` doet het in één stap, met drie regels eromheen.
+
+**Archiveren, niet weggooien.** De Sofascore-export is de enige kopie van wat
+die bron ooit zei. Is hij weg, dan is de vergelijking niet meer over te doen en
+staat er niets meer tegenover de nieuwe data. Hij gaat dus naar
+`data/sofascore_archief/dashboard_data.2026-09-17.json`.
+
+**Eerst alles bewaren, dan pas iets zetten.** Twee losse stappen per bestand
+zouden betekenen dat een struikeling halverwege één bestand overschreven
+achterlaat waar nog geen kopie van is. Nu zijn het twee rondes: alle kopieën
+eerst, alle vervangingen daarna.
+
+**Twee keer op één dag wordt geweigerd.** De tweede keer zou
+`dashboard_data.json` archiveren die na de eerste keer al Transfermarkt ís — dat
+overschrijft de enige Sofascore-kopie met een duplicaat van de nieuwe data. Het
+archiefpad draagt de datum, en een bestaand pad is een bezwaar, geen waarschuwing:
+er gebeurt dan niets.
+
+Bezwaren blokkeren de hele omwisseling, ook de stappen die op zichzelf wel
+konden. Half omgewisseld is de enige toestand waarin het dashboard een
+Sofascore-wedstrijdenlijst naast Transfermarkt-dashboarddata zou lezen.
+
+## Wat de vergelijking uiteindelijk zei
+
+165 gekoppelde wedstrijden, gelijke datum en gelijke uitslag, op één na: de
+bekerfinale van 2023, en dat is de strafschoppenafspraak en geen tegenspraak.
+Zeven splitsingen, waarvan zes winst — Transfermarkt houdt de voorrondes van de
+Champions League en de Europa League apart en scheidt de play-offs van de Jupiler
+Pro League, waar Sofascore er één toernooi van maakt.
+
+De zevende is de scheidsrechter, en die valt in het voordeel van de nieuwe bron
+uit: bij NEC – PSV van 30-03-2024 zegt Transfermarkt Bas Nijhuis en Sofascore Pol
+van Boekel, en Bas Nijhuis is juist.
+
+De dekking gaat overal omhoog behalve bij de ronde (164 → 113). Dat kost niets:
+`round` wordt in `dashboard.html` alleen in het zoekpaneel gebruikt, nooit
+uit `dashboard_data.json` gelezen om te tonen.
+
+En de optelsom, het scherpste verschil: Transfermarkt 613 − 18 = 595 ✓, Sofascore
+662 − 17 = 645 tegen 595 ✗. De nieuwe export klopt met zichzelf, de oude niet.
