@@ -129,6 +129,10 @@ const fNum=n=>n!=null?n.toLocaleString('nl-NL'):'—';
 const fMarket=v=>{if(!v)return'—';if(v>=1000000)return`€${(v/1000000).toFixed(1).replace('.0','')}M`;if(v>=1000)return`€${Math.round(v/1000)}K`;return`€${v}`;};
 const pImg=id=>`/img/player/${id}`;
 const tImg=id=>`/img/team/${id}`;
+// Transfermarkt nummert zijn clubs anders dan Sofascore; een TM-nummer door
+// /img/team/ sturen zou het wapen van een wíllekeurige andere club opleveren.
+// De volle URL gaat langs /img/ext, dat de host toetst voor hij iets ophaalt.
+const tmImg=id=>`https://tmssl.akamaized.net/images/wappen/head/${id}.png`;
 // Een foto-URL uit de bron gaat langs dezelfde proxy als de rest. Rechtstreeks
 // laden werkt op mobiel niet, en daarvoor staat die proxy er.
 const extImg=u=>u?`/img/ext?u=${encodeURIComponent(u)}`:null;
@@ -1351,74 +1355,67 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
   const [query,setQuery]=useState('');
   const [results,setResults]=useState([]);
   const [loading,setLoading]=useState(false);
-  const [team,setTeam]=useState(null);
-  const [seasons,setSeasons]=useState([]);
+  const [club,setClub]=useState(null);
   const [selSeason,setSelSeason]=useState(null);
   const [events,setEvents]=useState([]);
   const [checked,setChecked]=useState(new Set());
   const [saving,setSaving]=useState(false);
   const [savedMsg,setSavedMsg]=useState('');
+  const [fout,setFout]=useState('');
+  const [bron,setBron]=useState('');
+  const [dashboardBron,setDashboardBron]=useState(null);
 
-  async function searchTeams(){
+  // Toevoegen werkt pas als het dashboard zelf uit Transfermarkt leest. Dat
+  // hier tonen in plaats van het pas bij opslaan te melden scheelt een hele
+  // zoektocht voor niets.
+  useEffect(()=>{apiFetch('/api/bron').then(d=>setDashboardBron(d?.bron||null));},[]);
+  const nogSofascore=dashboardBron!==null&&dashboardBron!=='transfermarkt';
+
+  // Transfermarkt nummert een seizoen naar het jaar waarin het begint, en het
+  // seizoen kantelt in juli. Zelf uitrekenen scheelt een verzoek en geeft
+  // dezelfde lijst als de server.
+  const nu=new Date();
+  const huidigSeizoen=nu.getMonth()>=6?nu.getFullYear():nu.getFullYear()-1;
+  const seasons=Array.from({length:25},(_,i)=>huidigSeizoen-i);
+  const seizoenLabel=j=>`${j}/${String((j+1)%100).padStart(2,'0')}`;
+
+  async function searchClubs(){
     if(!query.trim())return;
-    setLoading(true);setResults([]);
-    const data=await apiFetch(`/sofascore/search/teams/${encodeURIComponent(query.trim())}`);
-    setResults(data?.teams||[]);
+    setLoading(true);setResults([]);setFout('');
+    const data=await apiFetch(`/tm/zoek/${encodeURIComponent(query.trim())}`);
+    // Onbereikbaar is iets anders dan niets gevonden. Zonder dat onderscheid
+    // leest een storing als "die club bestaat niet".
+    if(data?.error){setFout('Transfermarkt is nu niet bereikbaar. Probeer het zo nog eens.');}
+    setResults(data?.clubs||[]);
     setLoading(false);
   }
 
-  async function selectTeam(t){
-    setTeam(t);setLoading(true);setStep('seasons');setSeasons([]);
-    const data=await apiFetch(`/sofascore/team/${t.id}/unique-tournaments`);
-    const tournaments=data?.uniqueTournaments||[];
-    const results=await Promise.all(
-      tournaments.slice(0,20).map(tn=>apiFetch(`/sofascore/unique-tournament/${tn.id}/seasons`))
-    );
-    const yearMap={};
-    results.forEach(r=>{
-      (r?.seasons||[]).forEach(s=>{
-        const yr=s.year||'';
-        if(!yr.includes('/')) return;
-        if(!yearMap[yr]||s.id>yearMap[yr].id) yearMap[yr]={...s};
-      });
-    });
-    const toFullYear=p=>{const n=parseInt(p);if(n>=100)return n;return n<=30?2000+n:1900+n;};
-    const sorted=Object.values(yearMap).sort((a,b)=>{
-      const ay=toFullYear((a.year||'0').split('/')[0]);
-      const by=toFullYear((b.year||'0').split('/')[0]);
-      return by-ay;
-    });
-    setSeasons(sorted);
+  function selectClub(c){
+    setClub(c);setStep('seasons');setEvents([]);setChecked(new Set());setFout('');
+  }
+
+  async function selectSeason(jaar){
+    setSelSeason(jaar);setLoading(true);setEvents([]);setChecked(new Set());
+    setStep('matches');setFout('');setBron('');
+    const data=await apiFetch(`/tm/club/${club.id}/${jaar}`);
+    if(data?.error){setFout('Transfermarkt is nu niet bereikbaar. Probeer het zo nog eens.');}
+    setBron(data?.bron||'');
+    const ws=(data?.matches||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    setEvents(ws);
     setLoading(false);
   }
 
-  async function selectSeason(s){
-    setSelSeason(s);setLoading(true);setEvents([]);setChecked(new Set());
-    setStep('matches');
-    const yr=s.year||'';
-    const [startYr,endYr]=yr.split('/').map(p=>parseInt(p.length===2?'20'+p:p));
-    const seasonStart=new Date(startYr,6,1).getTime()/1000;
-    const seasonEnd=new Date(endYr,5,30,23,59,59).getTime()/1000;
-    let allEvents=[], page=0, seenSeason=false, emptyAfterSeason=0;
-    while(allEvents.length<400){
-      const data=await apiFetch(`/sofascore/team/${team.id}/events/last/${page}`);
-      const evs=data?.events||[];
-      if(!evs.length) break;
-      const filtered=evs.filter(e=>{
-        const ts=e.startTimestamp||0;
-        return ts>=seasonStart && ts<=seasonEnd;
-      });
-      if(filtered.length>0){ seenSeason=true; emptyAfterSeason=0; }
-      else if(seenSeason){ emptyAfterSeason++; if(emptyAfterSeason>=2) break; }
-      const oldest=evs[evs.length-1]?.startTimestamp||0;
-      if(oldest>0 && oldest<seasonStart-60*24*3600) break;
-      else if(page>14) break;
-      allEvents=[...allEvents,...filtered];
-      page++;
-    }
-    allEvents.sort((a,b)=>b.startTimestamp-a.startTimestamp);
-    setEvents(allEvents);
-    setLoading(false);
+  // Op de speelschemapagina is alleen de tegenstander gelinkt, de club zelf
+  // niet. De kant-kolom zegt welke van de twee thuis speelde, en daarmee is de
+  // regel weer in de goede volgorde te zetten.
+  function opstelling(w){
+    const tegen=(w.clubs||[])[0]?.name||'';
+    const zelf=club?.name||'';
+    return w.kant==='uit'?{thuis:tegen,uit:zelf}:{thuis:zelf,uit:tegen};
+  }
+  function label(w){
+    const {thuis,uit}=opstelling(w);
+    return `${thuis} - ${uit}`;
   }
 
   function toggleMatch(id){
@@ -1427,87 +1424,76 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     setChecked(s);
   }
   function toggleAll(){
-    const nieuweIds=events.filter(e=>!savedIds.has(e.id)).map(e=>e.id);
-    if(checked.size===nieuweIds.length) setChecked(new Set());
-    else setChecked(new Set(nieuweIds));
+    const nieuwe=events.filter(e=>!savedIds.has(e.match_id)).map(e=>e.match_id);
+    if(checked.size===nieuwe.length) setChecked(new Set());
+    else setChecked(new Set(nieuwe));
   }
 
   async function saveMatches(){
     if(!checked.size)return;
-    setSaving(true);
-    const toSave=events.filter(e=>checked.has(e.id)).map(e=>{
-      const ht=e.homeTeam||{}, at=e.awayTeam||{};
-      const ts=e.startTimestamp;
-      const date=ts?new Date(ts*1000).toISOString().slice(0,10):'';
-      const tnmt=e.tournament?.uniqueTournament||e.tournament||{};
-      return{
-        id:e.id, date, startTimestamp:ts,
-        home_team:{name:ht.name||'',id:ht.id,slug:ht.slug||''},
-        away_team:{name:at.name||'',id:at.id,slug:at.slug||''},
-        home_score:(e.homeScore?.current??null),
-        away_score:(e.awayScore?.current??null),
-        half_time:{home:e.homeScore?.period1??null,away:e.awayScore?.period1??null},
-        tournament:tnmt.name||e.tournament?.name||'',
-        tournament_id:tnmt.id||e.tournament?.id,
-        season:e.season?.name||'',
-        season_id:e.season?.id,
-        round:e.roundInfo?.round||null,
-        venue:{name:e.venue?.name||'',city:e.venue?.city?.name||e.venue?.city||'',id:e.venue?.id||null},
-        attendance:e.attendance||null,
-        referee:{name:e.referee?.name||'',id:e.referee?.id||null},
-        source_team:team.name,
-        goals:[], cards:[], substitutions:[], team_stats:{home:{},away:{}},
-      };
-    });
-    const result=await fetch('/api/matches/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave)}).then(r=>r.json()).catch(()=>null);
+    setSaving(true);setFout('');
+    // Alleen het nummer, de datum en een naam om in de lijst te herkennen. De
+    // rest — stadion, opstelling, doelpunten — haalt de server zelf op uit het
+    // wedstrijdrapport; hier iets meesturen zou een tweede waarheid maken.
+    const toSave=events.filter(e=>checked.has(e.match_id)).map(e=>({
+      match_id:e.match_id, date:e.date||'', label:label(e),
+    }));
+    const result=await fetch('/api/tm/toevoegen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave)}).then(r=>r.json()).catch(()=>null);
     setSaving(false);
-    if(result){
-      setSavedMsg(`${result.added} wedstrijden opgeslagen (totaal: ${result.total})`);
-      if(onSaved) onSaved();
-      setChecked(new Set());
-      if(onMatchesAdded) onMatchesAdded();
-    }
+    if(!result){setFout('Opslaan is niet gelukt.');return;}
+    if(result.error){setFout(result.error);return;}
+    setSavedMsg(result.added
+      ? `${result.added} wedstrijd${result.added===1?'':'en'} toegevoegd (totaal: ${result.total}). De gegevens worden nu opgehaald — dat duurt even.`
+      : `Die ${result.already===1?'wedstrijd stond':'wedstrijden stonden'} er al in.`);
+    if(onSaved) onSaved();
+    setChecked(new Set());
+    if(onMatchesAdded) onMatchesAdded();
   }
 
-  function reset(){setStep('search');setQuery('');setResults([]);setTeam(null);setSeasons([]);setSelSeason(null);setEvents([]);setChecked(new Set());setSavedMsg('');}
+  function reset(){setStep('search');setQuery('');setResults([]);setClub(null);setSelSeason(null);setEvents([]);setChecked(new Set());setSavedMsg('');setFout('');}
+
+  const Melding=({tekst,kleur})=>html`<${Card} style=${{background:`${kleur}14`,border:`1px solid ${kleur}33`}}>
+    <div style=${{color:kleur,fontWeight:600,fontSize:14}}>${tekst}</div>
+  </${Card}>`;
 
   // ── Render ──
   if(step==='search') return html`<div style=${{display:'flex',flexDirection:'column',gap:16}}>
     <${Card} style=${{background:'linear-gradient(135deg,#e8f4ff,#f0f7ff)',border:'1px solid rgba(0,122,255,0.15)'}}>
       <div style=${{fontSize:18,fontWeight:700,marginBottom:4,color:T.text}}>Wedstrijd toevoegen</div>
       <div style=${{fontSize:13,color:T.muted}}>Zoek een club, kies een seizoen en vink de wedstrijden aan die je bezocht hebt.</div>
+      <div style=${{fontSize:11,color:T.dim,marginTop:6}}>Bron: Transfermarkt</div>
     </${Card}>
+    ${nogSofascore&&html`<${Melding} kleur=${T.orange} tekst="Het dashboard leest nog uit Sofascore. Zoeken kan al, opslaan pas na de omwisseling." />`}
     <div style=${{display:'flex',gap:8}}>
       <${SearchInput} value=${query} onChange=${setQuery} placeholder="Bijv. PSV, Ajax, Bayern..." />
     </div>
-    <button onClick=${searchTeams} disabled=${loading||!query.trim()} style=${{
+    <button onClick=${searchClubs} disabled=${loading||!query.trim()} style=${{
       background:T.blue,color:'#fff',border:'none',borderRadius:12,padding:'14px',
       fontSize:16,fontWeight:700,cursor:'pointer',opacity:loading||!query.trim()?0.4:1,
       boxShadow:'0 2px 8px rgba(0,122,255,0.25)',
     }}>${loading?'Zoeken...':'Zoeken'}</button>
-    ${savedMsg&&html`<${Card} style=${{background:'rgba(52,199,89,0.08)',border:'1px solid rgba(52,199,89,0.2)'}}>
-      <div style=${{color:T.green,fontWeight:600,fontSize:14}}>${savedMsg}</div>
-    </${Card}>`}
+    ${savedMsg&&html`<${Melding} tekst=${savedMsg} kleur=${T.green} />`}
+    ${fout&&html`<${Melding} tekst=${fout} kleur=${T.red} />`}
     ${results.length>0&&html`<div>
       <div style=${{fontSize:12,color:T.dim,marginBottom:8}}>${results.length} resultaten</div>
       <div style=${{display:'flex',flexDirection:'column',gap:8}}>
-        ${results.slice(0,10).map(t=>html`<${Card} key=${t.id} onClick=${()=>selectTeam(t)}>
+        ${results.map(c=>html`<${Card} key=${c.id} onClick=${()=>selectClub(c)}>
           <div style=${{display:'flex',gap:12,alignItems:'center'}}>
             <div style=${{width:44,height:44,background:T.bg3,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <${TeamBadge} id=${t.id} name=${t.name} src=${t.logo_url} size=${38} />
+              <${TeamBadge} name=${c.name} src=${tmImg(c.id)} size=${38} />
             </div>
-            <div>
-              <div style=${{display:'flex',alignItems:'center',gap:6}}>
-                <span style=${{fontWeight:700,fontSize:15,color:T.text}}>${t.name}</span>
-                ${t.gender==='F'&&html`<span style=${{background:'#ff2d5518',color:'#ff2d55',borderRadius:6,padding:'1px 7px',fontSize:10,fontWeight:700}}>Vrouwen</span>`}
-              </div>
-              <div style=${{fontSize:12,color:T.muted}}>${t.country?.name||''}</div>
+            <div style=${{minWidth:0}}>
+              <div style=${{fontWeight:700,fontSize:15,color:T.text}}>${c.name}</div>
+              <div style=${{fontSize:12,color:T.muted}}>Transfermarkt ${c.id}</div>
             </div>
             <span style=${{marginLeft:'auto',color:T.blue,fontSize:20}}>›</span>
           </div>
         </${Card}>`)}
       </div>
     </div>`}
+    ${!loading&&!fout&&query.trim()&&results.length===0&&savedMsg===''&&html`<${Card}>
+      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen clubs gevonden</div>
+    </${Card}>`}
   </div>`;
 
   if(step==='seasons') return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
@@ -1516,14 +1502,13 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     </button>
     <${Card} style=${{display:'flex',gap:12,alignItems:'center'}}>
       <div style=${{width:48,height:48,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <${TeamBadge} id=${team.id} name=${team.name} src=${team.logo_url} size=${42} />
+        <${TeamBadge} name=${club.name} src=${tmImg(club.id)} size=${42} />
       </div>
-      <div><div style=${{fontWeight:700,fontSize:18,color:T.text}}>${team.name}</div><div style=${{fontSize:13,color:T.muted}}>Kies een seizoen</div></div>
+      <div><div style=${{fontWeight:700,fontSize:18,color:T.text}}>${club.name}</div><div style=${{fontSize:13,color:T.muted}}>Kies een seizoen</div></div>
     </${Card}>
-    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:24}}>Seizoenen laden...</div>`}
-    ${!loading&&seasons.map(s=>html`<${Card} key=${s.id} onClick=${()=>selectSeason(s)}>
+    ${seasons.map(j=>html`<${Card} key=${j} onClick=${()=>selectSeason(j)}>
       <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style=${{fontWeight:600,fontSize:16,color:T.text}}>${s.year||s.name}</div>
+        <div style=${{fontWeight:600,fontSize:16,color:T.text}}>${seizoenLabel(j)}</div>
         <span style=${{color:T.blue,fontSize:20}}>›</span>
       </div>
     </${Card}>`)}
@@ -1535,29 +1520,28 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     </button>
     <${Card} style=${{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
       <div style=${{width:40,height:40,background:T.bg3,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <${TeamBadge} id=${team.id} name=${team.name} src=${team.logo_url} size=${34} />
+        <${TeamBadge} name=${club.name} src=${tmImg(club.id)} size=${34} />
       </div>
-      <div style=${{flex:1}}>
-        <div style=${{fontWeight:700,color:T.text}}>${team.name} — ${selSeason?.year||selSeason?.name}</div>
-        <div style=${{fontSize:12,color:T.muted}}>Alle competities</div>
+      <div style=${{flex:1,minWidth:0}}>
+        <div style=${{fontWeight:700,color:T.text}}>${club.name} — ${seizoenLabel(selSeason)}</div>
+        <div style=${{fontSize:12,color:T.muted}}>Alle competities${bron==='cache'?' · uit de cache':''}</div>
       </div>
     </${Card}>
-    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:32}}>Wedstrijden ophalen... (even geduld)</div>`}
+    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:32}}>Speelschema ophalen... (even geduld)</div>`}
+    ${fout&&html`<${Melding} tekst=${fout} kleur=${T.red} />`}
     ${!loading&&events.length>0&&html`<div>
       <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
         <div style=${{fontSize:13,color:T.muted}}>${events.length} wedstrijden gevonden · ${checked.size} geselecteerd</div>
         <button onClick=${toggleAll} style=${{background:T.bg3,border:'none',borderRadius:8,padding:'4px 12px',color:T.blue,fontSize:12,cursor:'pointer',fontWeight:600}}>
-          ${checked.size===events.length?'Geen':'Alle'}
+          ${checked.size===events.filter(e=>!savedIds.has(e.match_id)).length?'Geen':'Alle'}
         </button>
       </div>
       <div style=${{display:'flex',flexDirection:'column',gap:6}}>
         ${events.map(e=>{
-          const ht=e.homeTeam||{},at=e.awayTeam||{};
-          const hs=e.homeScore?.current,as_=e.awayScore?.current;
-          const date=e.startTimestamp?new Date(e.startTimestamp*1000).toISOString().slice(0,10):'';
-          const isChecked=checked.has(e.id);
-          const alreadySaved=savedIds.has(e.id);
-          return html`<div key=${e.id} onClick=${()=>!alreadySaved&&toggleMatch(e.id)} style=${{
+          const {thuis,uit}=opstelling(e);
+          const isChecked=checked.has(e.match_id);
+          const alreadySaved=savedIds.has(e.match_id);
+          return html`<div key=${e.match_id} onClick=${()=>!alreadySaved&&toggleMatch(e.match_id)} style=${{
             background:T.bg2,
             border:`1px solid ${isChecked?T.blue:T.border}`,
             borderLeft:alreadySaved?`3px solid ${T.green}`:isChecked?`3px solid ${T.blue}`:`1px solid ${T.border}`,
@@ -1576,17 +1560,18 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
             </div>
             <div style=${{flex:1,minWidth:0}}>
               <div style=${{fontSize:14,fontWeight:600,color:T.text}}>
-                ${ht.name} <span style=${{color:T.blue,fontWeight:800}}>${hs??'?'}–${as_??'?'}</span> ${at.name}
+                ${thuis} <span style=${{color:T.blue,fontWeight:800}}>${e.uitslag||'–'}</span> ${uit}
               </div>
-              <div style=${{fontSize:11,color:T.dim,marginTop:2}}>${fDate(date)} · ${e.tournament?.name||''} · R${e.roundInfo?.round||'?'}${alreadySaved?html` · <span style=${{color:T.green,fontWeight:600}}>al opgeslagen</span>`:''}</div>
+              <div style=${{fontSize:11,color:T.dim,marginTop:2}}>${fDate(e.date)}${alreadySaved?html` · <span style=${{color:T.green,fontWeight:600}}>al opgeslagen</span>`:''}</div>
             </div>
           </div>`;
         })}
       </div>
     </div>`}
-    ${!loading&&events.length===0&&selSeason&&html`<${Card}>
-      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen wedstrijden gevonden</div>
+    ${!loading&&!fout&&events.length===0&&html`<${Card}>
+      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen wedstrijden in dit seizoen</div>
     </${Card}>`}
+    ${savedMsg&&html`<${Melding} tekst=${savedMsg} kleur=${T.green} />`}
     <!-- Sticky save button -->
     ${checked.size>0&&html`<div style=${{position:'fixed',bottom:'calc(90px + env(safe-area-inset-bottom,0px))',left:0,right:0,padding:'12px 16px',background:'rgba(242,242,247,0.88)',backdropFilter:'blur(20px) saturate(160%)',WebkitBackdropFilter:'blur(20px) saturate(160%)',borderTop:`1px solid rgba(255,255,255,0.5)`,zIndex:20}}>
       <button onClick=${saveMatches} disabled=${saving} style=${{

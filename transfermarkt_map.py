@@ -296,6 +296,34 @@ def _datum_uit_rij(rijtekst: str) -> str:
     return _datum_nl(rijtekst)
 
 
+def uitslag_uit_rij(linktekst: str, rijtekst: str) -> str | None:
+    """De eindstand van een speelschemarij, als '5:0'.
+
+    Twee wegen, want één is niet betrouwbaar genoeg. De link naar het
+    wedstrijdrapport draagt de stand meestal als tekst; staat daar iets anders
+    (bij een wedstrijd die nog gespeeld moet worden bijvoorbeeld), dan wordt de
+    rij afgezocht.
+
+    Het addertje is de aftraptijd: '18:45' ziet er net zo uit als een uitslag.
+    Transfermarkt schrijft tijden met twee cijfers achter de dubbele punt en
+    uitslagen met één, dus daarop valt te scheiden. Liever niets teruggeven dan
+    een aftraptijd als uitslag tonen.
+    """
+    schoon = (linktekst or "").strip()
+    if re.fullmatch(r"\d{1,2}:\d{1,2}", schoon) and not _lijkt_op_tijd(schoon):
+        return schoon
+    for kandidaat in re.findall(r"\b\d{1,2}:\d{1,2}\b", rijtekst or ""):
+        if not _lijkt_op_tijd(kandidaat):
+            return kandidaat
+    return None
+
+
+def _lijkt_op_tijd(tekst: str) -> bool:
+    """'18:45' is een aftraptijd, '5:0' een uitslag."""
+    links, rechts = tekst.split(":")
+    return len(rechts) == 2 and int(links) <= 23
+
+
 def _thuis_of_uit(rij) -> str | None:
     """
     Leest de T/U-kolom: speelde de club thuis of uit?
@@ -404,6 +432,7 @@ def speelschema(club_id: int, saison: int, toon: bool = False) -> list[dict]:
             "match_id": mid, "date": datum,
             "clubs": clubs,
             "kant": _thuis_of_uit(rij),
+            "uitslag": uitslag_uit_rij(a.get_text(strip=True), rijtekst),
             "rij": _knip(rijtekst, 140),
         })
 
@@ -956,6 +985,21 @@ def zelftest() -> int:
     toets("een koppeling voor een al gevonden wedstrijd doet niets",
           (pas_handmatig_toe(mapping, rest, {"5": {"tm_match_id": 999}}),
            mapping["5"]["tm_match_id"]), (0, 111))
+
+    print("\n── uitslag uit een speelschemarij ──")
+    for wat, link, rij, verwacht in [
+        ("de linktekst is de uitslag", "5:0", "za 14-9-19 18:45 PSV Vitesse 5:0", "5:0"),
+        ("een aftraptijd in de link is geen uitslag",
+         "18:45", "za 14-9-19 18:45 PSV Vitesse", None),
+        ("dan wint de uitslag verderop in de rij",
+         "18:45", "za 14-9-19 18:45 PSV Vitesse 5:0", "5:0"),
+        ("een lege link valt terug op de rij", "", "zo 3-8-25 1:1 gelijk", "1:1"),
+        ("20:00 is een tijd, geen 20-0", "20:00", "vr 1-1-25 20:00 A B", None),
+        ("0:0 telt gewoon", "0:0", "vr 1-1-25 18:30 A B 0:0", "0:0"),
+        ("10:0 is een uitslag, geen tijd", "10:0", "x 10:0", "10:0"),
+        ("een rij zonder cijferpaar geeft niets", "", "nog niet gespeeld", None),
+    ]:
+        toets(wat, uitslag_uit_rij(link, rij), verwacht)
 
     print("\n── speelschema-cache ──")
     _zelftest_cache(toets)

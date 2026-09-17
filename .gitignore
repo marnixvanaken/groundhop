@@ -21,3 +21,5 @@ data/tm_schema_cache/
 data/tm_match_handmatig.json
 data/sofascore_archief/
 data/tm_selectie.json
+node_modules/
+package-lock.json

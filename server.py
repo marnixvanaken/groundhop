@@ -209,6 +209,20 @@ class Handler(SimpleHTTPRequestHandler):
         elif path == "/api/tm/toevoegen":
             import transfermarkt_selectie as tsel
 
+            # Zolang het dashboard nog uit Sofascore komt, hoort hier niets te
+            # gebeuren. De Transfermarkt-keten schrijft dashboard_data.json, dus
+            # doorgaan zou de Sofascore-export overschrijven zonder dat er ooit
+            # vergeleken is — precies wat 'vergelijk eerst, vervang daarna'
+            # moet voorkomen. Alleen aannemen is ook niets waard: de wedstrijd
+            # zou in de selectie blijven staan en nooit opgehaald worden.
+            if huidige_bron() != "transfermarkt":
+                self.send_json({"added": 0, "already": 0, "total": 0,
+                                "fetching": False,
+                                "error": "Het dashboard leest nog uit Sofascore. "
+                                         "Wissel eerst om met "
+                                         "'python3 transfermarkt_vergelijk.py --vervang'."})
+                return
+
             gevraagd = body if isinstance(body, list) else []
             selectie = tsel.lees()
             toegevoegd, stond_er_al = [], []

@@ -809,3 +809,68 @@ uit `dashboard_data.json` gelezen om te tonen.
 
 En de optelsom, het scherpste verschil: Transfermarkt 613 − 18 = 595 ✓, Sofascore
 662 − 17 = 645 tegen 595 ✗. De nieuwe export klopt met zichzelf, de oude niet.
+
+## Wedstrijd toevoegen via Transfermarkt
+
+Het zoekpaneel praatte volledig met Sofascore. Na de omwisseling zou toevoegen
+data opleveren die niet meer bij de rest past, dus het moest om.
+
+**Eerst moest de keten op eigen benen.** `tm_match_map.json` koppelt een
+sofascore_id aan een tm_match_id; die koppeling is gemaakt door de
+Sofascore-lijst tegen de speelschema's van Transfermarkt te leggen. Daarmee kon
+er geen wedstrijd meer bíj, want een nieuwe wedstrijd heeft geen sofascore_id om
+vanaf te vertrekken. `data/tm_selectie.json` is nu de bron: een platte lijst
+Transfermarkt-wedstrijd-ID's, eenmalig te vullen met `--seed`. Het sofascore_id
+blijft bewaard als herkomst, niet als sleutel.
+
+**De omwisseling kondigt zichzelf aan.** De export schrijft zijn eigen herkomst
+mee in `source`. De server leest dat veld en kiest daarop zijn keten. Er is geen
+instelling om te vergeten om te zetten: zodra `dashboard_data.json` van
+Transfermarkt komt, draait de Transfermarkt-keten.
+
+**Drie vragen, geen doorgeefluik.** `/sofascore/` stuurt elk pad door naar de
+API. Dat kan bij Transfermarkt niet, want die levert HTML die hier geparst moet
+worden — en dat is winst: `/tm/zoek`, `/tm/club/<id>/<seizoen>` en
+`/tm/seizoenen` zijn drie afgebakende vragen, er is geen pad waarlangs het
+dashboard een willekeurige URL kan laten ophalen.
+
+**Het paneel werd een stap korter.** Bij Sofascore moest je eerst een competitie
+kiezen en dan een seizoen. De speelschemapagina van Transfermarkt geeft alle
+competities van een seizoen in één keer, dus het zijn nog drie stappen: club,
+seizoen, wedstrijden.
+
+### Drie dingen die stil fout zouden zijn gegaan
+
+**Een leeg antwoord dat twee dingen kan betekenen.** `zoek_club` gaf een lege
+lijst terug of Transfermarkt nu onbereikbaar was of de naam niet bestond. Het
+paneel zou dan "geen clubs gevonden" tonen terwijl er niets gezocht is.
+`zoek_club_met_status` geeft de fout mee.
+
+**Het wapen van een willekeurige andere club.** `TeamBadge` bouwt zijn URL uit
+een Sofascore-teamnummer. Een Transfermarkt-clubnummer daarin levert geen fout
+op maar een bestaand plaatje van een andere club — het soort fout dat niemand
+opvalt. De clubwapens gaan nu langs `/img/ext`, dat de host toetst, met
+Transfermarkts eigen logohost.
+
+**Toevoegen vóór de omwisseling.** De Transfermarkt-keten schrijft
+`dashboard_data.json`. Wie vóór de omwisseling een wedstrijd toevoegt zou die
+keten starten en daarmee de Sofascore-export overschrijven zonder dat er ooit
+vergeleken is. Alleen de wedstrijd aannemen is net zo fout: hij blijft dan in de
+selectie staan en wordt nooit opgehaald. De route weigert en zegt wat er eerst
+moet gebeuren; het paneel meldt het al bij binnenkomst.
+
+### De uitslag uit een speelschemarij
+
+Het paneel toont de stand bij elke wedstrijd. Die staat in de rij, maar zo ook
+de aftraptijd, en `18:45` ziet er net zo uit als een uitslag. Transfermarkt
+schrijft tijden met twee cijfers achter de dubbele punt en uitslagen met één,
+dus daarop valt te scheiden — en bij twijfel liever niets tonen dan een
+aftraptijd als uitslag.
+
+### Het paneel toetst zichzelf
+
+`test/paneel.test.mjs` rendert het paneel echt in een browser en bedient het
+echt, met Transfermarkt onderschept. Dertien toetsen, in dezelfde geest als de
+`--zelftest` van de Python-modules: dat een uitwedstrijd de tegenstander links
+zet, dat er alleen een nummer, een datum en een naam naar de server gaan, en dat
+er geen javascriptfout valt.
