@@ -136,6 +136,32 @@ const tmImg=id=>`https://tmssl.akamaized.net/images/wappen/head/${id}.png`;
 // Een foto-URL uit de bron gaat langs dezelfde proxy als de rest. Rechtstreeks
 // laden werkt op mobiel niet, en daarvoor staat die proxy er.
 const extImg=u=>u?`/img/ext?u=${encodeURIComponent(u)}`:null;
+
+// Transfermarkt serveert hetzelfde plaatje in meerdere maten; alleen het stukje
+// na /portrait/ of /wappen/ verschilt. De opstellingspagina linkt naar de
+// kleinste, en die staat op een retinascherm op twee- tot driemaal zijn eigen
+// grootte — vandaar de zachte randen. De maat ophogen kost niets: het is
+// dezelfde afbeelding op een ander pad.
+const TM_MATEN=[
+  [/\/portrait\/(small|medium)\//, '/portrait/header/'],
+  [/\/images\/wappen\/(head|small|medium)\//, '/images/wappen/big/'],
+];
+const scherper=u=>{
+  if(!u) return u;
+  for(const [patroon,vervanging] of TM_MATEN){
+    if(patroon.test(u)) return u.replace(patroon,vervanging);
+  }
+  return u;
+};
+// Welke bronnen achter elkaar geprobeerd mogen worden: eerst de scherpe maat,
+// dan het origineel. Of elke maat voor elke speler bestaat is niet te
+// garanderen, en een ontbrekende scherpe versie mag geen lege plek opleveren
+// waar eerst een foto stond.
+const beeldbronnen=(ruw,terugval)=>{
+  if(!ruw) return terugval?[terugval]:[];
+  const scherp=scherper(ruw);
+  return scherp!==ruw?[extImg(scherp),extImg(ruw)]:[extImg(ruw)];
+};
 const FLAG_FIX={'en':'gb-eng','sx':'gb-sct','nx':'gb-nir','wl':'gb-wls','wa':'gb-wls'};
 const fFlag=a2=>{if(!a2)return null;const c=FLAG_FIX[a2.toLowerCase()]||a2.toLowerCase();return`https://flagcdn.com/w40/${c}.png`;};
 const goalLabel=t=>t==='penalty'?' (pen)':t==='ownGoal'?' (eg)':'';
@@ -263,18 +289,21 @@ function Pill({children,active,color,onClick,size}){
 }
 
 function Avatar({player,size=44}){
-  const [err,setErr]=useState(false);
+  const [stap,setStap]=useState(0);
   const init=(player.short_name||player.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
   const style={width:size,height:size,borderRadius:'50%',objectFit:'cover',background:T.bg4,flexShrink:0};
-  if(err) return html`<div style=${{...style,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.33,fontWeight:700,color:T.muted}}>${init}</div>`;
-  return html`<img src=${extImg(player.photo_url)||pImg(player.id)} alt=${player.short_name||player.name||''} loading="lazy" onError=${()=>setErr(true)} style=${style} />`;
+  const lijst=beeldbronnen(player.photo_url,player.id!=null?pImg(player.id):null);
+  const bron=lijst[stap];
+  if(!bron) return html`<div style=${{...style,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.33,fontWeight:700,color:T.muted}}>${init}</div>`;
+  return html`<img src=${bron} alt=${player.short_name||player.name||''} loading="lazy" onError=${()=>setStap(stap+1)} style=${style} />`;
 }
 
 function TeamBadge({id,name,src,size=32}){
-  const [err,setErr]=useState(false);
-  const bron=extImg(src)||(id!=null?tImg(id):null);
-  if(err||!bron) return html`<div style=${{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.35,fontWeight:700,color:T.muted}}>${(name||'?').slice(0,3)}</div>`;
-  return html`<img src=${bron} alt="" loading="lazy" onError=${()=>setErr(true)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
+  const [stap,setStap]=useState(0);
+  const lijst=beeldbronnen(src,id!=null?tImg(id):null);
+  const bron=lijst[stap];
+  if(!bron) return html`<div style=${{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.35,fontWeight:700,color:T.muted}}>${(name||'?').slice(0,3)}</div>`;
+  return html`<img src=${bron} alt="" loading="lazy" onError=${()=>setStap(stap+1)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
 }
 
 function Flag({a2,size=18}){
@@ -699,14 +728,15 @@ function XICard({player,type,color,onPlayerClick}){
   if(!player)return html`<div style=${{width:70}}></div>`;
   const posColor=POS_COLOR[player.position]||T.muted;
   const initials=(player.short_name||player.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('');
-  const [imgOk,setImgOk]=useState(true);
+  const [stap,setStap]=useState(0);
+  const bronnen=beeldbronnen(player.photo_url,player.id!=null?pImg(player.id):null);
   return html`<div
     onClick=${()=>onPlayerClick&&onPlayerClick(player)}
     style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:3,width:70,flexShrink:0,cursor:onPlayerClick?'pointer':'default'}}
   >
     <div style=${{width:46,height:46,borderRadius:'50%',background:posColor+'22',border:`2px solid ${posColor}55`,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-      ${imgOk
-        ?html`<img src=${extImg(player.photo_url)||pImg(player.id)} style=${{width:'100%',height:'100%',objectFit:'cover'}} onError=${()=>setImgOk(false)} loading="lazy" />`
+      ${bronnen[stap]
+        ?html`<img src=${bronnen[stap]} style=${{width:'100%',height:'100%',objectFit:'cover'}} onError=${()=>setStap(stap+1)} loading="lazy" />`
         :html`<span style=${{fontSize:14,fontWeight:800,color:posColor}}>${initials}</span>`}
     </div>
     <div style=${{fontSize:9,fontWeight:600,color:T.text,textAlign:'center',lineHeight:1.2,maxWidth:68,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${player.short_name||player.name}</div>

@@ -125,6 +125,34 @@ fout += toets('een wedstrijd uit de selectie heet al opgeslagen',
 const vitesseRegel = await page.locator('div').filter({ hasText: /^PSV Eindhoven 5:0 Vitesse/ }).first().textContent();
 fout += toets('een wedstrijd die er niet in staat niet', /al opgeslagen/.test(vitesseRegel), false);
 
+// De maat van een Transfermarkt-plaatje zit in het pad. Ophogen mag nooit een
+// andere afbeelding opleveren, en een URL die er niet op lijkt blijft heel.
+const beeld = await page.evaluate(() => [
+  scherper('https://img.a.transfermarkt.technology/portrait/small/255294-168.jpg?lm=4711'),
+  scherper('https://img.a.transfermarkt.technology/portrait/medium/566723-1762944477.jpg?lm=4711'),
+  scherper('https://img.a.transfermarkt.technology/portrait/header/566723-1762944477.jpg?lm=4711'),
+  scherper('https://tmssl.akamaized.net/images/wappen/head/383.png'),
+  scherper('https://api.sofascore.app/api/v1/player/850816/image'),
+  scherper(''),
+  beeldbronnen('https://img.a.transfermarkt.technology/portrait/small/9-1.jpg', '/img/player/7').length,
+  beeldbronnen('', '/img/player/7'),
+  beeldbronnen('', null),
+]);
+fout += toets('small wordt header',
+  beeld[0], 'https://img.a.transfermarkt.technology/portrait/header/255294-168.jpg?lm=4711');
+fout += toets('medium ook',
+  beeld[1], 'https://img.a.transfermarkt.technology/portrait/header/566723-1762944477.jpg?lm=4711');
+fout += toets('header blijft header',
+  beeld[2], 'https://img.a.transfermarkt.technology/portrait/header/566723-1762944477.jpg?lm=4711');
+fout += toets('een clubwapen gaat naar de grote maat',
+  beeld[3], 'https://tmssl.akamaized.net/images/wappen/big/383.png');
+fout += toets('een Sofascore-URL blijft ongemoeid',
+  beeld[4], 'https://api.sofascore.app/api/v1/player/850816/image');
+fout += toets('een lege URL blijft leeg', beeld[5], '');
+fout += toets('er is een scherpe én een originele bron om te proberen', beeld[6], 2);
+fout += toets('zonder foto-URL blijft de terugval over', beeld[7], ['/img/player/7']);
+fout += toets('en zonder allebei is er niets', beeld[8], []);
+
 fout += toets('geen enkele javascriptfout', fouten, []);
 console.log(fout ? `\n  ${fout} fout` : '\n  alles goed');
 await browser.close();

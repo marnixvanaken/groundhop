@@ -924,3 +924,25 @@ tegen de grammatica van 3.9 en eist de `__future__`-import zodra er PEP
 604-annotaties in staan. Met `--zelftest` bewijst hij eerst dat hij rood kán
 worden — zeven gevallen, waaronder een `match`-statement en een bitwise-of die
 juist géén annotatie is. Een toets die nooit afkeurt bewijst niets met groen.
+
+## De foto's waren te klein, niet te slecht
+
+De portretten kwamen er zacht uit. Niet omdat Transfermarkt slechte foto's heeft,
+maar omdat de opstellingspagina naar de kleinste maat linkt: `/portrait/small/`
+is zo'n 60 pixels breed, en het dashboard zet hem op 46 CSS-pixels — op een
+retinascherm dus op 92 tot 138 echte pixels. Uitvergroot, en dat zie je.
+
+Transfermarkt serveert dezelfde afbeelding op meerdere paden; alleen het stukje
+na `/portrait/` of `/images/wappen/` verschilt. `scherper()` hoogt die maat op:
+`small` en `medium` worden `header`, en een clubwapen gaat van `head` naar `big`.
+Er wordt niets herschaald en niets opnieuw opgehaald bij de bron — het is
+letterlijk dezelfde foto op een ander pad, dus de bestaande data hoeft niet
+opnieuw gescrapet te worden.
+
+Of élke maat voor élke speler bestaat valt van hieruit niet te controleren:
+Transfermarkt is vanuit de ontwikkelomgeving niet bereikbaar. Vandaar
+`beeldbronnen()`, dat een lijstje teruggeeft in plaats van één URL: eerst de
+scherpe maat, dan het origineel, dan pas de initialen. Een ontbrekende scherpe
+versie levert zo nooit een lege plek op waar eerst een foto stond. De drie
+plekken die een foto tonen — de avatar, het clubwapen en de speler in de XI —
+liepen alle drie langs hun eigen `onError`; die delen nu één pad.
