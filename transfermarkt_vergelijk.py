@@ -40,6 +40,8 @@ Gebruik
 from __future__ import annotations
 
 import argparse
+import contextlib
+import io
 import json
 from collections import defaultdict
 from pathlib import Path
@@ -317,6 +319,21 @@ def toon_lijst(regels: list[str], alles: bool, wit: int = 4):
         print(f"{' ' * wit}... en nog {len(regels) - TOON} (--alles toont ze allemaal)")
 
 
+def toon_blokken(blokken: list[list[str]], alles: bool, wit: int = 4):
+    """Zoals toon_lijst, maar knipt tussen blokken en nooit middenin een blok.
+
+    Een splitsing is pas te begrijpen als je de takken erbij ziet; een kopregel
+    zonder takken is erger dan niets.
+    """
+    toon = blokken if alles else blokken[:TOON]
+    for blok in toon:
+        for r in blok:
+            print(f"{' ' * wit}{r}")
+    if len(toon) < len(blokken):
+        print(f"{' ' * wit}... en nog {len(blokken) - len(toon)} "
+              f"(--alles toont ze allemaal)")
+
+
 def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
     """Print het hele rapport en geeft het aantal echte tegenspraken terug."""
     print(f"\n{'=' * 78}\n  VERGELIJKING — {OUD.name} naast {NIEUW.name}\n{'=' * 78}")
@@ -398,15 +415,16 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
         print(f"  {naam:<16} {len(g['gelijk']):>8} {len(g['hernoemd']):>9} "
               f"{len(g['samengevoegd']):>10} {len(g['gesplitst']):>10} {vink}")
         for a, takken in g["gesplitst"]:
-            gesplitst_totaal.append(f"{naam}: {a!r} werd:")
+            # Eén splitsing is één punt, hoeveel regels hij ook kost.
+            blok = [f"{naam}: {a!r} werd:"]
             for b, wanneer in takken:
                 # De kleinste tak is de afwijking; die krijgt zijn wedstrijden
                 # erbij, de grote tak alleen een telling.
                 if len(wanneer) <= 3:
-                    for w in wanneer:
-                        gesplitst_totaal.append(f"    {b!r}  —  {w}")
+                    blok += [f"    {b!r}  —  {w}" for w in wanneer]
                 else:
-                    gesplitst_totaal.append(f"    {b!r}  —  {len(wanneer)} wedstrijden")
+                    blok.append(f"    {b!r}  —  {len(wanneer)} wedstrijden")
+            gesplitst_totaal.append(blok)
         if g["hernoemd"] or g["samengevoegd"]:
             wissels = ([f"{a!r} → {b!r}" for a, b in g["hernoemd"]] +
                        [f"{a!r} → {b!r}  (samengevoegd)" for a, b in g["samengevoegd"]])
@@ -416,7 +434,7 @@ def rapport(oud: dict, nieuw: dict, uitgesteld: list[dict], alles: bool) -> int:
         fout += len(gesplitst_totaal)
         print(f"\n  ▼ {meervoud(len(gesplitst_totaal), 'naam valt', 'namen vallen')} uiteen "
               f"— dat is geen spelling maar een andere indeling:")
-        toon_lijst(gesplitst_totaal, alles)
+        toon_blokken(gesplitst_totaal, alles)
 
     # ── 3. dekking ──
     print(f"\n{'─' * 78}\n  3. DEKKING — wat de nieuwe bron erbij heeft, over dezelfde "
@@ -580,6 +598,25 @@ def zelftest() -> int:
           [("Stadion Feijenoord", ["2024-01-01  A - B"]),
            ("Varkenoord", ["2024-02-01  A - B"])])
     toets("een gesplitste naam telt niet als hernoemd", g["hernoemd"], [])
+
+    print("\n── blokken tonen ──")
+    # Een splitsing beslaat meerdere regels. Die regels tellen als één punt,
+    # anders loopt de eindstand op zodra het rapport uitvoeriger wordt.
+    blokken = [[f"veld: {i!r} werd:", "    'a'  —  x", "    'b'  —  y"]
+               for i in range(TOON + 2)]
+    uit = io.StringIO()
+    with contextlib.redirect_stdout(uit):
+        toon_blokken(blokken, alles=False)
+    regels = uit.getvalue().splitlines()
+    toets("de afkapregel knipt tussen blokken, niet middenin",
+          len(regels), TOON * 3 + 1)
+    toets("de afkapregel telt blokken", regels[-1].strip(),
+          "... en nog 2 (--alles toont ze allemaal)")
+    uit = io.StringIO()
+    with contextlib.redirect_stdout(uit):
+        toon_blokken(blokken, alles=True)
+    toets("--alles toont alle blokken zonder afkapregel",
+          len(uit.getvalue().splitlines()), len(blokken) * 3)
 
     leeg = [(w(1, "2024-01-01", "A", "B", 0, 0, stadion=""),
              w(9, "2024-01-01", "A", "B", 0, 0, stadion="Philips"))]

@@ -275,6 +275,25 @@ def hernoem_stadions(wedstrijden: list[dict]) -> list[dict]:
     return uit
 
 
+def stadionwissels(wedstrijden: list[dict]) -> list[tuple[str, str, int, bool]]:
+    """Wat de aliastabel deed: per regel het aantal wedstrijden en of hij samenvoegt.
+
+    Een aliastabel is stille code: staat er een spelfout in een sleutel, dan doet
+    die regel niets en merk je dat nergens aan. Vandaar dat het rapport hem
+    hardop naleest. Een regel die wel omzet maar niets samenvoegt (de doelnaam
+    komt verder niet voor) verandert alleen het label, niet de telling — ook dat
+    is het vermelden waard, want dat is precies het verschil tussen 41 en 39
+    stadions.
+    """
+    namen: dict = {}
+    for w in wedstrijden:
+        naam = (w.get("venue") or {}).get("name")
+        if naam:
+            namen[naam] = namen.get(naam, 0) + 1
+    return [(van, naar, namen.get(van, 0), namen.get(naar, 0) > 0)
+            for van, naar in sorted(STADIONNAMEN.items())]
+
+
 def tel_stadions(wedstrijden: list[dict]) -> list[dict]:
     """Elk stadion, met bezoeken, eerste en laatste keer, en het volste huis."""
     wedstrijden = op_datum(wedstrijden)
@@ -491,8 +510,10 @@ def verrijk_spelers(spelers: list[dict], tabel: dict[str, str]) -> tuple[list[di
 def bouw(wedstrijden: list[dict], spelers: list[dict],
          tabel: dict[str, str]) -> tuple[dict, dict]:
     """Zet wedstrijden en spelers om naar het schema dat het dashboard leest."""
+    wissels = stadionwissels(wedstrijden)
     wedstrijden = hernoem_stadions(wedstrijden)
     spelers, ongewoon = verrijk_spelers(spelers, tabel)
+    ongewoon["stadionwissels"] = wissels
     data = sorted(w.get("date") for w in wedstrijden if w.get("date"))
     goals = [doelpunten(w) for w in wedstrijden]
 
@@ -536,6 +557,22 @@ def rapporteer(export: dict, ongewoon: dict):
         pijl = "  " if was in (None, 0) else ("↑" if nieuw > was else
                                               ("↓" if nieuw < was else " "))
         print(f"  {naam:<18} {nieuw:>14} {pijl:>2} {was if was else '—':>16}")
+
+    wissels = ongewoon.get("stadionwissels") or []
+    if wissels:
+        print("\n  ── de aliastabel voor stadionnamen ──")
+        for van, naar, aantal, voegt_samen in wissels:
+            if not aantal:
+                teken, wat = "✗", "komt in deze data niet voor — sleutel klopt niet"
+            elif voegt_samen:
+                teken, wat = "✓", f"{aantal} wedstrijden, telt nu als één stadion"
+            else:
+                teken, wat = "·", f"{aantal} wedstrijden, alleen het label wijzigt"
+            print(f"  {teken} {van!r} → {naar!r}")
+            print(f"      {wat}")
+        if any(not a for _, _, a, _ in wissels):
+            print("  ✗ = die regel doet niets. Controleer de spelling tegen de "
+                  "naam die Transfermarkt gebruikt.")
 
     p = export["players"]
     met_positie = sum(1 for s in p if s.get("position"))
@@ -748,6 +785,21 @@ def zelftest() -> int:
           hernoem_stadions(kuip_tm)[0]["venue"]["city"], "Rotterdam")
     toets("de oorspronkelijke wedstrijd blijft ongemoeid",
           kuip_tm[0]["venue"]["name"], 'Stadion Feyenoord "De Kuip"')
+    # De tabel hardop nalezen: wat deed elke regel, en deed hij iets?
+    wissels = dict((van, (aantal, samen)) for van, _, aantal, samen
+                   in stadionwissels(tm + kuip_tm))
+    toets("een regel die samenvoegt wordt zo gemeld",
+          wissels["Amsterdam ArenA"], (1, True))
+    toets("De Kuip idem", wissels['Stadion Feyenoord "De Kuip"'], (1, True))
+    alleen_oud = [_w(47, "2018-09-06", "A", "B", 0, 0,
+                     venue={"name": "Amsterdam ArenA", "city": "Amsterdam", "id": None})]
+    toets("zonder de nieuwe naam ernaast voegt de regel niets samen",
+          dict((van, (a, sam)) for van, _, a, sam
+               in stadionwissels(alleen_oud))["Amsterdam ArenA"], (1, False))
+    toets("een sleutel die nergens voorkomt telt nul",
+          dict((van, a) for van, _, a, _
+               in stadionwissels([]))["Amsterdam ArenA"], 0)
+
     onbekend = [_w(45, "2020-01-01", "A", "B", 0, 0,
                    venue={"name": "Philips Stadion", "city": "Eindhoven", "id": None})]
     toets("een stadion dat niet in de tabel staat blijft zoals het was",

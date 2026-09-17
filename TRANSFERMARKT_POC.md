@@ -718,3 +718,49 @@ eens zijn is er niets te zien, of ze samen gelijk hebben of samen ongelijk. Dat
 is geen gebrek dat te repareren is, het is wat een vergelijking ís. Het is wel
 goed om te weten wat de groene vinkjes in dat rapport betekenen: de twee bronnen
 spreken elkaar niet tegen, niet dat de data waar is.
+
+## Een teller die meegroeide met het rapport
+
+De splitsingen kregen hun wedstrijden erbij — `'Pol van Boekel' werd: 'Bas
+Nijhuis' — 2024-03-30 NEC Nijmegen - PSV Eindhoven` — en precies daardoor
+sprong de eindstand van 9 naar 32 punten, zonder dat er één ding in de data
+veranderde. De regel eronder was `fout += len(gesplitst_totaal)`, en
+`gesplitst_totaal` was een platte lijst regels. Zolang elke splitsing één regel
+kostte klopte dat toevallig; zodra er takken bij kwamen telde hij de uitleg mee
+als bevinding.
+
+Dezelfde lijst voedde ook het afkappen, dus `toon_lijst` knipte na vijftien
+regels — middenin een splitsing. Wat overbleef was `toernooi: 'UEFA Europa
+League' werd:` met niets eronder: een kopregel die je alleen vertelt dat er iets
+staat wat je niet mag zien.
+
+Beide komen uit één verkeerde keuze: de regel als eenheid nemen in plaats van de
+bevinding. Nu is `gesplitst_totaal` een lijst blokken, telt de eindstand blokken,
+en knipt `toon_blokken` tussen blokken. Zeven splitsingen zijn zeven punten,
+hoeveel wedstrijden er ook bij staan — en zes daarvan zijn winst: Transfermarkt
+houdt de voorrondes van de Champions League en de Europa League apart en scheidt
+de play-offs van de Jupiler Pro League. Blijft over: de scheidsrechter.
+
+## De aliastabel leest zichzelf hardop na
+
+Na het samenvoegen van De Kuip en de ArenA stonden er nog steeds 41 stadions in
+de export, waar er 39 verwacht werden. De koppeling in `bouw()` klopt — eerst
+`hernoem_stadions`, dan pas `tel_stadions` — dus óf een sleutel matcht de
+Transfermarkt-spelling niet, óf de regel hernoemt wel maar voegt niets samen
+omdat de doelnaam verder nergens voorkomt.
+
+Een aliastabel is stille code: een spelfout in een sleutel levert geen fout op,
+alleen een regel die nooit afgaat. `stadionwissels()` meet daarom vóór het
+hernoemen hoe vaak elke sleutel voorkomt en of de doelnaam er al is, en het
+rapport zet het eronder:
+
+    ✓ 'Amsterdam ArenA' → 'Johan Cruijff ArenA'
+          7 wedstrijden, telt nu als één stadion
+    · 'Stadion Feyenoord "De Kuip"' → 'De Kuip'
+          3 wedstrijden, alleen het label wijzigt
+    ✗ 'Gelredome' → 'GelreDome'
+          komt in deze data niet voor — sleutel klopt niet
+
+`✗` betekent: die regel doet niets. `·` betekent: hij hernoemt wel, maar de
+telling blijft gelijk — precies het verschil tussen 41 en 39. Welke van de drie
+het is, zegt de volgende run.
