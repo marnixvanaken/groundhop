@@ -904,3 +904,23 @@ lang zou het paneel een wedstrijd die je net hebt toegevoegd opnieuw aanbieden.
 De selectie is het eerlijke antwoord op "heb ik deze al?": die is waar op het
 moment dat je hem toevoegt. `/api/tm/selectie` geeft hem, en het paneel valt
 terug op de oude lijst zolang die route nog niets heeft opgeleverd.
+
+## De server draaide nooit op de venv
+
+`python3 server.py` viel om op `str | None` in een annotatie. Dat is geen nieuwe
+fout: die regel stond er al, en elke andere module in dit project draagt
+`from __future__ import annotations` — twee ervan zelfs met de opmerking "PEP
+604-annotaties op Python 3.9 (macOS CLT)". `server.py` was overgeslagen.
+
+Dat het nooit opviel komt door de volgorde waarin het misging. Met de
+systeem-python struikelde de server al op regel 110 over een ontbrekende
+`curl_cffi` en kwam nooit tot regel 138. Met de venv, die `curl_cffi` wél heeft,
+kwam hij verder — en pas daar bleek dat de venv Python 3.9 draait, waar `X | Y`
+in een annotatie geen leesfout is maar een uitvoerfout.
+
+Een fout die zich achter een andere fout verstopt blijft verstopt tot je de
+eerste oplost. `test/versie.test.py` haalt hem naar voren: hij keurt elke module
+tegen de grammatica van 3.9 en eist de `__future__`-import zodra er PEP
+604-annotaties in staan. Met `--zelftest` bewijst hij eerst dat hij rood kán
+worden — zeven gevallen, waaronder een `match`-statement en een bitwise-of die
+juist géén annotatie is. Een toets die nooit afkeurt bewijst niets met groen.

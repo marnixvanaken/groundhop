@@ -6,6 +6,8 @@ Match Tracker Server — vervangt 'python3 -m http.server'
 - Slaat wedstrijdselecties op in data/selected_matches.json
 """
 
+from __future__ import annotations  # PEP 604-annotaties op Python 3.9 (macOS CLT)
+
 import json
 import os
 import sys
