@@ -238,7 +238,8 @@ def main():
         schoon.append(rec)
     UITVOER.write_text(json.dumps(schoon, ensure_ascii=False, indent=2), "utf-8")
     print(f"\n  ✓ {UITVOER} geschreven ({len(schoon)} wedstrijden)")
-    print(f"    {SELECTED} is ongewijzigd — vergelijk eerst, vervang daarna.")
+    if UITVOER != SELECTED:
+        print(f"    {SELECTED} is ongewijzigd — vergelijk eerst, vervang daarna.")
 
 
 if __name__ == "__main__":

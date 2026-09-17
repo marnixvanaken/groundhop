@@ -507,6 +507,27 @@ def verrijk_spelers(spelers: list[dict], tabel: dict[str, str]) -> tuple[list[di
                  "bank_jongste": bank_jongste, "bank_oudste": bank_oudste}
 
 
+def spelerslaag_achterstand(afgeleid: Path, samengevoegd: Path) -> int:
+    """Hoeveel spelers zijn wel afgeleid maar nog niet van een profiel voorzien?
+
+    transfermarkt_players.py leidt af wie speelde; transfermarkt_profiles.py
+    haalt daar de geboortedatum, positie en nationaliteit bij en schrijft de laag
+    die het dashboard leest. Slaat die tweede stap over, dan blijft de vorige
+    laag gewoon staan en verdwijnt elke nieuwe speler zonder één foutmelding —
+    de export meldt dan simpelweg een ouder aantal. Dat verschil is hier te zien
+    en dus te melden.
+    """
+    if not (afgeleid.exists() and samengevoegd.exists()):
+        return 0
+    try:
+        a = json.loads(afgeleid.read_text("utf-8"))
+        b = json.loads(samengevoegd.read_text("utf-8"))
+    except (json.JSONDecodeError, OSError):
+        return 0
+    bekend = {s.get("id") for s in b}
+    return sum(1 for s in a if s.get("id") not in bekend)
+
+
 # ─── Bouwen ──────────────────────────────────────────────────────────────────
 
 def bouw(wedstrijden: list[dict], spelers: list[dict],
@@ -761,6 +782,31 @@ def zelftest() -> int:
     toets("twee namen onder één id blijven één stadion", len(st), 1)
     toets("de nieuwste naam wint", st[0]["name"], "Johan Cruijff ArenA")
 
+    print("\n── loopt de spelerslaag achter? ──")
+    # De stille variant: profiles.py slaan overslaan laat de vorige laag staan,
+    # zodat de export een ouder aantal meldt zonder iets te zeggen.
+    import tempfile
+    with tempfile.TemporaryDirectory() as d:
+        tmp = Path(d)
+        afgeleid, samen = tmp / "a.json", tmp / "b.json"
+        afgeleid.write_text(json.dumps([{"id": 1}, {"id": 2}, {"id": 3}]), "utf-8")
+        samen.write_text(json.dumps([{"id": 1}, {"id": 2}]), "utf-8")
+        toets("een speler zonder profiel wordt geteld",
+              spelerslaag_achterstand(afgeleid, samen), 1)
+        samen.write_text(json.dumps([{"id": 1}, {"id": 2}, {"id": 3}]), "utf-8")
+        toets("bijgewerkte laag geeft nul", spelerslaag_achterstand(afgeleid, samen), 0)
+        # Meer profielen dan afgeleide spelers is geen achterstand: dat is een
+        # speler die uit de selectie is gehaald maar nog in de cache zit.
+        samen.write_text(json.dumps([{"id": i} for i in range(1, 6)]), "utf-8")
+        toets("een overgebleven profiel telt niet als achterstand",
+              spelerslaag_achterstand(afgeleid, samen), 0)
+        toets("een ontbrekend bestand geeft nul, geen fout",
+              spelerslaag_achterstand(tmp / "weg.json", samen), 0)
+        stuk = tmp / "stuk.json"
+        stuk.write_text("{geen json", "utf-8")
+        toets("onleesbare json geeft nul, geen fout",
+              spelerslaag_achterstand(stuk, samen), 0)
+
     print("\n── de officiële naam wint ──")
     # Zonder id kan sleutelmaker twee namen niet aan elkaar knopen; de
     # aliastabel doet dat vóór het tellen. Transfermarkt geeft stadions geen id,
@@ -902,6 +948,11 @@ def main():
     spelers = json.loads(SPELERS.read_text("utf-8"))
     print(f"  {len(wedstrijden)} wedstrijden in {WEDSTRIJDEN}")
     print(f"  {len(spelers)} spelers in {SPELERS}")
+    achter = spelerslaag_achterstand(Path("data/tm_players.json"), SPELERS)
+    if achter:
+        print(f"\n  ▼ {achter} spelers zijn wel afgeleid maar hebben nog geen profiel.")
+        print(f"    Ze staan in data/tm_players.json maar niet in {SPELERS}, en")
+        print(f"    vallen dus buiten deze export. Draai transfermarkt_profiles.py.")
 
     tabel = landcodes()
     if not tabel:

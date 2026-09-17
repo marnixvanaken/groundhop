@@ -946,3 +946,40 @@ scherpe maat, dan het origineel, dan pas de initialen. Een ontbrekende scherpe
 versie levert zo nooit een lege plek op waar eerst een foto stond. De drie
 plekken die een foto tonen — de avatar, het clubwapen en de speler in de XI —
 liepen alle drie langs hun eigen `onError`; die delen nu één pad.
+
+## 47 spelers die stil verdwenen
+
+De eerste echte toevoeging via het paneel werkte: zes wedstrijden erbij,
+opgehaald, opnieuw geëxporteerd, 171 in het dashboard. Maar in het log stonden
+drie regels die niet bij elkaar pasten:
+
+    171 wedstrijden → 2832 spelers
+    ✓ data/tm_players.json geschreven
+    ...
+    2785 spelers in data/tm_players_full.json
+
+`transfermarkt_players.py` leidt af wie speelde en hoe lang.
+`transfermarkt_profiles.py` haalt daar de geboortedatum, positie en
+nationaliteit bij en schrijft `tm_players_full.json` — en dát is wat het
+dashboard leest. Die tweede stap stond niet in de keten. De laag van de vorige
+run bleef dus gewoon staan, en de 47 nieuwe spelers vielen buiten de export.
+
+Geen foutmelding, want er ging niets stuk: er lag een geldig bestand, alleen een
+ouder. De export meldde zelfs `2785 van 2785 spelers in een linie` — een
+volmaakte score over een verouderde verzameling. Dat is de gevaarlijkste vorm
+van fout: eentje die zichzelf als volledig rapporteert.
+
+De stap staat nu in beide ketens, tussen `players` en `dashboard`. Hij is
+incrementeel — alleen wie nog niet in `tm_player_cache` zit wordt opgehaald —
+dus na een paar nieuwe wedstrijden kost hij minuten, niet uren.
+
+En omdat het overslaan van een stap nooit meer stil mag zijn, telt
+`spelerslaag_achterstand()` het verschil tussen de afgeleide en de samengevoegde
+laag, en meldt het bovenaan de export. Andersom telt niet mee: meer profielen
+dan afgeleide spelers is geen achterstand maar een speler die uit de selectie is
+gehaald terwijl zijn profiel in de cache bleef.
+
+Meegenomen: `transfermarkt_sync.py` meldde `✓ data/selected_matches.json
+geschreven` en daaronder `data/selected_matches.json is ongewijzigd` — over
+hetzelfde bestand, in twee regels. Dezelfde onwaarheid die in de export al was
+rechtgezet, maar hier nog stond.

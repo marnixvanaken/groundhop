@@ -64,11 +64,20 @@ KETENS = {
                  ["sofascore_tracker.py", "--export"]],
         "export": [["sofascore_tracker.py", "--export"]],
     },
+    # transfermarkt_profiles.py hoort er wél tussen. players.py leidt af wie
+    # speelde en hoe lang; geboortedatum, positie en nationaliteit staan alleen
+    # op het spelersprofiel, en het dashboard leest die samengevoegde laag.
+    # Zonder deze stap krijgt een nieuwe speler geen profiel en valt hij uit de
+    # export — zonder foutmelding, want de laag van de vorige run staat er nog.
+    # De stap is incrementeel: alleen wie nog niet in de cache zit wordt
+    # opgehaald, dus na een paar nieuwe wedstrijden kost het minuten, geen uren.
     "transfermarkt": {
         "sync": [["transfermarkt_sync.py"],
                  ["transfermarkt_players.py"],
+                 ["transfermarkt_profiles.py"],
                  ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"]],
         "export": [["transfermarkt_players.py"],
+                   ["transfermarkt_profiles.py"],
                    ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"]],
     },
 }
