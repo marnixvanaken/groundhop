@@ -36,18 +36,66 @@ def daily_scheduler():
 
 threading.Thread(target=daily_scheduler, daemon=True).start()
 
+def huidige_bron():
+    """Welke bron voedt het dashboard op dit moment: 'transfermarkt' of 'sofascore'?
+
+    De export schrijft zijn eigen herkomst mee in `source`. Daarop afgaan in
+    plaats van op een aparte instelling betekent dat de omwisseling zichzelf
+    aankondigt: zodra dashboard_data.json van Transfermarkt komt, draait de
+    server de Transfermarkt-keten. Er is niets om te vergeten om te zetten.
+    """
+    f = DATA_DIR / "dashboard_data.json"
+    if not f.exists():
+        return "sofascore"
+    try:
+        return json.loads(f.read_text("utf-8")).get("source") or "sofascore"
+    except Exception:
+        return "sofascore"
+
+
+# Per bron: wat er moet draaien om de wedstrijden op te halen, en wat er moet
+# draaien om alleen opnieuw te exporteren. De eerste kan uren duren, de tweede
+# seconden — vandaar dat opslaan alleen de tweede start.
+KETENS = {
+    "sofascore": {
+        "sync": [["sofascore_tracker.py", "--download"],
+                 ["sofascore_tracker.py", "--export"]],
+        "export": [["sofascore_tracker.py", "--export"]],
+    },
+    "transfermarkt": {
+        "sync": [["transfermarkt_sync.py"],
+                 ["transfermarkt_players.py"],
+                 ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"]],
+        "export": [["transfermarkt_players.py"],
+                   ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"]],
+    },
+}
+
+
+def draai_keten(soort):
+    """Draait de stappen van de actieve bron, en stopt bij de eerste die faalt.
+
+    Doorgaan na een mislukte stap zou een export opleveren uit half opgehaalde
+    data, en dat is erger dan geen export: het dashboard toont dan stilletjes
+    te weinig wedstrijden.
+    """
+    bron = huidige_bron()
+    for stap in KETENS[bron][soort]:
+        r = subprocess.run([sys.executable] + stap, timeout=86400, check=False)
+        if r.returncode != 0:
+            return f"{stap[0]} stopte met code {r.returncode}"
+    return None
+
+
 def run_sync():
-    """Draai download + export op de achtergrond."""
+    """Draai de keten van de actieve bron op de achtergrond."""
     if _sync_status["running"]:
         return
     _sync_status["running"] = True
     _sync_status["error"] = None
+    _sync_status["bron"] = huidige_bron()
     try:
-        python = sys.executable
-        # Stap 1: download wedstrijddata
-        subprocess.run([python, "sofascore_tracker.py", "--download"], timeout=86400, check=False)
-        # Stap 2: exporteer
-        subprocess.run([python, "sofascore_tracker.py", "--export"], timeout=60, check=False)
+        _sync_status["error"] = draai_keten("sync")
         _sync_status["last"] = time.strftime("%d-%m %H:%M:%S")
     except Exception as e:
         _sync_status["error"] = str(e)
@@ -155,10 +203,37 @@ class Handler(SimpleHTTPRequestHandler):
             f.write_text(json.dumps(existing, ensure_ascii=False, indent=2), "utf-8")
             print(f"  + {added} wedstrijden opgeslagen (totaal: {len(existing)})")
             # Snelle export op de achtergrond (geen volledige download)
-            threading.Thread(target=lambda: subprocess.run(
-                [sys.executable, "sofascore_tracker.py", "--export"], timeout=60, check=False
-            ), daemon=True).start()
+            threading.Thread(target=lambda: draai_keten("export"), daemon=True).start()
             self.send_json({"added": added, "total": len(existing)})
+
+        elif path == "/api/tm/toevoegen":
+            import transfermarkt_selectie as tsel
+
+            gevraagd = body if isinstance(body, list) else []
+            selectie = tsel.lees()
+            toegevoegd, stond_er_al = [], []
+            for m in gevraagd:
+                try:
+                    tm_id = int(m.get("match_id"))
+                except (TypeError, ValueError):
+                    continue
+                selectie, nieuw = tsel.voeg_toe(
+                    selectie, tm_id, m.get("label", ""), m.get("date", ""))
+                (toegevoegd if nieuw else stond_er_al).append(tm_id)
+            tsel.schrijf(selectie)
+            print(f"  + {len(toegevoegd)} wedstrijden in {tsel.SELECTIE} "
+                  f"(totaal: {len(selectie)})")
+
+            # Ophalen én opnieuw exporteren, want een nieuwe wedstrijd bestaat
+            # pas voor het dashboard als zijn rapport binnen is. Dat duurt
+            # seconden per wedstrijd, dus het gaat naar de achtergrond en de
+            # knop meldt zich via /api/sync-status.
+            if toegevoegd and not _sync_status["running"]:
+                threading.Thread(target=run_sync, daemon=True).start()
+            self.send_json({"added": len(toegevoegd),
+                            "already": len(stond_er_al),
+                            "total": len(selectie),
+                            "fetching": bool(toegevoegd)})
 
         elif path == "/api/sync":
             if not _sync_status["running"]:
@@ -170,6 +245,44 @@ class Handler(SimpleHTTPRequestHandler):
 
         else:
             self.send_json({"error": "Not found"}, 404)
+
+    def tm_route(self, rest):
+        """/tm/zoek/<naam>, /tm/club/<id>/<seizoen>, /tm/seizoenen"""
+        import transfermarkt_map as tmap
+
+        delen = [d for d in rest.split("/") if d]
+        if not delen:
+            self.send_json({"error": "onbekende route"}, 404)
+            return
+
+        if delen[0] == "zoek" and len(delen) > 1:
+            naam = unquote("/".join(delen[1:])).strip()
+            if len(naam) < 2:
+                self.send_json({"clubs": []})
+                return
+            clubs, zoekfout = tmap.zoek_club_met_status(naam)
+            # Onbereikbaar is iets anders dan niets gevonden, en het paneel moet
+            # dat verschil kunnen tonen.
+            self.send_json({"clubs": clubs[:12], "error": zoekfout})
+
+        elif delen[0] == "club" and len(delen) >= 3:
+            club_id, saison = int(delen[1]), int(delen[2])
+            wedstrijden, bron = tmap.speelschema_gecachet(club_id, saison)
+            mislukt = "mislukt" in bron
+            # De rij-tekst bevat de uitslag en de competitie in één string; het
+            # dashboard toont hem zoals hij is. Hem hier uit elkaar peuteren zou
+            # betekenen dat de parser op twee plaatsen moet kloppen.
+            self.send_json({"matches": wedstrijden, "bron": bron,
+                            "club_id": club_id, "saison": saison,
+                            "error": "Transfermarkt onbereikbaar" if mislukt else None})
+
+        elif delen[0] == "seizoenen":
+            nu = tmap.huidig_seizoen()
+            self.send_json({"huidig": nu,
+                            "seizoenen": list(range(nu, nu - 25, -1))})
+
+        else:
+            self.send_json({"error": "onbekende route"}, 404)
 
     def do_GET(self):
         parsed = urlparse(self.path)
@@ -209,6 +322,18 @@ class Handler(SimpleHTTPRequestHandler):
                 self.send_response(400)
                 self.end_headers()
 
+        # ─── Transfermarkt ─────────────────────────────────────────────────
+        # Geen doorgeefluik zoals /sofascore/, maar drie afgebakende vragen.
+        # Transfermarkt levert HTML, geen JSON: er valt niets door te sturen,
+        # het moet hier geparst worden. Dat de route daarmee smal is, is winst —
+        # er is geen pad waarlangs het dashboard een willekeurige URL kan laten
+        # ophalen.
+        elif path.startswith("/tm/"):
+            try:
+                self.tm_route(path[len("/tm/"):])
+            except Exception as e:
+                self.send_json({"error": f"{type(e).__name__}: {e}"}, 200)
+
         # ─── Sofascore proxy ───────────────────────────────────────────────
         elif path.startswith("/sofascore/"):
             sf_path = path[len("/sofascore"):]
@@ -226,6 +351,9 @@ class Handler(SimpleHTTPRequestHandler):
         elif path == "/api/cookies":
             # POST endpoint: sla cookies op
             pass
+
+        elif path == "/api/bron":
+            self.send_json({"bron": huidige_bron()})
 
         elif path == "/api/cookie-status":
             has = COOKIES_FILE.exists()

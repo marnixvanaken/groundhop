@@ -31,6 +31,7 @@ import time
 from pathlib import Path
 
 from transfermarkt_poc import BASE, fetch, parse_match
+from transfermarkt_selectie import SELECTIE, lees as lees_selectie
 
 SELECTED = Path("data/selected_matches.json")
 MATCH_MAP = Path("data/tm_match_map.json")
@@ -110,11 +111,26 @@ def rapporteer(records: list[dict], mapping: dict, origineel: list[dict]):
     oud = {str(m["id"]): m for m in origineel}
     # Welke Sofascore-wedstrijd hoort bij welke TM-wedstrijd?
     tm_naar_sofa = {str(v["tm_match_id"]): k for k, v in mapping.items()}
+    # Na de omwisseling staat er in SELECTED Transfermarkt-data, en dan wijst
+    # geen enkele sleutel meer ergens heen. Een kolom vol nullen zou dan lezen
+    # als totaal verlies, terwijl er niets te vergelijken valt — dus weglaten
+    # en zeggen waarom.
+    vergelijkbaar = sum(1 for r in records
+                        if tm_naar_sofa.get(str(r["id"])) in oud)
 
-    print(f"  {'veld':<16} {'Transfermarkt':>16}   {'was (Sofascore)':>16}")
-    print(f"  {'-' * 16} {'-' * 16}   {'-' * 16}")
+    if vergelijkbaar:
+        print(f"  {'veld':<16} {'Transfermarkt':>16}   {'was (Sofascore)':>16}")
+        print(f"  {'-' * 16} {'-' * 16}   {'-' * 16}")
+    else:
+        print(f"  Er staat geen Sofascore-data meer naast om mee te vergelijken —")
+        print(f"  {SELECTED} is al omgewisseld. De oude staat in data/sofascore_archief/.")
+        print(f"\n  {'veld':<16} {'Transfermarkt':>16}")
+        print(f"  {'-' * 16} {'-' * 16}")
     for veld in TELVELDEN:
         nieuw = sum(1 for r in records if gevuld(r, veld))
+        if not vergelijkbaar:
+            print(f"  {veld:<16} {nieuw:>7} / {n:<6}")
+            continue
         oud_n = 0
         for r in records:
             sofa_id = tm_naar_sofa.get(str(r["id"]))
@@ -143,11 +159,27 @@ def main():
                    help="toon alleen de stand, haal niets op")
     args = p.parse_args()
 
-    if not MATCH_MAP.exists():
-        raise SystemExit(f"  {MATCH_MAP} ontbreekt — draai eerst transfermarkt_map.py --map")
-    mapping = json.loads(MATCH_MAP.read_text("utf-8"))
-    origineel = json.loads(SELECTED.read_text("utf-8"))
-    print(f"  {len(mapping)} koppelingen in {MATCH_MAP}")
+    # De selectie is de bron zodra hij bestaat; de koppeling is dan nog
+    # uitsluitend herkomst. Zonder selectie draait de oude weg door, zodat een
+    # half gemigreerde installatie niet stukloopt.
+    selectie = lees_selectie()
+    if selectie:
+        mapping = {}
+        for s in selectie:
+            sleutel = str(s.get("sofascore_id") or f"tm{s['match_id']}")
+            mapping[sleutel] = {"tm_match_id": int(s["match_id"]),
+                                "date": s.get("date", ""),
+                                "sofascore_label": s.get("label", "")}
+        print(f"  {len(mapping)} wedstrijden in {SELECTIE}")
+    elif MATCH_MAP.exists():
+        mapping = json.loads(MATCH_MAP.read_text("utf-8"))
+        print(f"  {len(mapping)} koppelingen in {MATCH_MAP}")
+        print(f"    ! nog geen {SELECTIE} — draai transfermarkt_selectie.py --seed")
+    else:
+        raise SystemExit(f"  Geen {SELECTIE} en geen {MATCH_MAP} — draai eerst\n"
+                         f"  transfermarkt_map.py --map en daarna "
+                         f"transfermarkt_selectie.py --seed")
+    origineel = json.loads(SELECTED.read_text("utf-8")) if SELECTED.exists() else []
 
     if UITGESTELD.exists():
         uit = json.loads(UITGESTELD.read_text("utf-8"))
@@ -192,7 +224,8 @@ def main():
     # zou na de overstap op niets meer matchen en zou elke wedstrijd die je al
     # hebt opnieuw aanbieden. De koppeling die we toch al hebben lost dat op:
     # we schrijven het Sofascore-ID mee, als herkomst, niet als sleutel.
-    tm_naar_sofa = {str(v["tm_match_id"]): int(k) for k, v in mapping.items()}
+    tm_naar_sofa = {str(v["tm_match_id"]): int(k)
+                    for k, v in mapping.items() if k.isdigit()}
     schoon = []
     for r in records:
         rec = {k: v for k, v in r.items() if not k.startswith("_")}

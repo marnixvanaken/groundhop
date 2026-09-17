@@ -209,20 +209,44 @@ def kies_club(naam: str, kandidaten: list[dict]) -> tuple[dict | None, list[dict
 
 # ─── Club zoeken ─────────────────────────────────────────────────────────────
 
-def zoek_club(naam: str, toon: bool = False) -> list[dict]:
-    """Zoekt clubs via de snelzoekfunctie. Geeft kandidaten met ID en naam."""
+def zoek_club_met_status(naam: str) -> tuple[list[dict], str | None]:
+    """Zoekt clubs en zegt erbij of het zoeken zelf lukte.
+
+    Het verschil is niet academisch: een onbereikbaar Transfermarkt levert
+    dezelfde lege lijst op als een naam die niet bestaat. Wie dat niet uit
+    elkaar houdt, meldt 'geen clubs gevonden' terwijl er niets gezocht is.
+    """
     url = f"{BASE}/schnellsuche/ergebnis/schnellsuche"
     try:
         resp = _http.get(url, params={"query": naam}, headers=HEADERS,
                          timeout=25, **_IMPERSONATE)
     except Exception as e:
-        print(f"  ! zoeken mislukt: {type(e).__name__}: {e}")
-        return []
+        return [], f"{type(e).__name__}: {e}"
     if resp.status_code != 200:
-        print(f"  ! HTTP {resp.status_code} bij zoeken op {naam!r}")
-        return []
+        return [], f"HTTP {resp.status_code}"
+    return _lees_clubs(resp.text, naam), None
 
-    s = soep(resp.text)
+
+def zoek_club(naam: str, toon: bool = False) -> list[dict]:
+    """Zoekt clubs via de snelzoekfunctie. Geeft kandidaten met ID en naam."""
+    kandidaten, fout = zoek_club_met_status(naam)
+    if fout:
+        print(f"  ! zoeken mislukt: {fout}")
+        return []
+    if toon:
+        print(f"\n  Zoekresultaten voor {naam!r}:")
+        for k in kandidaten[:8]:
+            merk = "→" if lijkt_op(k["name"], naam) else " "
+            print(f"   {merk} {k['id']:>7}  {k['name']}")
+        if not kandidaten:
+            print("    geen clubs gevonden")
+    return kandidaten
+
+
+def _lees_clubs(html: str, naam: str) -> list[dict]:
+    """Haalt de clubkandidaten uit een zoekpagina, beste treffer eerst."""
+
+    s = soep(html)
     gezien, kandidaten = set(), []
     for a in s.find_all("a", href=VEREIN_RE):
         href = a.get("href", "")
@@ -239,13 +263,6 @@ def zoek_club(naam: str, toon: bool = False) -> list[dict]:
 
     # Exacte naamovereenkomst eerst.
     kandidaten.sort(key=lambda k: (not lijkt_op(k["name"], naam), len(k["name"])))
-    if toon:
-        print(f"\n  Zoekresultaten voor {naam!r}:")
-        for k in kandidaten[:8]:
-            merk = "→" if lijkt_op(k["name"], naam) else " "
-            print(f"   {merk} {k['id']:>7}  {k['name']}")
-        if not kandidaten:
-            print("    geen clubs gevonden")
     return kandidaten
 
 
