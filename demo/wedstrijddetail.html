@@ -24,7 +24,8 @@
   --accent:         #0a7a3d;  /*  5.43:1 op kaart — jouw tellers          */
   --accent-strong:  #11a24f;  /*  3.33:1 met wit — alleen groot en vet    */
   --accent-soft:    rgba(10,122,61,0.10);
-  --glass:          rgba(237,239,242,0.72);
+  --glass:          rgba(237,239,242,0.93);
+  --glass-filter:   blur(36px) saturate(1.5) brightness(1.3);
   --glass-border:   rgba(255,255,255,0.7);
   --shadow:         0 1px 2px rgba(20,23,26,0.04), 0 6px 16px rgba(20,23,26,0.06);
   --radius:         18px;
@@ -42,7 +43,8 @@
     --accent:        #45d284;  /*  8.52:1 op kaart                        */
     --accent-strong: #1c9a57;  /*  3.61:1 met wit                         */
     --accent-soft:   rgba(69,210,132,0.12);
-    --glass:         rgba(14,16,19,0.72);
+    --glass:         rgba(14,16,19,0.91);
+    --glass-filter:  blur(36px) saturate(1.5) brightness(0.42);
     --glass-border:  rgba(255,255,255,0.12);
     --shadow:        0 1px 2px rgba(0,0,0,0.3), 0 6px 16px rgba(0,0,0,0.4);
   }
@@ -73,13 +75,15 @@ body{
   height:calc(52px + env(safe-area-inset-top,0px));
   padding-top:env(safe-area-inset-top,0px);
   background:var(--glass);
-  backdrop-filter:blur(28px) saturate(1.4);
-  -webkit-backdrop-filter:blur(28px) saturate(1.4);
+  backdrop-filter:var(--glass-filter);
+  -webkit-backdrop-filter:var(--glass-filter);
   border-bottom:0.5px solid var(--separator);
 }
 .bar::after{ /* scroll edge effect: content vervaagt tegen de balk aan */
-  content:""; position:absolute; left:0; right:0; top:100%; height:16px;
-  background:linear-gradient(to bottom,var(--surface),transparent);
+  content:""; position:absolute; left:0; right:0; top:100%; height:24px;
+  background:linear-gradient(to bottom,var(--glass),transparent);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
   pointer-events:none;
 }
 .back{
@@ -242,10 +246,17 @@ main{padding:16px; display:flex; flex-direction:column; gap:16px; max-width:460p
   width:calc(100% - 24px); max-width:436px;
   display:flex; padding:5px; border-radius:26px;
   background:var(--glass);
-  backdrop-filter:blur(32px) saturate(1.5);
-  -webkit-backdrop-filter:blur(32px) saturate(1.5);
+  backdrop-filter:var(--glass-filter);
+  -webkit-backdrop-filter:var(--glass-filter);
   border:0.5px solid var(--glass-border);
   box-shadow:0 8px 32px rgba(0,0,0,0.16);
+}
+.tabbar::before{
+  content:""; position:absolute; left:0; right:0; bottom:100%; height:22px;
+  background:linear-gradient(to top,var(--glass),transparent);
+  backdrop-filter:blur(6px);
+  -webkit-backdrop-filter:blur(6px);
+  pointer-events:none;
 }
 .tabbar button{
   flex:1; min-height:44px; border:0; background:none; cursor:pointer;
@@ -257,6 +268,10 @@ main{padding:16px; display:flex; flex-direction:column; gap:16px; max-width:460p
   stroke-linecap:round; stroke-linejoin:round;}
 
 /* ── Toegankelijkheidsstanden ──────────────────────────────────────────── */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .bar,.tabbar{background:var(--surface);}
+  .bar::after,.tabbar::before{display:none;}
+}
 @media (prefers-reduced-transparency: reduce){
   .bar,.tabbar{background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none;}
 }
