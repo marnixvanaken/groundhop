@@ -70,11 +70,18 @@ def main():
         f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
         encoding="utf-8")
 
-    (doel / "crests").mkdir(exist_ok=True)
     for naam in ["match-data.js", "venue-data.js"]:
         shutil.copyfile(DEMO / naam, doel / naam)
-    for f in (DEMO / "crests").iterdir():
-        shutil.copyfile(f, doel / "crests" / f.name)
+
+    # Alle beeldmappen mee, niet alleen de clublogo's: zonder de portretten
+    # valt de opstelling terug op initialen en is het verschil juist weg.
+    for map_ in ["crests", "players", "tournaments"]:
+        bron = DEMO / map_
+        if not bron.is_dir():
+            continue
+        (doel / map_).mkdir(exist_ok=True)
+        for f in bron.iterdir():
+            shutil.copyfile(f, doel / map_ / f.name)
 
     for f in sorted(doel.rglob("*")):
         if f.is_file():
