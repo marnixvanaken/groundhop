@@ -24,11 +24,13 @@
   --accent:         #0a7a3d;  /*  5.43:1 op kaart — jouw tellers          */
   --accent-strong:  #11a24f;  /*  3.33:1 met wit — alleen groot en vet    */
   --accent-soft:    rgba(10,122,61,0.10);
-  --glass:          rgba(237,239,242,0.93);
-  --glass-filter:   blur(36px) saturate(1.5) brightness(1.3);
+  --glass:          rgba(237,239,242,0.70);
+  --glass-filter:   blur(30px) saturate(1.5) brightness(1.12);
   --glass-border:   rgba(255,255,255,0.7);
   --shadow:         0 1px 2px rgba(20,23,26,0.04), 0 6px 16px rgba(20,23,26,0.06);
   --radius:         18px;
+  --bar-h:          calc(52px + env(safe-area-inset-top,0px));
+  --tab-h:          calc(74px + env(safe-area-inset-bottom,0px));
   --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
   --display: "Outfit", var(--ui);
 }
@@ -43,8 +45,8 @@
     --accent:        #45d284;  /*  8.52:1 op kaart                        */
     --accent-strong: #1c9a57;  /*  3.61:1 met wit                         */
     --accent-soft:   rgba(69,210,132,0.12);
-    --glass:         rgba(14,16,19,0.91);
-    --glass-filter:  blur(36px) saturate(1.5) brightness(0.42);
+    --glass:         rgba(14,16,19,0.74);
+    --glass-filter:  blur(30px) saturate(1.5) brightness(0.6);
     --glass-border:  rgba(255,255,255,0.12);
     --shadow:        0 1px 2px rgba(0,0,0,0.3), 0 6px 16px rgba(0,0,0,0.4);
   }
@@ -63,8 +65,8 @@ body{
   font-size:15px;          /* Apple Body, standaard 15pt                  */
   line-height:1.4;
   -webkit-font-smoothing:antialiased;
-  padding-bottom:calc(96px + env(safe-area-inset-bottom,0px));
 }
+html,body{height:100%; overflow:hidden;}
 .num{font-family:var(--display);font-variant-numeric:tabular-nums;}
 
 /* ── Functionele laag: hier hoort glas, en alleen hier ──────────────────── */
@@ -79,13 +81,6 @@ body{
   -webkit-backdrop-filter:var(--glass-filter);
   border-bottom:0.5px solid var(--separator);
 }
-.bar::after{ /* scroll edge effect: content vervaagt tegen de balk aan */
-  content:""; position:absolute; left:0; right:0; top:100%; height:24px;
-  background:linear-gradient(to bottom,var(--glass),transparent);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  pointer-events:none;
-}
 .back{
   display:flex; align-items:center; gap:2px;
   min-height:44px; min-width:44px; padding:0 8px;  /* 44pt raakvlak */
@@ -94,7 +89,22 @@ body{
 }
 .bar h1{font-size:17px; font-weight:600; letter-spacing:-0.01em;}
 
-main{padding:16px; display:flex; flex-direction:column; gap:16px; max-width:460px; margin:0 auto;}
+/* Het scroll edge effect zelf: de content vervaagt waar hij de balken raakt,
+   zodat het glas doorschijnend kan blijven zonder dat je er tekst door leest. */
+main{
+  position:fixed; inset:0; overflow-y:auto; overscroll-behavior:contain;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  padding:calc(var(--bar-h) + 16px) 16px calc(var(--tab-h) + 24px);
+  --fade:linear-gradient(to bottom,
+    rgba(0,0,0,0)    0,
+    rgba(0,0,0,0.26) var(--bar-h),
+    rgba(0,0,0,1)    calc(var(--bar-h) + 44px),
+    rgba(0,0,0,1)    calc(100% - var(--tab-h) - 28px),
+    rgba(0,0,0,0.26) calc(100% - var(--tab-h) + 12px),
+    rgba(0,0,0,0)    100%);
+  -webkit-mask-image:var(--fade); mask-image:var(--fade);
+}
+main > *{width:100%; max-width:428px; flex:none;}
 
 /* ── Contentlaag: dekkende kaarten ─────────────────────────────────────── */
 .card{
@@ -250,13 +260,6 @@ main{padding:16px; display:flex; flex-direction:column; gap:16px; max-width:460p
   -webkit-backdrop-filter:var(--glass-filter);
   border:0.5px solid var(--glass-border);
   box-shadow:0 8px 32px rgba(0,0,0,0.16);
-}
-.tabbar::before{
-  content:""; position:absolute; left:0; right:0; bottom:100%; height:22px;
-  background:linear-gradient(to top,var(--glass),transparent);
-  backdrop-filter:blur(6px);
-  -webkit-backdrop-filter:blur(6px);
-  pointer-events:none;
 }
 .tabbar button{
   flex:1; min-height:44px; border:0; background:none; cursor:pointer;
