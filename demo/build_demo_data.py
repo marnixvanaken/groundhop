@@ -19,6 +19,7 @@ Gebruik:  python3 demo/build_demo_data.py [match_id]
 import json
 import shutil
 import sys
+from urllib.parse import quote
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -81,6 +82,18 @@ def nth(matches, match, key):
     return len(earlier)
 
 
+def foto(speler):
+    """Na de overstap naar Transfermarkt hangen de spelers aan andere id's, dus
+    het bestand in img/player/ is er dan nog niet. De export draagt wel een
+    photo_url; die gaat langs /img/ext, dat de host toetst. In een losse demo
+    zonder server levert dat niets op en blijven het initialen."""
+    lokaal = copy_photo(speler["id"])
+    if lokaal:
+        return lokaal
+    url = speler.get("photo_url")
+    return f"/img/ext?u={quote(url, safe='')}" if url else None
+
+
 def build_lineup(players, match_id):
     """Reconstrueert de opstelling vanaf de spelerskant."""
     teams = {}
@@ -98,7 +111,7 @@ def build_lineup(players, match_id):
                 "goals": md.get("goals") or 0,
                 "assists": md.get("assists") or 0,
                 "starter": bool(md.get("starter")),
-                "photo": copy_photo(p["id"]),
+                "photo": foto(p),
                 # Hoe vaak je deze speler in totaal hebt zien spelen.
                 "seen": p.get("matches_seen") or 0,
             })

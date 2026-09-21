@@ -79,6 +79,7 @@
   border-radius:7px; padding:3px 7px; min-width:38px; text-align:center;
 }
 .rating.leeg{color:var(--content-2); font-weight:600;}
+.zonder-rating .player{grid-template-columns:16px 34px 1fr auto;}
 </style>
 </head>
 <body>
@@ -245,6 +246,10 @@ function render(){
 
 function toonPloeg(team){
   const spelers = M.lineup[team];
+  // Transfermarkt kent geen cijfers per speler. Een kolom met alleen streepjes
+  // is erger dan geen kolom, dus hij verschijnt alleen als er iets in staat.
+  const metRating = spelers.some(p => p.rating != null);
+  document.getElementById('lineup').classList.toggle('zonder-rating', !metRating);
   const basis = spelers.filter(p => p.starter);
   const rest  = spelers.filter(p => !p.starter);
   const blok = (label, lijst) => !lijst.length ? '' :
@@ -260,7 +265,7 @@ function toonPloeg(team){
             p.assists ? ` · ${p.assists} assist${p.assists > 1 ? 's' : ''}` : ''}</div>
         </div>
         <div class="seen num" title="Zo vaak zag je deze speler">${p.seen}×</div>
-        ${p.rating
+        ${!metRating ? '' : p.rating
           ? `<div class="rating num">${p.rating.toFixed(1)}</div>`
           : `<div class="rating num leeg">—</div>`}
       </div>`).join('');

@@ -290,10 +290,18 @@ function render(naam){
         <div class="row-value">nr. ${v.rank_attendance} · ${getal(v.attendance_max)}</div>
       </div>
     </div>` : ''}
-    <div class="note">
-      Publiekscijfer bekend bij ${v.attendance_known} van de ${v.visits} duels hier.
-      In totaal hebben ${t.matches_without_venue} van je duels geen stadion in de data.
-    </div>
+    ${(() => {
+      // Transfermarkt levert het publiek vrijwel altijd; dan valt er niets meer
+      // voor te behouden en hoort die regel er ook niet te staan.
+      const regels = [];
+      if (v.attendance_known < v.visits){
+        regels.push(`Publiekscijfer bekend bij ${v.attendance_known} van de ${v.visits} duels hier.`);
+      }
+      if (t.matches_without_venue){
+        regels.push(`In totaal hebben ${t.matches_without_venue} van je duels geen stadion in de data.`);
+      }
+      return regels.length ? `<div class="note">${regels.join(' ')}</div>` : '';
+    })()}
   </section>`;
 
   app.querySelectorAll('.seg button').forEach(b => {

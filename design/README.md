@@ -59,6 +59,38 @@ desondanks te reconstrueren: via `players[].matches_detail` is 179 van de 180
 wedstrijden gedekt, met een mediaan van 43 spelers per duel, inclusief
 starter-vlag, minuten, rating, goals en assists.
 
+## De bron wisselt naar Transfermarkt
+
+Op `claude/festive-allen-8yl9v3` staat een afgeronde migratie van Sofascore
+naar Transfermarkt, hier binnengehaald. De omwisseling zelf is nog niet
+gebeurd: `dashboard_data.json` draagt nog geen `source`-veld en is dus nog
+Sofascore. Transfermarkt is alleen bereikbaar vanaf een eigen machine, dus
+`transfermarkt_sync.py` draait daar.
+
+Wat dat voor het ontwerp betekent:
+
+| Veld | Na de omwisseling |
+|---|---|
+| `attendance` | van 41 van de 180 naar vrijwel compleet |
+| `avg_rating` | bestaat niet op Transfermarkt |
+| xG, schoten, passes, duels | bestaan niet (worden hier niet gebruikt) |
+| `round` | dekking 164 → 113 |
+| `matches_seen`, `starter`, `minutes`, `goals`, `assists` | blijven |
+| `photo_url` | blijft, maar zonder voorspelbare URL |
+
+De twee schermen tonen daarom wat er is in plaats van een vaste vorm aan te
+nemen. De ratingkolom in de opstelling verschijnt alleen als er ratings zijn,
+en het voorbehoud over publieksdekking alleen als er iets voor te behouden is.
+Beide gedragen zich dus goed op de oude en de nieuwe bron.
+
+De afleiding van de opstelling blijft werken: `players[].matches_detail` draagt
+op Transfermarkt dezelfde velden, `rating` uitgezonderd.
+
+Spelersfoto's hebben op Transfermarkt geen vast URL-patroon — er zit een
+timestamp in — dus de export draagt `photo_url` mee en die gaat langs
+`/img/ext`, dat de host toetst. `tools/fetch_images.py` haalt bij Sofascore op
+en is na de omwisseling niet meer de aangewezen weg.
+
 ## Richting
 
 De wedstrijd is het atoom. Elk duel knoopt een stadion, twee clubs, een

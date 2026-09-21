@@ -401,7 +401,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F356160%2Fimage",
     "seen": 1
    },
    {
@@ -414,7 +414,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F153257%2Fimage",
     "seen": 2
    },
    {
@@ -427,7 +427,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F870263%2Fimage",
     "seen": 2
    },
    {
@@ -440,7 +440,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F898815%2Fimage",
     "seen": 3
    },
    {
@@ -453,7 +453,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 1,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F148899%2Fimage",
     "seen": 2
    },
    {
@@ -466,7 +466,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F787941%2Fimage",
     "seen": 1
    },
    {
@@ -479,7 +479,7 @@ window.MATCH = {
     "goals": 2,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F879346%2Fimage",
     "seen": 1
    },
    {
@@ -492,7 +492,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F70996%2Fimage",
     "seen": 1
    },
    {
@@ -505,7 +505,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F907668%2Fimage",
     "seen": 1
    },
    {
@@ -518,7 +518,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F962364%2Fimage",
     "seen": 3
    },
    {
@@ -531,7 +531,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F235672%2Fimage",
     "seen": 1
    },
    {
@@ -544,7 +544,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F592794%2Fimage",
     "seen": 2
    },
    {
@@ -557,7 +557,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F1940256%2Fimage",
     "seen": 1
    },
    {
@@ -583,7 +583,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F108484%2Fimage",
     "seen": 1
    },
    {
@@ -596,7 +596,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F805078%2Fimage",
     "seen": 1
    },
    {
@@ -609,7 +609,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F838232%2Fimage",
     "seen": 1
    },
    {
@@ -648,7 +648,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F1069560%2Fimage",
     "seen": 1
    },
    {
@@ -661,7 +661,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
-    "photo": null,
+    "photo": "/img/ext?u=https%3A%2F%2Fapi.sofascore.app%2Fapi%2Fv1%2Fplayer%2F1163083%2Fimage",
     "seen": 1
    }
   ]
