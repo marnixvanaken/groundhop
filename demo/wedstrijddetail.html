@@ -140,7 +140,7 @@ function render(){
   <section class="card">
     <div class="score-meta">
       <div class="comp-regel">${compLogo(M.tournament_logo)}<span class="comp">${comp}${rondeTekst}</span></div>
-      <div class="date">${datum(M.date)}</div>
+      <div class="date">${datum(M.date, true)}</div>
     </div>
     <div class="score">
       <div class="side">
@@ -227,7 +227,7 @@ function render(){
     </div>
     <div class="note">
       Je ${c.match_nr}<sup>e</sup> wedstrijd van ${c.total_matches}.
-      ${M.venue.name} bezocht je voor het eerst op ${datum(c.venue_first)}.
+      ${M.venue.name} bezocht je voor het eerst op ${datum(c.venue_first, true)}.
     </div>
   </section>`;
 

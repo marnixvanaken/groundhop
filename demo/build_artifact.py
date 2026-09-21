@@ -48,13 +48,39 @@ def onderdelen(pad):
     return eigen, body, titel
 
 
+def controleer(doel):
+    """Elk bestand dat de pagina's opvragen moet ook meegeleverd zijn.
+
+    Twee keer ging hier iets mis: eerst ontbraken de portretten, daarna het
+    gedeelde script, en beide keren zag je dat pas aan een leeg scherm. Een
+    ontbrekend script is stiller dan een ontbrekende afbeelding, dus laat de
+    bouw hier struikelen in plaats van de pagina.
+    """
+    verwijzingen = set()
+    for pagina in doel.glob("*.html"):
+        tekst = pagina.read_text(encoding="utf-8")
+        for attr in ("src", "href"):
+            verwijzingen |= set(re.findall(attr + r'="([^"#:]+?)"', tekst))
+    # Ook wat de datavelden noemen: logo's en portretten staan daar als pad.
+    for js in doel.glob("*-data.js"):
+        verwijzingen |= set(re.findall(r'"((?:crests|players|tournaments)/[^"]+)"',
+                                       js.read_text(encoding="utf-8")))
+
+    ontbreekt = sorted(v for v in verwijzingen if not (doel / v).exists())
+    if ontbreekt:
+        raise SystemExit("ontbrekende bestanden in de bouw:\n  " + "\n  ".join(ontbreekt))
+    print(f"  gecontroleerd: {len(verwijzingen)} verwijzingen, alles aanwezig")
+
+
 def main():
     doel = Path(sys.argv[1])
     doel.mkdir(parents=True, exist_ok=True)
     gedeeld = themas((DEMO / "groundhop.css").read_text(encoding="utf-8"))
 
     # Hoofdpagina: zonder documentskelet, met een naam in plaats van een omschrijving.
+    # Die heet hier index.html, dus ook de verwijzingen naar zichzelf om.
     eigen, body, _ = onderdelen(DEMO / "wedstrijddetail.html")
+    body = body.replace('href="wedstrijddetail.html"', 'href="index.html"')
     (doel / "index.html").write_text(
         f"<title>GroundHop Wedstrijddetail</title>\n{FONTS}\n"
         f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n\n{body}\n",
@@ -70,7 +96,7 @@ def main():
         f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
         encoding="utf-8")
 
-    for naam in ["match-data.js", "venue-data.js"]:
+    for naam in ["groundhop.js", "match-data.js", "venue-data.js"]:
         shutil.copyfile(DEMO / naam, doel / naam)
 
     # Alle beeldmappen mee, niet alleen de clublogo's: zonder de portretten
@@ -82,6 +108,8 @@ def main():
         (doel / map_).mkdir(exist_ok=True)
         for f in bron.iterdir():
             shutil.copyfile(f, doel / map_ / f.name)
+
+    controleer(doel)
 
     for f in sorted(doel.rglob("*")):
         if f.is_file():
