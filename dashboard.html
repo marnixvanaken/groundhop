@@ -126,14 +126,44 @@ const MND=['jan','feb','mrt','apr','mei','jun','jul','aug','sep','okt','nov','de
 const fDate=d=>{if(!d)return'';const[y,m,day]=d.split('-');return`${parseInt(day)} ${MND[parseInt(m)-1]} ${y}`;};
 const fAge=(y,d)=>`${y}j ${d}d`;
 const fNum=n=>n!=null?n.toLocaleString('nl-NL'):'—';
-const fXg=n=>n!=null?parseFloat(n).toFixed(2):'—';
-const fRating=n=>n?parseFloat(n).toFixed(1):'—';
 const fMarket=v=>{if(!v)return'—';if(v>=1000000)return`€${(v/1000000).toFixed(1).replace('.0','')}M`;if(v>=1000)return`€${Math.round(v/1000)}K`;return`€${v}`;};
 const pImg=id=>`/img/player/${id}`;
 const tImg=id=>`/img/team/${id}`;
+// Transfermarkt nummert zijn clubs anders dan Sofascore; een TM-nummer door
+// /img/team/ sturen zou het wapen van een wíllekeurige andere club opleveren.
+// De volle URL gaat langs /img/ext, dat de host toetst voor hij iets ophaalt.
+const tmImg=id=>`https://tmssl.akamaized.net/images/wappen/head/${id}.png`;
+// Een foto-URL uit de bron gaat langs dezelfde proxy als de rest. Rechtstreeks
+// laden werkt op mobiel niet, en daarvoor staat die proxy er.
+const extImg=u=>u?`/img/ext?u=${encodeURIComponent(u)}`:null;
+
+// Transfermarkt serveert hetzelfde plaatje in meerdere maten; alleen het stukje
+// na /portrait/ of /wappen/ verschilt. De opstellingspagina linkt naar de
+// kleinste, en die staat op een retinascherm op twee- tot driemaal zijn eigen
+// grootte — vandaar de zachte randen. De maat ophogen kost niets: het is
+// dezelfde afbeelding op een ander pad.
+const TM_MATEN=[
+  [/\/portrait\/(small|medium)\//, '/portrait/header/'],
+  [/\/images\/wappen\/(head|small|medium)\//, '/images/wappen/big/'],
+];
+const scherper=u=>{
+  if(!u) return u;
+  for(const [patroon,vervanging] of TM_MATEN){
+    if(patroon.test(u)) return u.replace(patroon,vervanging);
+  }
+  return u;
+};
+// Welke bronnen achter elkaar geprobeerd mogen worden: eerst de scherpe maat,
+// dan het origineel. Of elke maat voor elke speler bestaat is niet te
+// garanderen, en een ontbrekende scherpe versie mag geen lege plek opleveren
+// waar eerst een foto stond.
+const beeldbronnen=(ruw,terugval)=>{
+  if(!ruw) return terugval?[terugval]:[];
+  const scherp=scherper(ruw);
+  return scherp!==ruw?[extImg(scherp),extImg(ruw)]:[extImg(ruw)];
+};
 const FLAG_FIX={'en':'gb-eng','sx':'gb-sct','nx':'gb-nir','wl':'gb-wls','wa':'gb-wls'};
 const fFlag=a2=>{if(!a2)return null;const c=FLAG_FIX[a2.toLowerCase()]||a2.toLowerCase();return`https://flagcdn.com/w40/${c}.png`;};
-const rBg=r=>{if(!r)return T.bg4;const v=parseFloat(r);return v>=8.5?'#248a3d':v>=7.5?'#34c759':v>=6.5?'#ff9f0a':'#ff3b30';};
 const goalLabel=t=>t==='penalty'?' (pen)':t==='ownGoal'?' (eg)':'';
 const posLabel={G:'Keeper',D:'Verdediger',M:'Middenvelder',F:'Aanvaller'};
 
@@ -259,17 +289,21 @@ function Pill({children,active,color,onClick,size}){
 }
 
 function Avatar({player,size=44}){
-  const [err,setErr]=useState(false);
+  const [stap,setStap]=useState(0);
   const init=(player.short_name||player.name||'?').split(' ').map(w=>w[0]||'').join('').slice(0,2).toUpperCase();
   const style={width:size,height:size,borderRadius:'50%',objectFit:'cover',background:T.bg4,flexShrink:0};
-  if(err) return html`<div style=${{...style,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.33,fontWeight:700,color:T.muted}}>${init}</div>`;
-  return html`<img src=${pImg(player.id)} alt=${player.short_name||player.name||''} loading="lazy" onError=${()=>setErr(true)} style=${style} />`;
+  const lijst=beeldbronnen(player.photo_url,player.id!=null?pImg(player.id):null);
+  const bron=lijst[stap];
+  if(!bron) return html`<div style=${{...style,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.33,fontWeight:700,color:T.muted}}>${init}</div>`;
+  return html`<img src=${bron} alt=${player.short_name||player.name||''} loading="lazy" onError=${()=>setStap(stap+1)} style=${style} />`;
 }
 
-function TeamBadge({id,name,size=32}){
-  const [err,setErr]=useState(false);
-  if(err) return html`<div style=${{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.35,fontWeight:700,color:T.muted}}>${(name||'?').slice(0,3)}</div>`;
-  return html`<img src=${tImg(id)} alt="" loading="lazy" onError=${()=>setErr(true)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
+function TeamBadge({id,name,src,size=32}){
+  const [stap,setStap]=useState(0);
+  const lijst=beeldbronnen(src,id!=null?tImg(id):null);
+  const bron=lijst[stap];
+  if(!bron) return html`<div style=${{width:size,height:size,display:'flex',alignItems:'center',justifyContent:'center',fontSize:size*0.35,fontWeight:700,color:T.muted}}>${(name||'?').slice(0,3)}</div>`;
+  return html`<img src=${bron} alt="" loading="lazy" onError=${()=>setStap(stap+1)} style=${{width:size,height:size,objectFit:'contain',flexShrink:0}} />`;
 }
 
 function Flag({a2,size=18}){
@@ -312,11 +346,6 @@ function StatBox({label,value,color,sub}){
     <div style=${{fontSize:10,color:T.muted,marginTop:3,textTransform:'uppercase',letterSpacing:'0.06em'}}>${label}</div>
     ${sub&&html`<div style=${{fontSize:11,color:T.muted,marginTop:2}}>${sub}</div>`}
   </div>`;
-}
-
-function RatingBadge({rating}){
-  if(!rating)return null;
-  return html`<div style=${{background:rBg(rating),color:'#fff',borderRadius:10,padding:'3px 9px',fontSize:13,fontWeight:800,flexShrink:0}}>${fRating(rating)}</div>`;
 }
 
 function SectionTitle({children,right,icon}){
@@ -699,14 +728,15 @@ function XICard({player,type,color,onPlayerClick}){
   if(!player)return html`<div style=${{width:70}}></div>`;
   const posColor=POS_COLOR[player.position]||T.muted;
   const initials=(player.short_name||player.name||'?').split(' ').map(w=>w[0]).slice(0,2).join('');
-  const [imgOk,setImgOk]=useState(true);
+  const [stap,setStap]=useState(0);
+  const bronnen=beeldbronnen(player.photo_url,player.id!=null?pImg(player.id):null);
   return html`<div
     onClick=${()=>onPlayerClick&&onPlayerClick(player)}
     style=${{display:'flex',flexDirection:'column',alignItems:'center',gap:3,width:70,flexShrink:0,cursor:onPlayerClick?'pointer':'default'}}
   >
     <div style=${{width:46,height:46,borderRadius:'50%',background:posColor+'22',border:`2px solid ${posColor}55`,overflow:'hidden',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-      ${imgOk
-        ?html`<img src=${pImg(player.id)} style=${{width:'100%',height:'100%',objectFit:'cover'}} onError=${()=>setImgOk(false)} loading="lazy" />`
+      ${bronnen[stap]
+        ?html`<img src=${bronnen[stap]} style=${{width:'100%',height:'100%',objectFit:'cover'}} onError=${()=>setStap(stap+1)} loading="lazy" />`
         :html`<span style=${{fontSize:14,fontWeight:800,color:posColor}}>${initials}</span>`}
     </div>
     <div style=${{fontSize:9,fontWeight:600,color:T.text,textAlign:'center',lineHeight:1.2,maxWidth:68,overflow:'hidden',whiteSpace:'nowrap',textOverflow:'ellipsis'}}>${player.short_name||player.name}</div>
@@ -872,14 +902,14 @@ function MiniMatchRow({match:m}){
   }}>
     <div style=${{fontSize:11,color:T.dim,width:36,flexShrink:0,textAlign:'center'}}>${m.date?.slice(8)}/${m.date?.slice(5,7)}</div>
     <div style=${{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0}}>
-      <${TeamBadge} id=${m.home_team?.id} name=${m.home_team?.name} size=${22} />
+      <${TeamBadge} id=${m.home_team?.id} name=${m.home_team?.name} src=${m.home_team?.logo_url} size=${22} />
       <div style=${{flex:1,minWidth:0}}>
         <div style=${{fontSize:13,fontWeight:600,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
           ${m.home_team?.name}<span style=${{color:T.blue,fontWeight:800,margin:'0 4px'}}>${m.home_score??'?'}–${m.away_score??'?'}</span>${m.away_team?.name}
         </div>
         <div style=${{fontSize:11,color:uc?uc.border:T.dim,marginTop:1,fontWeight:uc?600:400,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${m.tournament}${m.venue?.city?` · ${m.venue.city}`:''}</div>
       </div>
-      <${TeamBadge} id=${m.away_team?.id} name=${m.away_team?.name} size=${22} />
+      <${TeamBadge} id=${m.away_team?.id} name=${m.away_team?.name} src=${m.away_team?.logo_url} size=${22} />
     </div>
   </div>`;
 }
@@ -887,7 +917,7 @@ function MiniMatchRow({match:m}){
 // ─── TAB: SPELERS ──────────────────────────────────────────────────────────
 const SORTS=[
   {k:'matches_seen',l:'Gezien'},{k:'goals',l:'Doelpunten'},{k:'assists',l:'Assists'},
-  {k:'xg_total',l:'xG'},{k:'avg_rating',l:'Cijfer'},{k:'minutes_played',l:'Minuten'},
+  {k:'minutes_played',l:'Minuten'},
   {k:'yellow_cards',l:'Geel'},{k:'red_cards',l:'Rood'},{k:'age_asc',l:'Jongste'},{k:'age_desc',l:'Oudste'},
   {k:'age_span',l:'Spanne'},{k:'clubs',l:'Clubs'},{k:'height_desc',l:'Grootste'},{k:'height_asc',l:'Kleinste'},
   {k:'max_transfer_fee',l:'Transfersom'},{k:'national_team_caps',l:'Interlands'},
@@ -1006,8 +1036,6 @@ function PlayerCard({player:p,onClick,rank,sort}){
   const lead=(()=>{
     if(sort==='goals') return{val:p.goals||0,lbl:'goals',color:T.green};
     if(sort==='assists') return{val:p.assists||0,lbl:'assists',color:T.blue};
-    if(sort==='xg_total') return{val:fXg(p.xg_total),lbl:'xG',color:T.orange};
-    if(sort==='avg_rating') return{val:fRating(p.avg_rating),lbl:'cijfer',color:rBg(p.avg_rating)};
     if(sort==='minutes_played') return{val:fNum(p.minutes_played),lbl:'min',color:T.teal};
     if(sort==='yellow_cards') return{val:p.yellow_cards||0,lbl:'geel',color:T.yellow};
     if(sort==='red_cards') return{val:p.red_cards||0,lbl:'rood',color:T.red};
@@ -1060,7 +1088,6 @@ function PlayerCard({player:p,onClick,rank,sort}){
       <div style=${{fontSize:11,color:T.muted,marginTop:1,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>${(p.teams_seen_for||[]).join(' · ')}${pos?` · ${pos}`:''}</div>
       <div style=${{display:'flex',gap:6,marginTop:5,alignItems:'center',flexWrap:'nowrap',overflow:'hidden'}}>
         ${apps.length>0&&html`<span style=${{fontSize:10,color:T.dim}}>${apps.join(' · ')}</span>`}
-        ${p.avg_rating&&sort!=='avg_rating'&&html`<${RatingBadge} rating=${p.avg_rating} />`}
         ${(p.goals||0)>0&&sort!=='goals'&&html`<span style=${{fontSize:10,color:T.green,fontWeight:700}}>${p.goals}G</span>`}
         ${(p.assists||0)>0&&sort!=='assists'&&html`<span style=${{fontSize:10,color:T.blue,fontWeight:700}}>${p.assists}A</span>`}
         ${p.height_cm&&(sort==='height_desc'||sort==='height_asc')&&html`<span style=${{fontSize:10,color:T.dim}}>${p.height_cm}cm</span>`}
@@ -1089,7 +1116,7 @@ function PlayerDetail({player:p,onBack}){
           <div style=${{display:'flex',gap:8,alignItems:'center',marginTop:6,flexWrap:'wrap'}}>
             ${p.nationality_alpha2&&html`<${Flag} a2=${p.nationality_alpha2} size=${22} />`}
             <span style=${{fontSize:13,color:T.muted}}>${p.nationality}</span>
-            ${p.position&&html`<span style=${{background:T.bg4,color:T.text,borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>${posLabel[p.position]||p.position}</span>`}
+            ${(p.position_detail||p.position)&&html`<span style=${{background:T.bg4,color:T.text,borderRadius:6,padding:'2px 8px',fontSize:11,fontWeight:600}}>${p.position_detail||posLabel[p.position]||p.position}</span>`}
           </div>
           ${p.date_of_birth&&html`<div style=${{fontSize:12,color:T.dim,marginTop:6,display:'flex',alignItems:'center',gap:4,flexWrap:'wrap'}}>
             <${Icon} name="cake" size=${13} color=${T.dim} /> ${p.date_of_birth}
@@ -1098,10 +1125,6 @@ function PlayerDetail({player:p,onBack}){
           </div>`}
           <div style=${{fontSize:12,color:T.dim,marginTop:2}}>${(p.teams_seen_for||[]).length} club${(p.teams_seen_for||[]).length!==1?'s':''}: ${(p.teams_seen_for||[]).join(', ')}</div>
         </div>
-        ${p.avg_rating&&html`<div style=${{background:rBg(p.avg_rating),borderRadius:10,padding:'8px 12px',textAlign:'center',flexShrink:0}}>
-          <div style=${{fontSize:22,fontWeight:800,color:'#fff'}}>${fRating(p.avg_rating)}</div>
-          <div style=${{fontSize:9,color:'rgba(255,255,255,0.8)',textTransform:'uppercase'}}>Cijfer</div>
-        </div>`}
       </div>
     </${Card}>
 
@@ -1113,14 +1136,6 @@ function PlayerDetail({player:p,onBack}){
         <${StatBox} label="Minuten" value=${fNum(p.minutes_played)} />
         <${StatBox} label="Goals" value=${p.goals} color=${T.green} />
         <${StatBox} label="Assists" value=${p.assists} color=${T.blue} />
-        <${StatBox} label="xG" value=${fXg(p.xg_total)} color=${T.orange} />
-        <${StatBox} label="Passes%" value=${p.pass_accuracy_pct?`${Math.round(p.pass_accuracy_pct)}%`:'—'} />
-        <${StatBox} label="Schoten" value=${p.total_shots||0} />
-        <${StatBox} label="Op doel" value=${p.shots_on_target||0} color=${T.green} />
-        <${StatBox} label="Duels W" value=${p.duels_won||0} color=${T.blue} />
-        <${StatBox} label="Duels V" value=${p.duels_lost||0} color=${T.red} />
-        <${StatBox} label="Tackles" value=${p.tackles||0} />
-        <${StatBox} label="Intercept" value=${p.interceptions||0} />
         <${StatBox} label="Geel" value=${p.yellow_cards||0} color=${T.yellow} />
         <${StatBox} label="Rood" value=${p.red_cards||0} color=${T.red} />
       </div>
@@ -1162,12 +1177,9 @@ function PlayerDetail({player:p,onBack}){
       <${SectionTitle} icon="list" right=${`${details.length} duels`}>Per wedstrijd</${SectionTitle}>
       <div style=${{display:'flex',flexDirection:'column',gap:6}}>
         ${details.map(d=>html`<div key=${d.match_id} style=${{background:T.bg3,borderRadius:10,padding:'10px 12px'}}>
-          <div style=${{display:'flex',gap:8,justifyContent:'space-between',alignItems:'flex-start'}}>
-            <div style=${{flex:1,minWidth:0}}>
-              <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${d.match_label}</div>
-              <div style=${{fontSize:11,color:T.muted}}>${fDate(d.date)} · ${d.starter?'Basisspeler':(`invaller ${d.minutes}'`)}</div>
-            </div>
-            <${RatingBadge} rating=${d.rating} />
+          <div style=${{minWidth:0}}>
+            <div style=${{fontSize:13,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>${d.match_label}</div>
+            <div style=${{fontSize:11,color:T.muted}}>${fDate(d.date)} · ${d.starter?'Basisspeler':(`invaller ${d.minutes}'`)}</div>
           </div>
           <div style=${{display:'flex',gap:10,marginTop:6,fontSize:12,flexWrap:'wrap'}}>
             ${d.goals>0&&html`<span style=${{color:T.green,display:'flex',alignItems:'center',gap:3}}><${Icon} name="ball" size=${12} color=${T.green} sw=${2}/> ${d.goals}</span>`}
@@ -1175,7 +1187,6 @@ function PlayerDetail({player:p,onBack}){
             ${d.yellow>0&&html`<span style=${{display:'inline-flex',alignItems:'center',gap:3}}><div style=${{width:8,height:12,background:T.yellow,borderRadius:1.5,flexShrink:0}}></div></span>`}
             ${d.red>0&&html`<span style=${{display:'inline-flex',alignItems:'center',gap:3}}><div style=${{width:8,height:12,background:T.red,borderRadius:1.5,flexShrink:0}}></div></span>`}
             ${d.minutes>0&&html`<span style=${{color:T.dim,display:'flex',alignItems:'center',gap:3}}><${Icon} name="clock" size=${12} color=${T.dim}/> ${d.minutes}'</span>`}
-            ${d.xg>0&&html`<span style=${{color:T.orange}}>xG ${fXg(d.xg)}</span>`}
             ${d.age_years>0&&html`<span style=${{color:T.dim}}>(${fAge(d.age_years,d.age_days)})</span>`}
           </div>
         </div>`)}
@@ -1271,7 +1282,7 @@ function TabClubs({data,onRegisterBack,onClearBack}){
           <!-- Badge + naam + vlag -->
           <div style=${{flex:1,minWidth:0,display:'flex',alignItems:'center',gap:8}}>
             <div style=${{width:28,height:28,flexShrink:0,background:T.bg3,borderRadius:6,display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <${TeamBadge} id=${t.id} name=${t.name} size=${22} />
+              <${TeamBadge} id=${t.id} name=${t.name} src=${t.logo_url} size=${22} />
             </div>
             <div style=${{minWidth:0,flex:1}}>
               <div style=${{fontWeight:600,fontSize:13,color:T.text,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>${t.name}</div>
@@ -1307,7 +1318,7 @@ function ClubDetail({team,data,onBack}){
     <${Card} style=${{background:'rgba(0,122,255,0.05)',border:'1px solid rgba(0,122,255,0.15)'}}>
       <div style=${{display:'flex',gap:16,alignItems:'center'}}>
         <div style=${{width:64,height:64,background:T.bg3,borderRadius:12,display:'flex',alignItems:'center',justifyContent:'center'}}>
-          <${TeamBadge} id=${team.id} name=${team.name} size=${56} />
+          <${TeamBadge} id=${team.id} name=${team.name} src=${team.logo_url} size=${56} />
         </div>
         <div>
           <div style=${{fontSize:22,fontWeight:800,color:T.text}}>${team.name}</div>
@@ -1350,7 +1361,7 @@ function TabStadions({data}){
         </div>
         <div style=${{flex:1,minWidth:0}}>
           <div style=${{fontWeight:700,fontSize:16,color:T.text}}>${v.name}</div>
-          <div style=${{fontSize:13,color:T.muted,marginTop:2}}>${v.city}</div>
+          ${v.city&&html`<div style=${{fontSize:13,color:T.muted,marginTop:2}}>${v.city}</div>`}
           <div style=${{marginTop:8,height:4,background:T.bg3,borderRadius:2,overflow:'hidden'}}>
             <div style=${{width:`${v.matches_count/maxVisits*100}%`,height:'100%',background:`linear-gradient(90deg,${T.blue},${T.purple})`,borderRadius:2}}></div>
           </div>
@@ -1374,74 +1385,80 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
   const [query,setQuery]=useState('');
   const [results,setResults]=useState([]);
   const [loading,setLoading]=useState(false);
-  const [team,setTeam]=useState(null);
-  const [seasons,setSeasons]=useState([]);
+  const [club,setClub]=useState(null);
   const [selSeason,setSelSeason]=useState(null);
   const [events,setEvents]=useState([]);
   const [checked,setChecked]=useState(new Set());
   const [saving,setSaving]=useState(false);
   const [savedMsg,setSavedMsg]=useState('');
+  const [fout,setFout]=useState('');
+  const [bron,setBron]=useState('');
+  const [dashboardBron,setDashboardBron]=useState(null);
+  const [selectie,setSelectie]=useState(null);
 
-  async function searchTeams(){
+  // Of je een wedstrijd al hebt staat in de selectie, niet in de opgehaalde
+  // wedstrijden: die loopt erachteraan zolang het ophalen bezig is. Vandaar dat
+  // het paneel de selectie aanhoudt en op de lijst van het dashboard terugvalt
+  // zolang die er nog niet is.
+  const herlaadSelectie=useCallback(()=>{
+    apiFetch('/api/tm/selectie').then(d=>{
+      if(d&&Array.isArray(d.ids)) setSelectie(new Set(d.ids));
+    });
+  },[]);
+  useEffect(herlaadSelectie,[]);
+  const alBinnen=id=>selectie?selectie.has(id):savedIds.has(id);
+
+  // Toevoegen werkt pas als het dashboard zelf uit Transfermarkt leest. Dat
+  // hier tonen in plaats van het pas bij opslaan te melden scheelt een hele
+  // zoektocht voor niets.
+  useEffect(()=>{apiFetch('/api/bron').then(d=>setDashboardBron(d?.bron||null));},[]);
+  const nogSofascore=dashboardBron!==null&&dashboardBron!=='transfermarkt';
+
+  // Transfermarkt nummert een seizoen naar het jaar waarin het begint, en het
+  // seizoen kantelt in juli. Zelf uitrekenen scheelt een verzoek en geeft
+  // dezelfde lijst als de server.
+  const nu=new Date();
+  const huidigSeizoen=nu.getMonth()>=6?nu.getFullYear():nu.getFullYear()-1;
+  const seasons=Array.from({length:25},(_,i)=>huidigSeizoen-i);
+  const seizoenLabel=j=>`${j}/${String((j+1)%100).padStart(2,'0')}`;
+
+  async function searchClubs(){
     if(!query.trim())return;
-    setLoading(true);setResults([]);
-    const data=await apiFetch(`/sofascore/search/teams/${encodeURIComponent(query.trim())}`);
-    setResults(data?.teams||[]);
+    setLoading(true);setResults([]);setFout('');
+    const data=await apiFetch(`/tm/zoek/${encodeURIComponent(query.trim())}`);
+    // Onbereikbaar is iets anders dan niets gevonden. Zonder dat onderscheid
+    // leest een storing als "die club bestaat niet".
+    if(data?.error){setFout('Transfermarkt is nu niet bereikbaar. Probeer het zo nog eens.');}
+    setResults(data?.clubs||[]);
     setLoading(false);
   }
 
-  async function selectTeam(t){
-    setTeam(t);setLoading(true);setStep('seasons');setSeasons([]);
-    const data=await apiFetch(`/sofascore/team/${t.id}/unique-tournaments`);
-    const tournaments=data?.uniqueTournaments||[];
-    const results=await Promise.all(
-      tournaments.slice(0,20).map(tn=>apiFetch(`/sofascore/unique-tournament/${tn.id}/seasons`))
-    );
-    const yearMap={};
-    results.forEach(r=>{
-      (r?.seasons||[]).forEach(s=>{
-        const yr=s.year||'';
-        if(!yr.includes('/')) return;
-        if(!yearMap[yr]||s.id>yearMap[yr].id) yearMap[yr]={...s};
-      });
-    });
-    const toFullYear=p=>{const n=parseInt(p);if(n>=100)return n;return n<=30?2000+n:1900+n;};
-    const sorted=Object.values(yearMap).sort((a,b)=>{
-      const ay=toFullYear((a.year||'0').split('/')[0]);
-      const by=toFullYear((b.year||'0').split('/')[0]);
-      return by-ay;
-    });
-    setSeasons(sorted);
+  function selectClub(c){
+    setClub(c);setStep('seasons');setEvents([]);setChecked(new Set());setFout('');
+  }
+
+  async function selectSeason(jaar){
+    setSelSeason(jaar);setLoading(true);setEvents([]);setChecked(new Set());
+    setStep('matches');setFout('');setBron('');
+    const data=await apiFetch(`/tm/club/${club.id}/${jaar}`);
+    if(data?.error){setFout('Transfermarkt is nu niet bereikbaar. Probeer het zo nog eens.');}
+    setBron(data?.bron||'');
+    const ws=(data?.matches||[]).slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+    setEvents(ws);
     setLoading(false);
   }
 
-  async function selectSeason(s){
-    setSelSeason(s);setLoading(true);setEvents([]);setChecked(new Set());
-    setStep('matches');
-    const yr=s.year||'';
-    const [startYr,endYr]=yr.split('/').map(p=>parseInt(p.length===2?'20'+p:p));
-    const seasonStart=new Date(startYr,6,1).getTime()/1000;
-    const seasonEnd=new Date(endYr,5,30,23,59,59).getTime()/1000;
-    let allEvents=[], page=0, seenSeason=false, emptyAfterSeason=0;
-    while(allEvents.length<400){
-      const data=await apiFetch(`/sofascore/team/${team.id}/events/last/${page}`);
-      const evs=data?.events||[];
-      if(!evs.length) break;
-      const filtered=evs.filter(e=>{
-        const ts=e.startTimestamp||0;
-        return ts>=seasonStart && ts<=seasonEnd;
-      });
-      if(filtered.length>0){ seenSeason=true; emptyAfterSeason=0; }
-      else if(seenSeason){ emptyAfterSeason++; if(emptyAfterSeason>=2) break; }
-      const oldest=evs[evs.length-1]?.startTimestamp||0;
-      if(oldest>0 && oldest<seasonStart-60*24*3600) break;
-      else if(page>14) break;
-      allEvents=[...allEvents,...filtered];
-      page++;
-    }
-    allEvents.sort((a,b)=>b.startTimestamp-a.startTimestamp);
-    setEvents(allEvents);
-    setLoading(false);
+  // Op de speelschemapagina is alleen de tegenstander gelinkt, de club zelf
+  // niet. De kant-kolom zegt welke van de twee thuis speelde, en daarmee is de
+  // regel weer in de goede volgorde te zetten.
+  function opstelling(w){
+    const tegen=(w.clubs||[])[0]?.name||'';
+    const zelf=club?.name||'';
+    return w.kant==='uit'?{thuis:tegen,uit:zelf}:{thuis:zelf,uit:tegen};
+  }
+  function label(w){
+    const {thuis,uit}=opstelling(w);
+    return `${thuis} - ${uit}`;
   }
 
   function toggleMatch(id){
@@ -1450,87 +1467,77 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     setChecked(s);
   }
   function toggleAll(){
-    const nieuweIds=events.filter(e=>!savedIds.has(e.id)).map(e=>e.id);
-    if(checked.size===nieuweIds.length) setChecked(new Set());
-    else setChecked(new Set(nieuweIds));
+    const nieuwe=events.filter(e=>!alBinnen(e.match_id)).map(e=>e.match_id);
+    if(checked.size===nieuwe.length) setChecked(new Set());
+    else setChecked(new Set(nieuwe));
   }
 
   async function saveMatches(){
     if(!checked.size)return;
-    setSaving(true);
-    const toSave=events.filter(e=>checked.has(e.id)).map(e=>{
-      const ht=e.homeTeam||{}, at=e.awayTeam||{};
-      const ts=e.startTimestamp;
-      const date=ts?new Date(ts*1000).toISOString().slice(0,10):'';
-      const tnmt=e.tournament?.uniqueTournament||e.tournament||{};
-      return{
-        id:e.id, date, startTimestamp:ts,
-        home_team:{name:ht.name||'',id:ht.id,slug:ht.slug||''},
-        away_team:{name:at.name||'',id:at.id,slug:at.slug||''},
-        home_score:(e.homeScore?.current??null),
-        away_score:(e.awayScore?.current??null),
-        half_time:{home:e.homeScore?.period1??null,away:e.awayScore?.period1??null},
-        tournament:tnmt.name||e.tournament?.name||'',
-        tournament_id:tnmt.id||e.tournament?.id,
-        season:e.season?.name||'',
-        season_id:e.season?.id,
-        round:e.roundInfo?.round||null,
-        venue:{name:e.venue?.name||'',city:e.venue?.city?.name||e.venue?.city||'',id:e.venue?.id||null},
-        attendance:e.attendance||null,
-        referee:{name:e.referee?.name||'',id:e.referee?.id||null},
-        source_team:team.name,
-        goals:[], cards:[], substitutions:[], team_stats:{home:{},away:{}},
-      };
-    });
-    const result=await fetch('/api/matches/save',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave)}).then(r=>r.json()).catch(()=>null);
+    setSaving(true);setFout('');
+    // Alleen het nummer, de datum en een naam om in de lijst te herkennen. De
+    // rest — stadion, opstelling, doelpunten — haalt de server zelf op uit het
+    // wedstrijdrapport; hier iets meesturen zou een tweede waarheid maken.
+    const toSave=events.filter(e=>checked.has(e.match_id)).map(e=>({
+      match_id:e.match_id, date:e.date||'', label:label(e),
+    }));
+    const result=await fetch('/api/tm/toevoegen',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(toSave)}).then(r=>r.json()).catch(()=>null);
     setSaving(false);
-    if(result){
-      setSavedMsg(`${result.added} wedstrijden opgeslagen (totaal: ${result.total})`);
-      if(onSaved) onSaved();
-      setChecked(new Set());
-      if(onMatchesAdded) onMatchesAdded();
-    }
+    if(!result){setFout('Opslaan is niet gelukt.');return;}
+    if(result.error){setFout(result.error);return;}
+    setSavedMsg(result.added
+      ? `${result.added} wedstrijd${result.added===1?'':'en'} toegevoegd (totaal: ${result.total}). De gegevens worden nu opgehaald — dat duurt even.`
+      : `Die ${result.already===1?'wedstrijd stond':'wedstrijden stonden'} er al in.`);
+    if(onSaved) onSaved();
+    herlaadSelectie();
+    setChecked(new Set());
+    if(onMatchesAdded) onMatchesAdded();
   }
 
-  function reset(){setStep('search');setQuery('');setResults([]);setTeam(null);setSeasons([]);setSelSeason(null);setEvents([]);setChecked(new Set());setSavedMsg('');}
+  function reset(){setStep('search');setQuery('');setResults([]);setClub(null);setSelSeason(null);setEvents([]);setChecked(new Set());setSavedMsg('');setFout('');}
+
+  const Melding=({tekst,kleur})=>html`<${Card} style=${{background:`${kleur}14`,border:`1px solid ${kleur}33`}}>
+    <div style=${{color:kleur,fontWeight:600,fontSize:14}}>${tekst}</div>
+  </${Card}>`;
 
   // ── Render ──
   if(step==='search') return html`<div style=${{display:'flex',flexDirection:'column',gap:16}}>
     <${Card} style=${{background:'linear-gradient(135deg,#e8f4ff,#f0f7ff)',border:'1px solid rgba(0,122,255,0.15)'}}>
       <div style=${{fontSize:18,fontWeight:700,marginBottom:4,color:T.text}}>Wedstrijd toevoegen</div>
       <div style=${{fontSize:13,color:T.muted}}>Zoek een club, kies een seizoen en vink de wedstrijden aan die je bezocht hebt.</div>
+      <div style=${{fontSize:11,color:T.dim,marginTop:6}}>Bron: Transfermarkt</div>
     </${Card}>
+    ${nogSofascore&&html`<${Melding} kleur=${T.orange} tekst="Het dashboard leest nog uit Sofascore. Zoeken kan al, opslaan pas na de omwisseling." />`}
     <div style=${{display:'flex',gap:8}}>
       <${SearchInput} value=${query} onChange=${setQuery} placeholder="Bijv. PSV, Ajax, Bayern..." />
     </div>
-    <button onClick=${searchTeams} disabled=${loading||!query.trim()} style=${{
+    <button onClick=${searchClubs} disabled=${loading||!query.trim()} style=${{
       background:T.blue,color:'#fff',border:'none',borderRadius:12,padding:'14px',
       fontSize:16,fontWeight:700,cursor:'pointer',opacity:loading||!query.trim()?0.4:1,
       boxShadow:'0 2px 8px rgba(0,122,255,0.25)',
     }}>${loading?'Zoeken...':'Zoeken'}</button>
-    ${savedMsg&&html`<${Card} style=${{background:'rgba(52,199,89,0.08)',border:'1px solid rgba(52,199,89,0.2)'}}>
-      <div style=${{color:T.green,fontWeight:600,fontSize:14}}>${savedMsg}</div>
-    </${Card}>`}
+    ${savedMsg&&html`<${Melding} tekst=${savedMsg} kleur=${T.green} />`}
+    ${fout&&html`<${Melding} tekst=${fout} kleur=${T.red} />`}
     ${results.length>0&&html`<div>
       <div style=${{fontSize:12,color:T.dim,marginBottom:8}}>${results.length} resultaten</div>
       <div style=${{display:'flex',flexDirection:'column',gap:8}}>
-        ${results.slice(0,10).map(t=>html`<${Card} key=${t.id} onClick=${()=>selectTeam(t)}>
+        ${results.map(c=>html`<${Card} key=${c.id} onClick=${()=>selectClub(c)}>
           <div style=${{display:'flex',gap:12,alignItems:'center'}}>
             <div style=${{width:44,height:44,background:T.bg3,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-              <${TeamBadge} id=${t.id} name=${t.name} size=${38} />
+              <${TeamBadge} name=${c.name} src=${tmImg(c.id)} size=${38} />
             </div>
-            <div>
-              <div style=${{display:'flex',alignItems:'center',gap:6}}>
-                <span style=${{fontWeight:700,fontSize:15,color:T.text}}>${t.name}</span>
-                ${t.gender==='F'&&html`<span style=${{background:'#ff2d5518',color:'#ff2d55',borderRadius:6,padding:'1px 7px',fontSize:10,fontWeight:700}}>Vrouwen</span>`}
-              </div>
-              <div style=${{fontSize:12,color:T.muted}}>${t.country?.name||''}</div>
+            <div style=${{minWidth:0}}>
+              <div style=${{fontWeight:700,fontSize:15,color:T.text}}>${c.name}</div>
+              <div style=${{fontSize:12,color:T.muted}}>Transfermarkt ${c.id}</div>
             </div>
             <span style=${{marginLeft:'auto',color:T.blue,fontSize:20}}>›</span>
           </div>
         </${Card}>`)}
       </div>
     </div>`}
+    ${!loading&&!fout&&query.trim()&&results.length===0&&savedMsg===''&&html`<${Card}>
+      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen clubs gevonden</div>
+    </${Card}>`}
   </div>`;
 
   if(step==='seasons') return html`<div style=${{display:'flex',flexDirection:'column',gap:12}}>
@@ -1539,14 +1546,13 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     </button>
     <${Card} style=${{display:'flex',gap:12,alignItems:'center'}}>
       <div style=${{width:48,height:48,background:T.bg3,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <${TeamBadge} id=${team.id} name=${team.name} size=${42} />
+        <${TeamBadge} name=${club.name} src=${tmImg(club.id)} size=${42} />
       </div>
-      <div><div style=${{fontWeight:700,fontSize:18,color:T.text}}>${team.name}</div><div style=${{fontSize:13,color:T.muted}}>Kies een seizoen</div></div>
+      <div><div style=${{fontWeight:700,fontSize:18,color:T.text}}>${club.name}</div><div style=${{fontSize:13,color:T.muted}}>Kies een seizoen</div></div>
     </${Card}>
-    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:24}}>Seizoenen laden...</div>`}
-    ${!loading&&seasons.map(s=>html`<${Card} key=${s.id} onClick=${()=>selectSeason(s)}>
+    ${seasons.map(j=>html`<${Card} key=${j} onClick=${()=>selectSeason(j)}>
       <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-        <div style=${{fontWeight:600,fontSize:16,color:T.text}}>${s.year||s.name}</div>
+        <div style=${{fontWeight:600,fontSize:16,color:T.text}}>${seizoenLabel(j)}</div>
         <span style=${{color:T.blue,fontSize:20}}>›</span>
       </div>
     </${Card}>`)}
@@ -1558,29 +1564,28 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
     </button>
     <${Card} style=${{display:'flex',gap:12,alignItems:'center',flexWrap:'wrap'}}>
       <div style=${{width:40,height:40,background:T.bg3,borderRadius:8,display:'flex',alignItems:'center',justifyContent:'center'}}>
-        <${TeamBadge} id=${team.id} name=${team.name} size=${34} />
+        <${TeamBadge} name=${club.name} src=${tmImg(club.id)} size=${34} />
       </div>
-      <div style=${{flex:1}}>
-        <div style=${{fontWeight:700,color:T.text}}>${team.name} — ${selSeason?.year||selSeason?.name}</div>
-        <div style=${{fontSize:12,color:T.muted}}>Alle competities</div>
+      <div style=${{flex:1,minWidth:0}}>
+        <div style=${{fontWeight:700,color:T.text}}>${club.name} — ${seizoenLabel(selSeason)}</div>
+        <div style=${{fontSize:12,color:T.muted}}>Alle competities${bron==='cache'?' · uit de cache':''}</div>
       </div>
     </${Card}>
-    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:32}}>Wedstrijden ophalen... (even geduld)</div>`}
+    ${loading&&html`<div style=${{textAlign:'center',color:T.muted,padding:32}}>Speelschema ophalen... (even geduld)</div>`}
+    ${fout&&html`<${Melding} tekst=${fout} kleur=${T.red} />`}
     ${!loading&&events.length>0&&html`<div>
       <div style=${{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
         <div style=${{fontSize:13,color:T.muted}}>${events.length} wedstrijden gevonden · ${checked.size} geselecteerd</div>
         <button onClick=${toggleAll} style=${{background:T.bg3,border:'none',borderRadius:8,padding:'4px 12px',color:T.blue,fontSize:12,cursor:'pointer',fontWeight:600}}>
-          ${checked.size===events.length?'Geen':'Alle'}
+          ${checked.size===events.filter(e=>!alBinnen(e.match_id)).length?'Geen':'Alle'}
         </button>
       </div>
       <div style=${{display:'flex',flexDirection:'column',gap:6}}>
         ${events.map(e=>{
-          const ht=e.homeTeam||{},at=e.awayTeam||{};
-          const hs=e.homeScore?.current,as_=e.awayScore?.current;
-          const date=e.startTimestamp?new Date(e.startTimestamp*1000).toISOString().slice(0,10):'';
-          const isChecked=checked.has(e.id);
-          const alreadySaved=savedIds.has(e.id);
-          return html`<div key=${e.id} onClick=${()=>!alreadySaved&&toggleMatch(e.id)} style=${{
+          const {thuis,uit}=opstelling(e);
+          const isChecked=checked.has(e.match_id);
+          const alreadySaved=alBinnen(e.match_id);
+          return html`<div key=${e.match_id} onClick=${()=>!alreadySaved&&toggleMatch(e.match_id)} style=${{
             background:T.bg2,
             border:`1px solid ${isChecked?T.blue:T.border}`,
             borderLeft:alreadySaved?`3px solid ${T.green}`:isChecked?`3px solid ${T.blue}`:`1px solid ${T.border}`,
@@ -1599,17 +1604,18 @@ function TabZoeken({onMatchesAdded,savedIds=new Set(),onSaved}){
             </div>
             <div style=${{flex:1,minWidth:0}}>
               <div style=${{fontSize:14,fontWeight:600,color:T.text}}>
-                ${ht.name} <span style=${{color:T.blue,fontWeight:800}}>${hs??'?'}–${as_??'?'}</span> ${at.name}
+                ${thuis} <span style=${{color:T.blue,fontWeight:800}}>${e.uitslag||'–'}</span> ${uit}
               </div>
-              <div style=${{fontSize:11,color:T.dim,marginTop:2}}>${fDate(date)} · ${e.tournament?.name||''} · R${e.roundInfo?.round||'?'}${alreadySaved?html` · <span style=${{color:T.green,fontWeight:600}}>al opgeslagen</span>`:''}</div>
+              <div style=${{fontSize:11,color:T.dim,marginTop:2}}>${fDate(e.date)}${alreadySaved?html` · <span style=${{color:T.green,fontWeight:600}}>al opgeslagen</span>`:''}</div>
             </div>
           </div>`;
         })}
       </div>
     </div>`}
-    ${!loading&&events.length===0&&selSeason&&html`<${Card}>
-      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen wedstrijden gevonden</div>
+    ${!loading&&!fout&&events.length===0&&html`<${Card}>
+      <div style=${{textAlign:'center',color:T.muted,padding:16}}>Geen wedstrijden in dit seizoen</div>
     </${Card}>`}
+    ${savedMsg&&html`<${Melding} tekst=${savedMsg} kleur=${T.green} />`}
     <!-- Sticky save button -->
     ${checked.size>0&&html`<div style=${{position:'fixed',bottom:'calc(90px + env(safe-area-inset-bottom,0px))',left:0,right:0,padding:'12px 16px',background:'rgba(242,242,247,0.88)',backdropFilter:'blur(20px) saturate(160%)',WebkitBackdropFilter:'blur(20px) saturate(160%)',borderTop:`1px solid rgba(255,255,255,0.5)`,zIndex:20}}>
       <button onClick=${saveMatches} disabled=${saving} style=${{
@@ -1760,7 +1766,7 @@ function TabWedstrijden({data}){
               ${m.date?.slice(8)}/${m.date?.slice(5,7)}
             </div>
             <div style=${{display:'flex',alignItems:'center',gap:6,flex:1,minWidth:0}}>
-              <${TeamBadge} id=${htId} name=${m.home_team?.name} size=${22} />
+              <${TeamBadge} id=${htId} name=${m.home_team?.name} src=${m.home_team?.logo_url} size=${22} />
               <div style=${{flex:1,minWidth:0}}>
                 <div style=${{fontSize:13,fontWeight:600,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
                   ${m.home_team?.name}
@@ -1774,7 +1780,7 @@ function TabWedstrijden({data}){
                   ${flags.map(fk=>{const sp=MATCH_SPECIALS.find(s=>s.k===fk);return html`<span key=${fk} title=${sp.title} style=${{background:sp.color+'22',color:sp.color,borderRadius:4,padding:'1px 6px',fontSize:10,fontWeight:700}}>${sp.l}</span>`;}) }
                 </div>`}
               </div>
-              <${TeamBadge} id=${atId} name=${m.away_team?.name} size=${22} />
+              <${TeamBadge} id=${atId} name=${m.away_team?.name} src=${m.away_team?.logo_url} size=${22} />
             </div>
           </div>`;
         })}
@@ -1831,7 +1837,14 @@ function App(){
 
   // Laad opgeslagen match-IDs eenmalig en herlaad na elke save
   const reloadSavedIds=useCallback(()=>{
-    apiFetch('/data/selected_matches.json').then(ms=>{if(ms)setSavedIds(new Set(ms.map(m=>m.id)));});
+    // Een wedstrijd kan onder twee nummers bekend zijn: het eigen id van de
+    // bron waaruit hij komt, en — bij een uit Transfermarkt gehaalde wedstrijd —
+    // het Sofascore-id van de koppeling. Het zoektabblad zoekt bij Sofascore,
+    // dus zonder dat tweede nummer zou het elke al opgehaalde wedstrijd
+    // opnieuw als nieuw aanbieden.
+    apiFetch('/data/selected_matches.json').then(ms=>{
+      if(ms)setSavedIds(new Set(ms.flatMap(m=>[m.id,m.sofascore_id]).filter(id=>id!=null)));
+    });
   },[]);
 
   const handleCountryClick=useCallback((a2)=>{
