@@ -1,0 +1,211 @@
+/* ───────────────────────────────────────────────────────────────────────────
+   GroundHop — gedeelde laag voor alle schermen.
+
+   Tokens zijn rollen, geen kleurnamen. De contrastverhoudingen staan erbij
+   zodat ze controleerbaar blijven en niet stilletjes wegzakken bij een
+   volgende aanpassing.
+
+   Twee regels die het hele ontwerp dragen:
+   - Glas hoort alleen op de functionele laag: de bovenbalk en de tabbalk.
+     De contentlaag is dekkend. (materials.md › Liquid Glass)
+   - Groen betekent precies één ding: jouw geschiedenis. Nooit een oordeel
+     over een wedstrijd of een speler. (color.md › Best practices)
+   ─────────────────────────────────────────────────────────────────────────── */
+:root{
+  --surface:        #edeff2;  /* het vlak waar kaarten op liggen          */
+  --card:           #ffffff;  /* contentlaag: dekkend, geen glas          */
+  --card-sunken:    #f4f5f7;
+  --content:        #14171a;  /* 17.99:1 op kaart                         */
+  --content-2:      #5b646e;  /*  6.01:1 op kaart                         */
+  --separator:      rgba(0,0,0,0.08);
+  --accent:         #0a7a3d;  /*  5.43:1 op kaart — jouw tellers          */
+  --accent-strong:  #11a24f;  /*  3.33:1 met wit — alleen groot en vet    */
+  --accent-soft:    rgba(10,122,61,0.10);
+  --glass:          rgba(237,239,242,0.70);
+  --glass-filter:   blur(30px) saturate(1.5) brightness(1.12);
+  --glass-border:   rgba(255,255,255,0.7);
+  --shadow:         0 1px 2px rgba(20,23,26,0.04), 0 6px 16px rgba(20,23,26,0.06);
+  --radius:         18px;
+  --bar-h:          calc(52px + env(safe-area-inset-top,0px));
+  --tab-h:          calc(74px + env(safe-area-inset-bottom,0px));
+  --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+  --display: "Outfit", var(--ui);
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --surface:       #0e1013;
+    --card:          #1b1f24;  /* contentlaag: dekkend, geen glas         */
+    --card-sunken:   #23282e;
+    --content:       #f2f4f6;  /* 15.02:1 op kaart                        */
+    --content-2:     #98a2ad;  /*  6.39:1 op kaart                        */
+    --separator:     rgba(255,255,255,0.10);
+    --accent:        #45d284;  /*  8.52:1 op kaart                        */
+    --accent-strong: #1c9a57;  /*  3.61:1 met wit                         */
+    --accent-soft:   rgba(69,210,132,0.12);
+    --glass:         rgba(14,16,19,0.74);
+    --glass-filter:  blur(30px) saturate(1.5) brightness(0.6);
+    --glass-border:  rgba(255,255,255,0.12);
+    --shadow:        0 1px 2px rgba(0,0,0,0.3), 0 6px 16px rgba(0,0,0,0.4);
+  }
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+/* Rasterkolommen krimpen standaard niet onder hun inhoud (min-width:auto).
+   Eén lange naam duwt dan de hele pagina breder dan het scherm. */
+.row-main,.bar-row > *{min-width:0;}
+html{-webkit-text-size-adjust:100%;}
+html,body{height:100%; overflow:hidden;}
+body{
+  font-family:var(--ui);
+  background:var(--surface);
+  color:var(--content);
+  font-size:15px;          /* Apple Body, standaard 15pt                  */
+  line-height:1.4;
+  -webkit-font-smoothing:antialiased;
+}
+.num{font-family:var(--display);font-variant-numeric:tabular-nums;}
+
+/* ── Functionele laag: hier hoort glas, en alleen hier ──────────────────── */
+.bar{
+  position:fixed; top:0; left:0; right:0; z-index:10;
+  display:flex; align-items:center; gap:4px;
+  padding:0 8px; padding-top:env(safe-area-inset-top,0px);
+  height:var(--bar-h);
+  background:var(--glass);
+  backdrop-filter:var(--glass-filter);
+  -webkit-backdrop-filter:var(--glass-filter);
+  border-bottom:0.5px solid var(--separator);
+}
+.back{
+  display:flex; align-items:center; gap:2px;
+  min-height:44px; min-width:44px; padding:0 8px;  /* 44pt raakvlak */
+  background:none; border:0; cursor:pointer;
+  font:inherit; color:var(--accent); text-decoration:none;
+}
+.bar h1{font-size:17px; font-weight:600; letter-spacing:-0.01em;}
+
+/* Het scroll edge effect: de content vervaagt waar hij de balken raakt, zodat
+   het glas doorschijnend kan blijven zonder dat je er tekst doorheen leest. */
+main{
+  position:fixed; inset:0; overflow-y:auto; overscroll-behavior:contain;
+  display:flex; flex-direction:column; align-items:center; gap:16px;
+  padding:calc(var(--bar-h) + 16px) 16px calc(var(--tab-h) + 24px);
+  --fade:linear-gradient(to bottom,
+    rgba(0,0,0,0)    0,
+    rgba(0,0,0,0.26) var(--bar-h),
+    rgba(0,0,0,1)    calc(var(--bar-h) + 44px),
+    rgba(0,0,0,1)    calc(100% - var(--tab-h) - 28px),
+    rgba(0,0,0,0.26) calc(100% - var(--tab-h) + 12px),
+    rgba(0,0,0,0)    100%);
+  -webkit-mask-image:var(--fade); mask-image:var(--fade);
+}
+/* flex:none, anders krimpen kaarten mee met de hoogte van het scrollgebied
+   en knipt hun eigen overflow:hidden de onderste regels eraf. */
+main > *{width:100%; max-width:428px; flex:none;}
+
+/* ── Contentlaag ───────────────────────────────────────────────────────── */
+.card{
+  background:var(--card);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow);
+  overflow:hidden;
+}
+.card-head{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:14px 16px 0;
+}
+.card-head h2{
+  font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--content-2);
+}
+.group-label{
+  padding:14px 16px 4px;
+  font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--content-2);
+}
+.row{
+  display:flex; align-items:center; gap:12px;
+  padding:12px 16px; min-height:44px;
+  color:inherit; text-decoration:none;
+}
+.row + .row{border-top:0.5px solid var(--separator);}
+.row-main{flex:1;}
+.row-label{font-size:12px; color:var(--content-2);}
+.row-value{font-size:15px; font-weight:500; margin-top:1px; overflow-wrap:break-word;}
+.chev{color:var(--content-2); font-size:17px;}
+.note{
+  padding:10px 16px 14px; font-size:12px; color:var(--content-2);
+  border-top:0.5px solid var(--separator);
+}
+
+/* ── De tellerband. Groen, want dit gaat over jou. ──────────────────────── */
+.tally{
+  display:grid; grid-template-columns:repeat(3,1fr);
+  border-top:0.5px solid var(--separator);
+}
+.tally > div{
+  padding:14px 8px; text-align:center; min-width:0;
+  border-right:0.5px solid var(--separator);
+}
+.tally > div:last-child{border-right:0;}
+.tally b{
+  display:block;
+  font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:26px; font-weight:700; line-height:1;
+  color:var(--accent);
+}
+.tally b sup{font-size:13px; font-weight:600; vertical-align:super;}
+.tally span{
+  display:block; margin-top:5px;
+  font-size:12px; color:var(--content-2); line-height:1.3;
+  overflow-wrap:break-word;
+}
+
+/* ── Keuzeschakelaar ───────────────────────────────────────────────────── */
+.seg{
+  display:flex; gap:2px; margin:12px 16px 0; padding:2px;
+  background:var(--card-sunken); border-radius:9px;
+}
+.seg button{
+  flex:1; min-height:32px; border:0; border-radius:7px; cursor:pointer;
+  background:none; color:var(--content); font:inherit; font-size:13px; font-weight:600;
+}
+.seg button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+
+/* ── Tabbalk: functionele laag, dus glas ───────────────────────────────── */
+.tabbar{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(10px + env(safe-area-inset-bottom,0px));
+  width:calc(100% - 24px); max-width:436px;
+  display:flex; padding:5px; border-radius:26px;
+  background:var(--glass);
+  backdrop-filter:var(--glass-filter);
+  -webkit-backdrop-filter:var(--glass-filter);
+  border:0.5px solid var(--glass-border);
+  box-shadow:0 8px 32px rgba(0,0,0,0.16);
+}
+.tabbar a{
+  flex:1; min-height:44px; text-decoration:none;
+  font:inherit; font-size:11px; font-weight:600; color:var(--content-2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+}
+.tabbar a[aria-current="page"]{color:var(--accent);}
+.tabbar svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8;
+  stroke-linecap:round; stroke-linejoin:round;}
+
+/* ── Toegankelijkheidsstanden ──────────────────────────────────────────── */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
+  .bar,.tabbar{background:var(--surface);}
+}
+@media (prefers-reduced-transparency: reduce){
+  .bar,.tabbar{background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none;}
+  main{-webkit-mask-image:none; mask-image:none;}
+}
+@media (prefers-contrast: more){
+  :root{--separator:rgba(0,0,0,0.3); --content-2:#41484f;}
+  .bar,.tabbar{background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none;}
+  .card{border:1px solid var(--separator);}
+  main{-webkit-mask-image:none; mask-image:none;}
+}
+@media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important;}}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px;}
