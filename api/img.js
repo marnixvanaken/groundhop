@@ -4,7 +4,7 @@ const path = require('path');
 
 export default function handler(req, res) {
   const { type, id } = req.query;
-  if (!type || !id || !['player', 'team'].includes(type)) {
+  if (!type || !id || !['player', 'team', 'tournament'].includes(type)) {
     return res.status(400).send('Missing or invalid params');
   }
 
@@ -18,7 +18,9 @@ export default function handler(req, res) {
   }
 
   // Fallback: proxy naar Sofascore
-  const url = `https://api.sofascore.app/api/v1/${type}/${id}/image`;
+  // Toernooien zitten bij Sofascore onder een ander pad dan de rest.
+  const sfPad = type === 'tournament' ? 'unique-tournament' : type;
+  const url = `https://api.sofascore.app/api/v1/${sfPad}/${id}/image`;
   const proxyReq = https.get(url, {
     headers: {
       'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',

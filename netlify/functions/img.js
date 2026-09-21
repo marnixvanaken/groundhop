@@ -2,11 +2,13 @@ const https = require('https');
 
 exports.handler = async (event) => {
   const { type, id } = event.queryStringParameters || {};
-  if (!type || !id || !['player', 'team'].includes(type)) {
+  if (!type || !id || !['player', 'team', 'tournament'].includes(type)) {
     return { statusCode: 400, body: 'Missing or invalid params' };
   }
 
-  const url = `https://api.sofascore.app/api/v1/${type}/${id}/image`;
+  // Toernooien zitten bij Sofascore onder een ander pad dan de rest.
+  const sfPad = type === 'tournament' ? 'unique-tournament' : type;
+  const url = `https://api.sofascore.app/api/v1/${sfPad}/${id}/image`;
 
   return new Promise((resolve) => {
     const req = https.get(url, {

@@ -26,6 +26,8 @@ SOURCE = ROOT / "data" / "dashboard_data.json"
 DEMO = Path(__file__).resolve().parent
 TARGET = DEMO / "match-data.js"
 CRESTS = DEMO / "crests"
+PHOTOS = DEMO / "players"
+LOGOS = DEMO / "tournaments"
 
 # PSV Eindhoven 6-2 Napoli, Champions League, 21 oktober 2025.
 # Gekozen omdat dit duel als enige alles heeft: stadion, publiek,
@@ -33,25 +35,44 @@ CRESTS = DEMO / "crests"
 DEFAULT_MATCH = 14566893
 
 
-def copy_crest(team_id):
-    """Kopieert een clublogo naar demo/crests/ met de juiste extensie.
+def extensie(pad):
+    """De bestanden in img/ hebben geen extensie; zonder extensie serveert een
+    webserver ze als octet-stream en toont de browser niets."""
+    kop = pad.read_bytes()[:12]
+    if kop[:8] == b"\x89PNG\r\n\x1a\n":
+        return ".png"
+    if kop[:4] == b"RIFF" and kop[8:12] == b"WEBP":
+        return ".webp"
+    if kop[:3] == b"\xff\xd8\xff":
+        return ".jpg"
+    return None
 
-    De bestanden in img/team/ hebben geen extensie; zonder extensie serveert
-    een gewone webserver ze als octet-stream en toont de browser niets.
-    """
-    bron = ROOT / "img" / "team" / str(team_id)
+
+def kopieer(soort, ident, bronmap, doelmap):
+    bron = ROOT / "img" / bronmap / str(ident)
     if not bron.exists():
         return None
-    kop = bron.read_bytes()[:12]
-    ext = ".png" if kop[:8] == b"\x89PNG\r\n\x1a\n" else \
-          ".webp" if kop[:4] == b"RIFF" and kop[8:12] == b"WEBP" else \
-          ".jpg" if kop[:3] == b"\xff\xd8\xff" else None
+    ext = extensie(bron)
     if ext is None:
         return None
-    CRESTS.mkdir(exist_ok=True)
-    doel = CRESTS / f"{team_id}{ext}"
-    shutil.copyfile(bron, doel)
-    return f"crests/{team_id}{ext}"
+    doelmap.mkdir(exist_ok=True)
+    shutil.copyfile(bron, doelmap / f"{ident}{ext}")
+    return f"{soort}/{ident}{ext}"
+
+
+def copy_crest(team_id):
+    return kopieer("crests", team_id, "team", CRESTS)
+
+
+def copy_photo(player_id):
+    """Van de 3016 spelers staan er 300 lokaal; de rest valt terug op initialen."""
+    return kopieer("players", player_id, "player", PHOTOS)
+
+
+def copy_logo(tournament_id):
+    """Competitielogo's staan er pas na tools/fetch_images.py; tot die tijd
+    toont het scherm de naam, zoals het nu ook doet."""
+    return kopieer("tournaments", tournament_id, "tournament", LOGOS)
 
 
 def nth(matches, match, key):
@@ -77,6 +98,7 @@ def build_lineup(players, match_id):
                 "goals": md.get("goals") or 0,
                 "assists": md.get("assists") or 0,
                 "starter": bool(md.get("starter")),
+                "photo": copy_photo(p["id"]),
                 # Hoe vaak je deze speler in totaal hebt zien spelen.
                 "seen": p.get("matches_seen") or 0,
             })
@@ -109,6 +131,7 @@ def main():
         "id": match["id"],
         "date": match["date"],
         "tournament": match["tournament"],
+        "tournament_logo": copy_logo(match.get("tournament_id")),
         "season": match["season"],
         "round": match.get("round"),
         "home": {

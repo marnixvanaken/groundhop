@@ -17,6 +17,7 @@
 
 /* ── Scorebord ─────────────────────────────────────────────────────────── */
 .score-meta{padding:16px 16px 0; text-align:center;}
+.comp-regel{display:flex; align-items:center; justify-content:center; gap:7px;}
 .comp{font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--content-2);}
 .date{font-size:13px; color:var(--content-2); margin-top:2px;}
 .score{
@@ -24,15 +25,6 @@
   gap:8px; padding:14px 16px 4px;
 }
 .side{display:flex; flex-direction:column; align-items:center; gap:8px;}
-.crest{width:52px; height:52px; object-fit:contain;}
-.crest-fallback{
-  width:52px; height:52px; border-radius:50%;
-  background:var(--card-sunken); color:var(--content-2);
-  display:flex; align-items:center; justify-content:center;
-  font-family:var(--display); font-weight:700; font-size:15px;
-  flex-shrink:0;
-}
-.crest-fallback.mini{width:22px; height:22px; font-size:9px; letter-spacing:-0.02em;}
 .side-name{font-size:13px; font-weight:600; text-align:center; line-height:1.25;}
 .result{
   font-family:var(--display); font-variant-numeric:tabular-nums;
@@ -62,12 +54,12 @@
   font-size:11px; font-weight:600; letter-spacing:0.02em;
   vertical-align:1px;
 }
-.goal .crest-mini{width:22px; height:22px; object-fit:contain; margin-top:1px;}
+.goal .crest-mini{margin-top:1px;}
 
 /* ── Opstelling ────────────────────────────────────────────────────────── */
 .player{
-  display:grid; grid-template-columns:20px 1fr auto auto;
-  gap:10px; align-items:center;
+  display:grid; grid-template-columns:16px 34px 1fr auto auto;
+  gap:8px; align-items:center;
   padding:9px 16px; min-height:44px;
 }
 .player + .player{border-top:0.5px solid var(--separator);}
@@ -112,20 +104,12 @@
   <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
 </nav>
 
+<script src="groundhop.js"></script>
 <script src="match-data.js"></script>
 <script>
 const M = window.MATCH;
 const app = document.getElementById('app');
 
-const DAG = ['zondag','maandag','dinsdag','woensdag','donderdag','vrijdag','zaterdag'];
-const MND = ['januari','februari','maart','april','mei','juni','juli','augustus',
-             'september','oktober','november','december'];
-
-function datum(iso){
-  const d = new Date(iso + 'T12:00:00');
-  return `${DAG[d.getDay()]} ${d.getDate()} ${MND[d.getMonth()]} ${d.getFullYear()}`;
-}
-function getal(n){ return n == null ? '—' : n.toLocaleString('nl-NL'); }
 
 // De bron levert landnamen in het Engels; de rest van het scherm is Nederlands.
 // Dit dekt alle 22 landen die in de scheidsrechterslijst voorkomen.
@@ -140,18 +124,9 @@ const LAND = {
 function land(naam){ return LAND[naam] || naam; }
 function minuut(g){ return g.minute + (g.added_time ? '+' + g.added_time : '') + "'"; }
 
-// Logo's staan naast deze pagina in crests/, gekopieerd uit img/team/ door
-// build_demo_data.py. Ontbreekt er een, dan vallen we terug op initialen.
+// De logo's staan naast deze pagina in crests/, gekopieerd uit img/team/.
 const CREST = {};
-
-function crest(naam, klasse){
-  const kort = naam.replace(/^(FC|AFC|SC|Jong)\s+/,'').slice(0,3).toUpperCase();
-  const mini = klasse === 'crest-mini' ? ' mini' : '';
-  const bron = CREST[naam];
-  if (!bron) return `<div class="crest-fallback${mini}">${kort}</div>`;
-  return `<img class="${klasse}" src="${bron}" alt="" loading="lazy"
-    onerror="this.outerHTML='<div class=&quot;crest-fallback${mini}&quot;>${kort}</div>'">`;
-}
+const clublogo = (naam, mini) => logo(CREST[naam], naam, mini);
 
 function render(){
   const c = M.context;
@@ -164,17 +139,17 @@ function render(){
   let html = `
   <section class="card">
     <div class="score-meta">
-      <div class="comp">${comp}${rondeTekst}</div>
+      <div class="comp-regel">${compLogo(M.tournament_logo)}<span class="comp">${comp}${rondeTekst}</span></div>
       <div class="date">${datum(M.date)}</div>
     </div>
     <div class="score">
       <div class="side">
-        ${crest(M.home.name, 'crest')}
+        ${clublogo(M.home.name)}
         <div class="side-name">${M.home.name}</div>
       </div>
       <div class="result">${M.home.score} – ${M.away.score}</div>
       <div class="side">
-        ${crest(M.away.name, 'crest')}
+        ${clublogo(M.away.name)}
         <div class="side-name">${M.away.name}</div>
       </div>
     </div>
@@ -209,7 +184,7 @@ function render(){
             <div class="scorer">${g.player}${soort}</div>
             ${g.assist ? `<div class="assist">assist ${g.assist}</div>` : ''}
           </div>
-          ${crest(g.team, 'crest-mini')}
+          ${clublogo(g.team, true)}
         </div>`;
       }).join('')}
     </div>
@@ -276,9 +251,11 @@ function toonPloeg(team){
     `<div class="group-label">${label}</div>` + lijst.map(p => `
       <div class="player">
         <div class="pos">${p.position || '·'}</div>
+        ${portret(p.photo, p.name)}
         <div>
           <div class="pname">${p.name}</div>
-          <div class="pmeta">${p.minutes != null ? p.minutes + ' min' : '—'}${
+          <div class="pmeta"><span class="vlag">${vlag(p.country)}</span> ${
+            p.minutes != null ? p.minutes + ' min' : '—'}${
             p.goals ? ` · ${p.goals} goal${p.goals > 1 ? 's' : ''}` : ''}${
             p.assists ? ` · ${p.assists} assist${p.assists > 1 ? 's' : ''}` : ''}</div>
         </div>

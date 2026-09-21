@@ -157,11 +157,26 @@ class Handler(SimpleHTTPRequestHandler):
         parsed = urlparse(self.path)
         path = parsed.path
 
-        # ─── Image proxy (player/team foto's via server — werkt op mobiel) ──
+        # ─── Image proxy (speler, club, toernooi — werkt ook op mobiel) ────
         if path.startswith("/img/"):
-            parts = path.split("/")  # ['', 'img', 'player'|'team', '<id>']
-            if len(parts) >= 4 and parts[2] in ("player", "team"):
-                img_url = f"https://api.sofascore.app/api/v1/{parts[2]}/{parts[3]}/image"
+            parts = path.split("/")  # ['', 'img', 'player'|'team'|'tournament', '<id>']
+            # Toernooien zitten bij Sofascore onder een ander pad dan de rest.
+            SF_PAD = {"player": "player", "team": "team", "tournament": "unique-tournament"}
+            if len(parts) >= 4 and parts[2] in SF_PAD:
+                # Staat het bestand lokaal, dan serveren we dat: sneller, en het
+                # scheelt een verzoek aan Sofascore bij elke paginaweergave.
+                lokaal = Path("img") / parts[2] / parts[3]
+                if lokaal.is_file():
+                    body = lokaal.read_bytes()
+                    self.send_response(200)
+                    self.send_header("Content-Type", "image/png")
+                    self.send_header("Content-Length", len(body))
+                    self.send_header("Cache-Control", "public, max-age=86400")
+                    self.send_cors()
+                    self.end_headers()
+                    self.wfile.write(body)
+                    return
+                img_url = f"https://api.sofascore.app/api/v1/{SF_PAD[parts[2]]}/{parts[3]}/image"
                 try:
                     resp = sf_get(img_url)
                     ct = resp.headers.get("Content-Type", "image/png")

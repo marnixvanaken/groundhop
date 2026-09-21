@@ -17,38 +17,46 @@ window.VENUES = {
    "clubs_top": [
     {
      "name": "PSV Eindhoven",
-     "count": 94
+     "count": 94,
+     "crest": "crests/2952.png"
     },
     {
      "name": "NEC Nijmegen",
-     "count": 5
+     "count": 5,
+     "crest": "crests/2962.png"
     },
     {
      "name": "AZ Alkmaar",
-     "count": 5
+     "count": 5,
+     "crest": "crests/2950.png"
     },
     {
      "name": "Go Ahead Eagles",
-     "count": 4
+     "count": 4,
+     "crest": "crests/2979.png"
     }
    ],
    "players": 1577,
    "tournaments": [
     {
      "name": "VriendenLoterij Eredivisie",
-     "count": 60
+     "count": 60,
+     "logo": null
     },
     {
      "name": "UEFA Champions League",
-     "count": 20
+     "count": 20,
+     "logo": null
     },
     {
      "name": "UEFA Europa League",
-     "count": 9
+     "count": 9,
+     "logo": null
     },
     {
      "name": "UEFA Conference League",
-     "count": 2
+     "count": 2,
+     "logo": null
     }
    ],
    "referees": 41,
@@ -99,6 +107,8 @@ window.VENUES = {
      "date": "2026-04-04",
      "home": "PSV Eindhoven",
      "away": "FC Utrecht",
+     "home_crest": "crests/2952.png",
+     "away_crest": "crests/2948.png",
      "home_score": 4,
      "away_score": 3,
      "tournament": "VriendenLoterij Eredivisie",
@@ -111,6 +121,8 @@ window.VENUES = {
      "date": "2026-03-14",
      "home": "PSV Eindhoven",
      "away": "NEC Nijmegen",
+     "home_crest": "crests/2952.png",
+     "away_crest": "crests/2962.png",
      "home_score": 2,
      "away_score": 3,
      "tournament": "VriendenLoterij Eredivisie",
@@ -123,6 +135,8 @@ window.VENUES = {
      "date": "2026-03-07",
      "home": "PSV Eindhoven",
      "away": "AZ Alkmaar",
+     "home_crest": "crests/2952.png",
+     "away_crest": "crests/2950.png",
      "home_score": 2,
      "away_score": 1,
      "tournament": "VriendenLoterij Eredivisie",
@@ -135,6 +149,8 @@ window.VENUES = {
      "date": "2026-01-28",
      "home": "PSV Eindhoven",
      "away": "FC Bayern München",
+     "home_crest": "crests/2952.png",
+     "away_crest": "crests/2672.png",
      "home_score": 1,
      "away_score": 2,
      "tournament": "UEFA Champions League",
@@ -147,6 +163,8 @@ window.VENUES = {
      "date": "2026-01-24",
      "home": "PSV Eindhoven",
      "away": "NAC Breda",
+     "home_crest": "crests/2952.png",
+     "away_crest": "crests/2947.png",
      "home_score": 2,
      "away_score": 2,
      "tournament": "VriendenLoterij Eredivisie",
@@ -159,6 +177,8 @@ window.VENUES = {
      "date": "2026-01-10",
      "home": "PSV Eindhoven",
      "away": "Excelsior",
+     "home_crest": "crests/2952.png",
+     "away_crest": "crests/2967.png",
      "home_score": 5,
      "away_score": 1,
      "tournament": "VriendenLoterij Eredivisie",
@@ -185,18 +205,21 @@ window.VENUES = {
    "clubs_top": [
     {
      "name": "Real Madrid",
-     "count": 1
+     "count": 1,
+     "crest": "crests/2829.png"
     },
     {
      "name": "Valencia",
-     "count": 1
+     "count": 1,
+     "crest": "crests/2828.png"
     }
    ],
    "players": 40,
    "tournaments": [
     {
      "name": "LaLiga",
-     "count": 1
+     "count": 1,
+     "logo": null
     }
    ],
    "referees": 1,
@@ -219,6 +242,8 @@ window.VENUES = {
      "date": "2023-11-11",
      "home": "Real Madrid",
      "away": "Valencia",
+     "home_crest": "crests/2829.png",
+     "away_crest": "crests/2828.png",
      "home_score": 5,
      "away_score": 1,
      "tournament": "LaLiga",

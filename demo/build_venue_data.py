@@ -15,13 +15,49 @@ Gebruik:  python3 demo/build_venue_data.py
 
 import collections
 import json
+import shutil
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMO = Path(__file__).resolve().parent
 TARGET = DEMO / "venue-data.js"
+CRESTS = DEMO / "crests"
+LOGOS = DEMO / "tournaments"
 
 TONEN = ["Philips Stadion", "Bernabéu"]
+
+
+def logo(tournament_id):
+    """Zie tools/fetch_images.py; ontbreekt het bestand, dan blijft het bij de naam."""
+    bron = ROOT / "img" / "tournament" / str(tournament_id)
+    if not bron.exists():
+        return None
+    LOGOS.mkdir(exist_ok=True)
+    kop = bron.read_bytes()[:12]
+    ext = (".png" if kop[:8] == b"\x89PNG\r\n\x1a\n"
+           else ".webp" if kop[:4] == b"RIFF" and kop[8:12] == b"WEBP"
+           else ".jpg" if kop[:3] == b"\xff\xd8\xff" else None)
+    if ext is None:
+        return None
+    shutil.copyfile(bron, LOGOS / f"{tournament_id}{ext}")
+    return f"tournaments/{tournament_id}{ext}"
+
+
+def crest(team_id):
+    """Clublogo naast deze pagina zetten. De bestanden in img/team/ hebben geen
+    extensie; zonder extensie serveert een webserver ze als octet-stream."""
+    bron = ROOT / "img" / "team" / str(team_id)
+    if not bron.exists():
+        return None
+    kop = bron.read_bytes()[:12]
+    ext = (".png" if kop[:8] == b"\x89PNG\r\n\x1a\n"
+           else ".webp" if kop[:4] == b"RIFF" and kop[8:12] == b"WEBP"
+           else ".jpg" if kop[:3] == b"\xff\xd8\xff" else None)
+    if ext is None:
+        return None
+    CRESTS.mkdir(exist_ok=True)
+    shutil.copyfile(bron, CRESTS / f"{team_id}{ext}")
+    return f"crests/{team_id}{ext}"
 
 
 def seizoen(datum):
@@ -39,9 +75,11 @@ def bouw(naam, data, coords):
     ids = {m["id"] for m in ms}
 
     clubs = collections.Counter()
+    club_ids = {}
     for m in ms:
-        clubs[m["home_team"]["name"]] += 1
-        clubs[m["away_team"]["name"]] += 1
+        for kant in ("home_team", "away_team"):
+            clubs[m[kant]["name"]] += 1
+            club_ids[m[kant]["name"]] = m[kant]["id"]
 
     spelers = {
         p["id"]
@@ -50,6 +88,7 @@ def bouw(naam, data, coords):
         if md["match_id"] in ids
     }
 
+    toernooi_ids = {m["tournament"]: m.get("tournament_id") for m in ms}
     publiek = [m["attendance"] for m in ms if m.get("attendance")]
     goals = sum(len(m.get("goals", [])) for m in ms)
 
@@ -87,10 +126,13 @@ def bouw(naam, data, coords):
         "goals": goals,
         "goals_per_match": round(goals / len(ms), 1) if ms else 0,
         "clubs": len(clubs),
-        "clubs_top": [{"name": n, "count": c} for n, c in clubs.most_common(4)],
+        "clubs_top": [
+            {"name": n, "count": c, "crest": crest(club_ids[n])}
+            for n, c in clubs.most_common(4)
+        ],
         "players": len(spelers),
         "tournaments": [
-            {"name": n, "count": c}
+            {"name": n, "count": c, "logo": logo(toernooi_ids.get(n))}
             for n, c in collections.Counter(m["tournament"] for m in ms).most_common(4)
         ],
         "referees": len({m["referee"]["name"] for m in ms if m.get("referee", {}).get("name")}),
@@ -108,6 +150,8 @@ def bouw(naam, data, coords):
                 "date": m["date"],
                 "home": m["home_team"]["name"],
                 "away": m["away_team"]["name"],
+                "home_crest": crest(m["home_team"]["id"]),
+                "away_crest": crest(m["away_team"]["id"]),
                 "home_score": m["home_score"],
                 "away_score": m["away_score"],
                 "tournament": m["tournament"],

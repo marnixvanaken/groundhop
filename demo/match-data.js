@@ -2,6 +2,7 @@ window.MATCH = {
  "id": 14566893,
  "date": "2025-10-21",
  "tournament": "UEFA Champions League",
+ "tournament_logo": null,
  "season": "UEFA Champions League 25/26",
  "round": 3,
  "home": {
@@ -125,6 +126,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": "players/927366.png",
     "seen": 19
    },
    {
@@ -137,6 +139,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 1,
     "starter": true,
+    "photo": "players/893499.png",
     "seen": 60
    },
    {
@@ -149,6 +152,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": "players/1046960.png",
     "seen": 41
    },
    {
@@ -161,6 +165,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": "players/961684.webp",
     "seen": 17
    },
    {
@@ -173,6 +178,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": "players/1184317.png",
     "seen": 18
    },
    {
@@ -185,6 +191,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 1,
     "starter": true,
+    "photo": "players/850816.png",
     "seen": 91
    },
    {
@@ -197,6 +204,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": "players/844234.png",
     "seen": 52
    },
    {
@@ -209,6 +217,7 @@ window.MATCH = {
     "goals": 2,
     "assists": 0,
     "starter": true,
+    "photo": "players/812145.webp",
     "seen": 17
    },
    {
@@ -221,6 +230,7 @@ window.MATCH = {
     "goals": 1,
     "assists": 0,
     "starter": true,
+    "photo": "players/1063767.png",
     "seen": 79
    },
    {
@@ -233,6 +243,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 1,
     "starter": true,
+    "photo": "players/845798.png",
     "seen": 89
    },
    {
@@ -245,6 +256,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": "players/38710.png",
     "seen": 34
    },
    {
@@ -257,6 +269,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/1134720.png",
     "seen": 47
    },
    {
@@ -269,6 +282,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/227192.png",
     "seen": 17
    },
    {
@@ -281,6 +295,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/825838.png",
     "seen": 78
    },
    {
@@ -293,6 +308,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/906021.png",
     "seen": 42
    },
    {
@@ -305,6 +321,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/1108094.png",
     "seen": 25
    },
    {
@@ -317,6 +334,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/1146018.png",
     "seen": 17
    },
    {
@@ -329,6 +347,7 @@ window.MATCH = {
     "goals": 1,
     "assists": 1,
     "starter": false,
+    "photo": "players/986395.png",
     "seen": 54
    },
    {
@@ -341,6 +360,7 @@ window.MATCH = {
     "goals": 1,
     "assists": 1,
     "starter": false,
+    "photo": "players/1047395.png",
     "seen": 36
    },
    {
@@ -353,6 +373,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/1136110.png",
     "seen": 26
    },
    {
@@ -365,6 +386,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/856744.jpg",
     "seen": 10
    }
   ],
@@ -379,6 +401,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 1
    },
    {
@@ -391,6 +414,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 2
    },
    {
@@ -403,6 +427,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 2
    },
    {
@@ -415,6 +440,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 3
    },
    {
@@ -427,6 +453,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 1,
     "starter": true,
+    "photo": null,
     "seen": 2
    },
    {
@@ -439,6 +466,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 1
    },
    {
@@ -451,6 +479,7 @@ window.MATCH = {
     "goals": 2,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 1
    },
    {
@@ -463,6 +492,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 1
    },
    {
@@ -475,6 +505,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 1
    },
    {
@@ -487,6 +518,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 3
    },
    {
@@ -499,6 +531,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": true,
+    "photo": null,
     "seen": 1
    },
    {
@@ -511,6 +544,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 2
    },
    {
@@ -523,6 +557,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 1
    },
    {
@@ -535,6 +570,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/908716.webp",
     "seen": 4
    },
    {
@@ -547,6 +583,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 1
    },
    {
@@ -559,6 +596,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 1
    },
    {
@@ -571,6 +609,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 1
    },
    {
@@ -583,6 +622,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": "players/875136.png",
     "seen": 31
    },
    {
@@ -595,6 +635,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 1,
     "starter": false,
+    "photo": "players/850993.png",
     "seen": 4
    },
    {
@@ -607,6 +648,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 1
    },
    {
@@ -619,6 +661,7 @@ window.MATCH = {
     "goals": 0,
     "assists": 0,
     "starter": false,
+    "photo": null,
     "seen": 1
    }
   ]
