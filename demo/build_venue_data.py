@@ -190,20 +190,27 @@ def main():
         for v in json.loads((ROOT / "data" / "venue_coords.json").read_text(encoding="utf-8"))["venues"]
     }
 
-    # Alle 31 punten gaan mee voor de kaartkop; de twee uitgewerkte stadions
-    # krijgen de volledige afleiding.
+    # Alle punten met een coordinaat gaan mee voor de kaartkop; de twee
+    # uitgewerkte stadions krijgen de volledige afleiding.
+    #
+    # De coordinatenlijst is op Sofascore-namen gebouwd. Schrijft de nieuwe bron
+    # een stadion anders, dan hoort dat punt er niet bij te staan en hoort het
+    # ook niet stilletjes te verdwijnen: wat niet koppelt wordt geteld en
+    # gemeld, zodat duidelijk is welke namen bijgewerkt moeten worden.
+    bezoeken = {v["name"]: v["matches_count"] for v in data["venues"]}
     kaart = [
         {
             "name": v["name"],
             "lat": v["lat"],
             "lon": v["lon"],
             "country": v["country"],
-            "visits": next(
-                b["matches_count"] for b in data["venues"] if b["name"] == v["name"]
-            ),
+            "visits": bezoeken[v["name"]],
         }
         for v in coords.values()
+        if v["name"] in bezoeken
     ]
+    zonder_coord = sorted(set(bezoeken) - set(coords))
+    ongebruikt = sorted(set(coords) - set(bezoeken))
 
     tonen = kies_stadions(data["venues"], coords)
     if not tonen:
@@ -236,7 +243,12 @@ def main():
               f"{v['clubs']} clubs, {v['players']} spelers, "
               f"publiek bekend bij {v['attendance_known']}, "
               f"nr {v['rank_visits']} van {v['venues_total']}")
-    print(f"  kaartpunten: {len(payload['map'])}")
+    print(f"  kaartpunten: {len(payload['map'])} van de {len(data['venues'])} stadions")
+    if zonder_coord:
+        print(f"  zonder coordinaat ({len(zonder_coord)}): {', '.join(zonder_coord)}")
+    if ongebruikt:
+        print(f"  coordinaat zonder stadion in de export ({len(ongebruikt)}): "
+              f"{', '.join(ongebruikt)}")
     print(f"  totalen: {payload['totals']}")
 
 
