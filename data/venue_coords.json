@@ -5,7 +5,8 @@
   "controleren": "kleiner stadion; ligging klopt op stadsniveau maar het exacte punt is niet geverifieerd",
   "koppeling": "op de naam zoals die in venues[] staat",
   "aliases": "Transfermarkt schrijft een stadion vaak anders dan Sofascore: de officiële naam in plaats van de courante, of met andere hoofdletters. Beide namen wijzen naar hetzelfde punt, dus ze staan er allebei in.",
-  "herkomst": "Bij een stadion dat alleen Transfermarkt kent staat de wedstrijd erbij waaraan het herkend is, zodat een verkeerde plaatsing na te lopen is."
+  "herkomst": "Bij een stadion dat alleen Transfermarkt kent staat de wedstrijd erbij waaraan het herkend is, zodat een verkeerde plaatsing na te lopen is.",
+  "display": "Een stadion dat onder zijn officiële naam onherkenbaar is, krijgt hier de naam die mensen gebruiken. Alleen invullen waar dat echt nodig is."
  },
  "venues": [
   {
@@ -305,7 +306,8 @@
    "status": "zeker",
    "aliases": [
     "Estádio Jornalista Mário Filho"
-   ]
+   ],
+   "display": "Maracanã"
   },
   {
    "name": "Euroborg",

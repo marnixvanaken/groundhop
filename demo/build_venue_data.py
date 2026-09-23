@@ -63,11 +63,13 @@ def logo(tournament_id):
     return f"tournaments/{tournament_id}{ext}"
 
 
-def toonnaam(naam):
+def toonnaam(naam, coord=None):
     """Transfermarkt schrijft sommige stadions in kapitalen, zoals de eigenaar
     ze zelf zet. Tussen namen in gewone schrijfwijze leest dat als schreeuwen,
     dus alleen dat geval wordt omgezet; de rest blijft precies zoals de bron
     hem levert, inclusief aanhalingstekens."""
+    if coord and coord.get("display"):
+        return coord["display"]
     letters = [c for c in naam if c.isalpha()]
     if letters and all(c.isupper() for c in letters):
         return naam.title()
@@ -152,7 +154,7 @@ def bouw(naam, data, coords):
     )
 
     return {
-        "name": toonnaam(naam),
+        "name": toonnaam(naam, coords),
         # Transfermarkt levert de stad niet mee; de coordinatenlijst wel.
         "city": bron.get("city") or coords.get("city") or "",
         "country": coords["country"],
@@ -227,7 +229,7 @@ def main():
             zonder_coord.append(v["name"])
             continue
         kaart.append({
-            "name": v["name"],
+            "name": toonnaam(v["name"], c),
             "lat": c["lat"],
             "lon": c["lon"],
             "country": c["country"],
