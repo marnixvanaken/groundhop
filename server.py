@@ -178,6 +178,14 @@ class Handler(SimpleHTTPRequestHandler):
         if not any(x in path for x in ['.js', '.css', '.png', '.ico', '.woff']):
             print(f"  {args[1] if len(args)>1 else ''} {path}")
 
+    def end_headers(self):
+        # De bestanden in demo/ worden bij elke bouw opnieuw geschreven. Laat je
+        # de browser ze cachen, dan toont de pagina oude data terwijl de bron al
+        # klopt — en dat kost meer zoekwerk dan het verkeer bespaart.
+        if self.path.startswith("/demo/"):
+            self.send_header("Cache-Control", "no-store")
+        super().end_headers()
+
     def send_cors(self):
         self.send_header("Access-Control-Allow-Origin", "*")
         self.send_header("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
