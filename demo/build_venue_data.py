@@ -62,6 +62,17 @@ def logo(tournament_id):
     return f"tournaments/{tournament_id}{ext}"
 
 
+def toonnaam(naam):
+    """Transfermarkt schrijft sommige stadions in kapitalen, zoals de eigenaar
+    ze zelf zet. Tussen namen in gewone schrijfwijze leest dat als schreeuwen,
+    dus alleen dat geval wordt omgezet; de rest blijft precies zoals de bron
+    hem levert, inclusief aanhalingstekens."""
+    letters = [c for c in naam if c.isalpha()]
+    if letters and all(c.isupper() for c in letters):
+        return naam.title()
+    return naam
+
+
 def crest(team_id):
     """Clublogo naast deze pagina zetten. De bestanden in img/team/ hebben geen
     extensie; zonder extensie serveert een webserver ze als octet-stream."""
@@ -132,8 +143,9 @@ def bouw(naam, data, coords):
     )
 
     return {
-        "name": naam,
-        "city": bron["city"],
+        "name": toonnaam(naam),
+        # Transfermarkt levert de stad niet mee; de coordinatenlijst wel.
+        "city": bron.get("city") or coords.get("city") or "",
         "country": coords["country"],
         "lat": coords["lat"],
         "lon": coords["lon"],
@@ -229,7 +241,10 @@ def main():
         "totals": {
             "venues": len(data["venues"]),
             "countries": len({v["country"] for v in coords.values()}),
-            "cities": len({v["city"] for v in data["venues"] if v.get("city")}),
+            "cities": len({
+                v.get("city") or (coords.get(v["name"]) or {}).get("city")
+                for v in data["venues"]
+            } - {None, ""}),
             "visits": sum(v["matches_count"] for v in data["venues"]),
             "matches_without_venue": sum(
                 1 for m in data["matches"] if not m.get("venue", {}).get("name")
