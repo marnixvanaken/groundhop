@@ -983,3 +983,31 @@ Meegenomen: `transfermarkt_sync.py` meldde `✓ data/selected_matches.json
 geschreven` en daaronder `data/selected_matches.json is ongewijzigd` — over
 hetzelfde bestand, in twee regels. Dezelfde onwaarheid die in de export al was
 rechtgezet, maar hier nog stond.
+
+## Soccerdonna: eerst meten, dan pas bouwen
+
+De vier vrouwenwedstrijden vielen buiten de migratie omdat Transfermarkt ze niet
+via de snelzoekfunctie levert. Soccerdonna dekt vrouwenvoetbal en hoort tot
+dezelfde familie sites, dus de verleiding is de bestaande parser er los op te
+laten en te kijken wat eruit komt.
+
+Dat is precies de verkeerde volgorde. `parse_match` steunt op negentien
+`sb-*`-klassen — `sb-endstand`, `sb-zusatzinfos`, `sb-aktion-wechsel-ein` — en
+dat zijn Transfermarkts eigen CSS-namen, geen webstandaard. Een site die er
+hetzelfde uitziet kan volstrekt anders zijn opgebouwd. Een parser die dan
+grotendeels lege velden oplevert ziet eruit als een wedstrijd met weinig
+gegevens, niet als een parser die niet past.
+
+`soccerdonna_probe.py` meet daarom eerst. Hij telt hoeveel van die negentien
+klassen er staan, welke ID-families in de URL's voorkomen (`spieler`, `verein`,
+`spielbericht`, `wettbewerb`), en laat waar het kan de échte parser los op de
+pagina zodat diens eigen diagnose vertelt welk veld hij niet vond. Hij schrijft
+niets in `data/` en koppelt niets: de enige uitvoer is een oordeel.
+
+Getoetst in beide richtingen, want een meting die nooit afkeurt meet niets. Op
+de nagebouwde Transfermarkt-pagina uit de zelftest van `transfermarkt_poc`:
+elf van de negentien klassen, "komt een eind". Op een pagina die er alleen op
+lijkt: nul, "vraagt een eigen parser".
+
+Hij neemt een URL in plaats van een padvorm te raden. De padvormen van
+Soccerdonna raden zou dezelfde fout zijn als de markup raden.
