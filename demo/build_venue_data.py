@@ -17,6 +17,7 @@ import collections
 import json
 import shutil
 from pathlib import Path
+from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMO = Path(__file__).resolve().parent
@@ -73,18 +74,26 @@ def toonnaam(naam):
     return naam
 
 
+LOGOS = {}
+
+
 def crest(team_id):
     """Clublogo naast deze pagina zetten. De bestanden in img/team/ hebben geen
-    extensie; zonder extensie serveert een webserver ze als octet-stream."""
+    extensie; zonder extensie serveert een webserver ze als octet-stream.
+
+    Staat het bestand er niet — na de overstap hangen clubs aan andere id's —
+    dan levert de export een logo_url, die langs /img/ext gaat."""
     bron = ROOT / "img" / "team" / str(team_id)
     if not bron.exists():
-        return None
+        url = LOGOS.get(team_id)
+        return f"/img/ext?u={quote(url, safe='')}" if url else None
     kop = bron.read_bytes()[:12]
     ext = (".png" if kop[:8] == b"\x89PNG\r\n\x1a\n"
            else ".webp" if kop[:4] == b"RIFF" and kop[8:12] == b"WEBP"
            else ".jpg" if kop[:3] == b"\xff\xd8\xff" else None)
     if ext is None:
-        return None
+        url = LOGOS.get(team_id)
+        return f"/img/ext?u={quote(url, safe='')}" if url else None
     CRESTS.mkdir(exist_ok=True)
     shutil.copyfile(bron, CRESTS / f"{team_id}{ext}")
     return f"crests/{team_id}{ext}"
@@ -197,6 +206,9 @@ def bouw(naam, data, coords):
 
 def main():
     data = json.loads((ROOT / "data" / "dashboard_data.json").read_text(encoding="utf-8"))
+    LOGOS.update({
+        c["id"]: c["logo_url"] for c in data.get("teams_visited", []) if c.get("logo_url")
+    })
     # Elk punt is vindbaar onder elke naam die het draagt, zodat een wissel
     # van bron de kaart niet leeg trekt.
     coords = {}

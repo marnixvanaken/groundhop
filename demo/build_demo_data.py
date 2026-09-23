@@ -74,8 +74,18 @@ def kopieer(soort, ident, bronmap, doelmap):
     return f"{soort}/{ident}{ext}"
 
 
+# Clublogo's die in de export staan, op id. Na de overstap naar Transfermarkt
+# hangen de clubs aan andere id's dan de bestanden in img/team/, net als bij de
+# spelersfoto's, dus de export is hier de betrouwbaarste bron.
+LOGOS = {}
+
+
 def copy_crest(team_id):
-    return kopieer("crests", team_id, "team", CRESTS)
+    lokaal = kopieer("crests", team_id, "team", CRESTS)
+    if lokaal:
+        return lokaal
+    url = LOGOS.get(team_id)
+    return f"/img/ext?u={quote(url, safe='')}" if url else None
 
 
 def copy_photo(player_id):
@@ -136,6 +146,9 @@ def build_lineup(players, match_id):
 
 def main():
     d = json.loads(SOURCE.read_text(encoding="utf-8"))
+    LOGOS.update({
+        c["id"]: c["logo_url"] for c in d.get("teams_visited", []) if c.get("logo_url")
+    })
     matches = d["matches"]
     if len(sys.argv) > 1:
         match_id = int(sys.argv[1])

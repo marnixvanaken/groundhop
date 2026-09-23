@@ -154,7 +154,8 @@ function render(){
         <div class="side-name">${M.away.name}</div>
       </div>
     </div>
-    ${M.half_time ? `<div class="half">rust ${M.half_time.home}–${M.half_time.away}</div>` : ''}
+    ${M.half_time && M.half_time.home != null && M.half_time.away != null
+      ? `<div class="half">rust ${M.half_time.home}–${M.half_time.away}</div>` : ''}
     <div class="tally">
       <div>
         <b class="num">${c.venue_visit}<sup>e</sup></b>
