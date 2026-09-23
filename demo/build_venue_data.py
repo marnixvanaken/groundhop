@@ -24,7 +24,26 @@ TARGET = DEMO / "venue-data.js"
 CRESTS = DEMO / "crests"
 LOGOS = DEMO / "tournaments"
 
-TONEN = ["Philips Stadion", "Bernabéu"]
+def kies_stadions(venues, bekend):
+    """Twee uitersten: het stadion waar je het vaakst kwam, en het
+    indrukwekkendste dat je één keer zag. Op naam vastleggen brak zodra de
+    bron wisselde en Transfermarkt een stadion anders schrijft.
+
+    Alleen stadions waarvan een coordinaat bekend is komen in aanmerking;
+    zonder coordinaat kan het scherm de ligging niet tonen.
+    """
+    venues = [v for v in venues if v["name"] in bekend]
+    if not venues:
+        return []
+    op_bezoek = sorted(venues, key=lambda v: -v["matches_count"])
+    vaakst = op_bezoek[0]
+    eenmalig = [v for v in venues if v["matches_count"] == 1]
+    # Onder de eenmalige het stadion met het grootste publiek; is dat nergens
+    # bekend, dan het meest recente bezoek.
+    if eenmalig:
+        eenmalig.sort(key=lambda v: (v.get("max_attendance") or 0, v["first_visit"]), reverse=True)
+        return [vaakst["name"], eenmalig[0]["name"]]
+    return [vaakst["name"]]
 
 
 def logo(tournament_id):
@@ -186,8 +205,17 @@ def main():
         for v in coords.values()
     ]
 
+    tonen = kies_stadions(data["venues"], coords)
+    if not tonen:
+        namen = sorted(v["name"] for v in data["venues"])[:5]
+        raise SystemExit(
+            "geen enkel stadion uit de export staat in data/venue_coords.json.\n"
+            "  Dat bestand is op Sofascore-namen gebouwd; schrijft de nieuwe bron\n"
+            "  ze anders, dan moeten de namen daar bijgewerkt worden.\n"
+            f"  In de export staat bijvoorbeeld: {', '.join(namen)}")
+    print(f"bron: {data.get('source', 'sofascore')} — toont {', '.join(tonen)}")
     payload = {
-        "venues": [bouw(n, data, coords[n]) for n in TONEN],
+        "venues": [bouw(n, data, coords[n]) for n in tonen],
         "map": kaart,
         "totals": {
             "venues": len(data["venues"]),

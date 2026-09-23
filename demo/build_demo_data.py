@@ -30,10 +30,23 @@ CRESTS = DEMO / "crests"
 PHOTOS = DEMO / "players"
 LOGOS = DEMO / "tournaments"
 
-# PSV Eindhoven 6-2 Napoli, Champions League, 21 oktober 2025.
-# Gekozen omdat dit duel als enige alles heeft: stadion, publiek,
-# scheidsrechter en acht goals.
-DEFAULT_MATCH = 14566893
+def kies_wedstrijd(matches):
+    """Een wedstrijd met zoveel mogelijk in beeld: stadion, publiek,
+    scheidsrechter en veel doelpunten.
+
+    Eerst stond hier een vast id. Dat was een Sofascore-id, en na de
+    overstap naar Transfermarkt bestaat het niet meer — dan viel de hele
+    demo om op een bron die verder prima werkt. Kiezen op inhoud werkt op
+    allebei.
+    """
+    def score(m):
+        return (
+            bool(m.get("venue", {}).get("name")),
+            bool(m.get("attendance")),
+            bool(m.get("referee", {}).get("name")),
+            len(m.get("goals") or []),
+        )
+    return max(matches, key=score)
 
 
 def extensie(pad):
@@ -122,12 +135,17 @@ def build_lineup(players, match_id):
 
 
 def main():
-    match_id = int(sys.argv[1]) if len(sys.argv) > 1 else DEFAULT_MATCH
     d = json.loads(SOURCE.read_text(encoding="utf-8"))
     matches = d["matches"]
-    match = next((m for m in matches if m["id"] == match_id), None)
-    if match is None:
-        sys.exit(f"wedstrijd {match_id} niet gevonden")
+    if len(sys.argv) > 1:
+        match_id = int(sys.argv[1])
+        match = next((m for m in matches if m["id"] == match_id), None)
+        if match is None:
+            sys.exit(f"wedstrijd {match_id} niet gevonden")
+    else:
+        match = kies_wedstrijd(matches)
+    match_id = match["id"]
+    print(f"bron: {d.get('source', 'sofascore')} — {len(matches)} wedstrijden")
 
     venue_name = match.get("venue", {}).get("name")
     home = match["home_team"]["name"]

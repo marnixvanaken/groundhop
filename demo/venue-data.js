@@ -189,35 +189,35 @@ window.VENUES = {
    ]
   },
   {
-   "name": "Bernabéu",
-   "city": "Madrid",
-   "country": "Spanje",
-   "lat": 40.4531,
-   "lon": -3.6883,
+   "name": "Signal Iduna Park",
+   "city": "Dortmund",
+   "country": "Duitsland",
+   "lat": 51.4926,
+   "lon": 7.4518,
    "coord_status": "zeker",
    "visits": 1,
    "visits_source": 1,
-   "first": "2023-11-11",
-   "last": "2023-11-11",
-   "goals": 6,
-   "goals_per_match": 6.0,
+   "first": "2024-03-13",
+   "last": "2024-03-13",
+   "goals": 2,
+   "goals_per_match": 2.0,
    "clubs": 2,
    "clubs_top": [
     {
-     "name": "Real Madrid",
+     "name": "Borussia Dortmund",
      "count": 1,
-     "crest": "crests/2829.png"
+     "crest": "crests/2673.png"
     },
     {
-     "name": "Valencia",
+     "name": "PSV Eindhoven",
      "count": 1,
-     "crest": "crests/2828.png"
+     "crest": "crests/2952.png"
     }
    ],
-   "players": 40,
+   "players": 45,
    "tournaments": [
     {
-     "name": "LaLiga",
+     "name": "UEFA Champions League",
      "count": 1,
      "logo": null
     }
@@ -231,25 +231,25 @@ window.VENUES = {
     }
    ],
    "attendance_known": 1,
-   "attendance_max": 72475,
-   "attendance_avg": 72475,
-   "rank_visits": 21,
-   "rank_attendance": 2,
+   "attendance_max": 81365,
+   "attendance_avg": 81365,
+   "rank_visits": 9,
+   "rank_attendance": 1,
    "venues_total": 31,
    "matches": [
     {
-     "id": 11369390,
-     "date": "2023-11-11",
-     "home": "Real Madrid",
-     "away": "Valencia",
-     "home_crest": "crests/2829.png",
-     "away_crest": "crests/2828.png",
-     "home_score": 5,
-     "away_score": 1,
-     "tournament": "LaLiga",
-     "goals": 6,
-     "attendance": 72475,
-     "referee": "José María Sánchez Martínez"
+     "id": 11905287,
+     "date": "2024-03-13",
+     "home": "Borussia Dortmund",
+     "away": "PSV Eindhoven",
+     "home_crest": "crests/2673.png",
+     "away_crest": "crests/2952.png",
+     "home_score": 2,
+     "away_score": 0,
+     "tournament": "UEFA Champions League",
+     "goals": 2,
+     "attendance": 81365,
+     "referee": "Daniele Orsato"
     }
    ]
   }
