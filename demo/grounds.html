@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Grounds — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css. */
+
+/* ── De kaart ──────────────────────────────────────────────────────────────
+   Geen kaarttegels maar vectoren: externe afbeeldingen worden in de
+   gepubliceerde demo geblokkeerd, en een omtrek werkt ook zonder netwerk.
+   De landen zijn achtergrond, de stippen zijn de inhoud — dus de landen
+   krijgen de kleur van een scheidslijn en de stippen het accent. */
+.kaart{display:block; width:100%; height:auto; background:var(--card-sunken);}
+.land{fill:var(--card); stroke:var(--separator); stroke-width:0.4;}
+.stip{fill:var(--accent); stroke:var(--card); stroke-width:1;}
+.buiten{
+  display:flex; align-items:center; gap:8px;
+  padding:10px 16px; border-top:0.5px solid var(--separator);
+  font-size:12px; color:var(--content-2);
+}
+.buiten b{
+  font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-weight:700; color:var(--accent); font-size:13px;
+}
+
+/* ── Lijst per land ────────────────────────────────────────────────────── */
+.landkop{
+  display:flex; align-items:baseline; justify-content:space-between;
+  padding:14px 16px 6px;
+}
+.landkop h2{
+  font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--content-2);
+}
+.landkop span{
+  font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:12px; color:var(--content-2);
+}
+.ground{
+  display:grid; grid-template-columns:1fr auto auto; gap:12px; align-items:center;
+  padding:10px 16px; min-height:44px; color:inherit; text-decoration:none;
+}
+.ground + .ground{border-top:0.5px solid var(--separator);}
+.ground-naam{font-size:15px; font-weight:500; min-width:0; overflow-wrap:break-word;}
+.ground-stad{font-size:12px; color:var(--content-2); margin-top:1px;}
+.ground-aantal{
+  font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:13px; font-weight:600; color:var(--accent);
+  background:var(--accent-soft); border-radius:7px; padding:3px 7px;
+}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1 style="padding-left:8px">Grounds</h1>
+</div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie">
+  <a href="#"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</a>
+  <a href="wedstrijddetail.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>Duels</a>
+  <a href="grounds.html" aria-current="page"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Grounds</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Spelers</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
+</nav>
+
+<script src="groundhop.js"></script>
+<script src="venue-data.js"></script>
+<script>
+const DATA = window.VENUES;
+const app = document.getElementById('app');
+
+const BREED = 396, HOOG = 300, RAND = 26;
+
+/* Mercator, de projectie die mensen van een kaart kennen: op deze
+   breedtegraden rekt hij het noorden op en dat hoort zo.
+
+   Beide assen moeten in dezelfde eenheid staan. Lengtegraden in graden naast
+   breedtegraden in Mercator-eenheden levert een schaal die er honderd keer
+   naast zit, en dan valt de hele kaart samen tot een streep. Dus gaan ze
+   allebei naar radialen.
+
+   De uitsnede volgt de stadions, niet de landsomtrek: die laatste loopt door
+   tot voorbij de punten en mag gerust buiten beeld doorlopen. */
+const rad = graden => graden * Math.PI / 180;
+const merc = graden => Math.log(Math.tan(Math.PI / 4 + rad(graden) / 2));
+
+function projectie(punten){
+  const xs = punten.map(k => rad(k.lon));
+  const ys = punten.map(k => merc(k.lat));
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMin = Math.min(...ys), yMax = Math.max(...ys);
+  const s = Math.min(
+    (BREED - 2 * RAND) / (xMax - xMin || 1),
+    (HOOG - 2 * RAND) / (yMax - yMin || 1),
+  );
+  const dx = (BREED - (xMax - xMin) * s) / 2;
+  const dy = (HOOG - (yMax - yMin) * s) / 2;
+  return (lon, lat) => [
+    (rad(lon) - xMin) * s + dx,
+    HOOG - ((merc(lat) - yMin) * s + dy),
+  ];
+}
+
+function kaart(){
+  const o = DATA.outline;
+  const binnen = DATA.map.filter(k =>
+    k.lon >= o.bbox[0] && k.lon <= o.bbox[2] && k.lat >= o.bbox[1] && k.lat <= o.bbox[3]);
+  const p = projectie(binnen);
+
+  const landen = o.countries.map(l => l.rings.map(ring =>
+    'M' + ring.map(([lon, lat]) => p(lon, lat).map(n => n.toFixed(1)).join(',')).join('L') + 'Z'
+  ).join('')).join('');
+
+  // Oppervlak evenredig met het aantal bezoeken, dus de straal met de wortel:
+  // anders lijkt Philips Stadion honderd keer zo groot als de rest.
+  const meest = Math.max(...binnen.map(k => k.visits));
+  const stippen = binnen
+    .slice()
+    .sort((a, b) => a.visits - b.visits)   // drukste bovenop
+    .map(k => {
+      const [x, y] = p(k.lon, k.lat);
+      const r = 2.5 + 6 * Math.sqrt(k.visits / meest);
+      return `<circle class="stip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${k.name} — ${k.visits}×</title></circle>`;
+    }).join('');
+
+  const buiten = DATA.offmap.length ? `
+    <div class="buiten">
+      <b>${DATA.offmap.length}</b>
+      <span>buiten deze uitsnede: ${DATA.offmap.join(', ')}</span>
+    </div>` : '';
+
+  return `
+  <section class="card">
+    <svg class="kaart" viewBox="0 0 ${BREED} ${HOOG}" role="img"
+         aria-label="Kaart van Europa met ${DATA.map.length} bezochte stadions">
+      <path class="land" d="${landen}"/>
+      ${stippen}
+    </svg>
+    ${buiten}
+    <div class="tally">
+      <div><b class="num">${DATA.totals.venues}</b><span>grounds</span></div>
+      <div><b class="num">${DATA.totals.countries}</b><span>landen</span></div>
+      <div><b class="num">${DATA.totals.cities || '—'}</b><span>steden</span></div>
+    </div>
+  </section>`;
+}
+
+function lijst(){
+  // Gegroepeerd op land, het land waar je het vaakst kwam bovenaan, en
+  // daarbinnen het stadion met de meeste bezoeken eerst.
+  const perLand = {};
+  for (const k of DATA.map) (perLand[k.country] ||= []).push(k);
+  const landen = Object.entries(perLand)
+    .map(([land, rij]) => [land, rij.sort((a, b) => b.visits - a.visits)])
+    .sort((a, b) => b[1].reduce((s, k) => s + k.visits, 0)
+                  - a[1].reduce((s, k) => s + k.visits, 0));
+
+  return landen.map(([land, rij]) => `
+    <section class="card">
+      <div class="landkop">
+        <h2>${land}</h2>
+        <span>${rij.length} ${rij.length === 1 ? 'ground' : 'grounds'}</span>
+      </div>
+      ${rij.map(k => `
+        <a class="ground" href="stadiondetail.html">
+          <div>
+            <div class="ground-naam">${k.name}</div>
+            ${k.city ? `<div class="ground-stad">${k.city}</div>` : ''}
+          </div>
+          <div class="ground-aantal num">${k.visits}×</div>
+          <div class="chev" aria-hidden="true">›</div>
+        </a>`).join('')}
+    </section>`).join('');
+}
+
+if (DATA && DATA.outline) {
+  app.innerHTML = kaart() + lijst();
+} else {
+  app.innerHTML = '<div class="card"><div class="note">Geen kaartdata gevonden. '
+    + 'Draai <code>python3 demo/build_venue_data.py</code>.</div></div>';
+}
+</script>
+</body>
+</html>

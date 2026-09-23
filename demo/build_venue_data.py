@@ -232,6 +232,7 @@ def main():
             "lon": c["lon"],
             "country": c["country"],
             "visits": v["matches_count"],
+            "city": v.get("city") or c.get("city") or "",
         })
     zonder_coord.sort()
     # Punten die onder geen enkele naam in de export voorkomen: die namen zijn
@@ -247,9 +248,20 @@ def main():
             f"  In de export staat bijvoorbeeld: {', '.join(namen)}")
     print(f"bron: {data.get('source', 'sofascore')} — toont {', '.join(tonen)}")
 
+    # De landsomtrek reist mee in de pagina: kaarttegels zijn externe
+    # afbeeldingen en die worden in de gepubliceerde demo geblokkeerd.
+    omtrek = json.loads((ROOT / "data" / "europe_outline.json").read_text(encoding="utf-8"))
+    west, zuid, oost, noord = omtrek["_uitsnede"]
+    buiten = sorted(
+        (k for k in kaart if not (west <= k["lon"] <= oost and zuid <= k["lat"] <= noord)),
+        key=lambda k: -k["visits"],
+    )
+
     payload = {
         "venues": [bouw(n, data, coords[n]) for n in tonen],
         "map": kaart,
+        "outline": {"bbox": omtrek["_uitsnede"], "countries": omtrek["countries"]},
+        "offmap": [k["name"] for k in buiten],
         "totals": {
             "venues": len(data["venues"]),
             "countries": len({v["country"] for v in coords.values()}),
@@ -273,6 +285,7 @@ def main():
               f"publiek bekend bij {v['attendance_known']}, "
               f"nr {v['rank_visits']} van {v['venues_total']}")
     print(f"  kaartpunten: {len(payload['map'])} van de {len(data['venues'])} stadions")
+    print(f"  buiten de uitsnede: {', '.join(payload['offmap']) or 'geen'}")
     if zonder_coord:
         print(f"  zonder coordinaat ({len(zonder_coord)}): {', '.join(zonder_coord)}")
     if ongebruikt:

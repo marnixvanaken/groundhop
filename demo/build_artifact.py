@@ -86,15 +86,18 @@ def main():
         f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n\n{body}\n",
         encoding="utf-8")
 
-    # Tweede scherm: wordt als los bestand geserveerd, dus compleet document.
-    eigen, body, _ = onderdelen(DEMO / "stadiondetail.html")
-    body = body.replace('href="wedstrijddetail.html"', 'href="index.html"')
-    (doel / "stadiondetail.html").write_text(
-        '<!DOCTYPE html>\n<html lang="nl">\n<head>\n<meta charset="UTF-8">\n'
-        '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">\n'
-        "<title>Stadiondetail</title>\n" + FONTS + "\n"
-        f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
-        encoding="utf-8")
+    # De andere schermen worden als los bestand geserveerd, dus complete
+    # documenten, met hun verwijzing naar de hoofdpagina omgezet.
+    for bestand, titel in [("stadiondetail.html", "Stadiondetail"),
+                           ("grounds.html", "Grounds")]:
+        eigen, body, _ = onderdelen(DEMO / bestand)
+        body = body.replace('href="wedstrijddetail.html"', 'href="index.html"')
+        (doel / bestand).write_text(
+            '<!DOCTYPE html>\n<html lang="nl">\n<head>\n<meta charset="UTF-8">\n'
+            '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">\n'
+            f"<title>{titel}</title>\n" + FONTS + "\n"
+            f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
+            encoding="utf-8")
 
     for naam in ["groundhop.js", "match-data.js", "venue-data.js"]:
         shutil.copyfile(DEMO / naam, doel / naam)
