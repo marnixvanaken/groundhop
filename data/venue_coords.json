@@ -1,46 +1,310 @@
 {
-  "_over_dit_bestand": {
-    "waarom": "dashboard_data.json bevat geen coordinaten. Deze staan hier zodat de kaart ze kan gebruiken en een nieuwe sync ze niet overschrijft.",
-    "zeker": "bekende stadions, coordinaat uit het hoofd betrouwbaar",
-    "controleren": "kleiner stadion; ligging klopt op stadsniveau maar het exacte punt is niet geverifieerd",
-    "koppeling": "op de naam zoals die in venues[] staat"
+ "_over_dit_bestand": {
+  "waarom": "dashboard_data.json bevat geen coordinaten. Deze staan hier zodat de kaart ze kan gebruiken en een nieuwe sync ze niet overschrijft.",
+  "zeker": "bekende stadions, coordinaat uit het hoofd betrouwbaar",
+  "controleren": "kleiner stadion; ligging klopt op stadsniveau maar het exacte punt is niet geverifieerd",
+  "koppeling": "op de naam zoals die in venues[] staat",
+  "aliases": "Transfermarkt schrijft een stadion vaak anders dan Sofascore: de officiële naam in plaats van de courante, of met andere hoofdletters. Beide namen wijzen naar hetzelfde punt, dus ze staan er allebei in."
+ },
+ "venues": [
+  {
+   "name": "Philips Stadion",
+   "city": "Eindhoven",
+   "country": "Nederland",
+   "lat": 51.4417,
+   "lon": 5.4674,
+   "status": "zeker"
   },
-  "venues": [
-    {"name": "Philips Stadion",                 "city": "Eindhoven",      "country": "Nederland",   "lat": 51.4417, "lon": 5.4674,  "status": "zeker"},
-    {"name": "Covebo Stadion - De Koel",        "city": "Venlo",          "country": "Nederland",   "lat": 51.3711, "lon": 6.1836,  "status": "controleren"},
-    {"name": "Johan Cruijff Arena",             "city": "Amsterdam",      "country": "Nederland",   "lat": 52.3144, "lon": 4.9419,  "status": "zeker"},
-    {"name": "Stadion de Goffert",              "city": "Nijmegen",       "country": "Nederland",   "lat": 51.8206, "lon": 5.8203,  "status": "zeker"},
-    {"name": "De Kuip",                         "city": "Rotterdam",      "country": "Nederland",   "lat": 51.8939, "lon": 4.5231,  "status": "zeker"},
-    {"name": "Stadion Galgenwaard",             "city": "Utrecht",        "country": "Nederland",   "lat": 52.0817, "lon": 5.1417,  "status": "zeker"},
-    {"name": "De Adelaarshorst",                "city": "Deventer",       "country": "Nederland",   "lat": 52.2589, "lon": 6.1839,  "status": "controleren"},
-    {"name": "De Grolsch Veste",                "city": "Enschede",       "country": "Nederland",   "lat": 52.2367, "lon": 6.8375,  "status": "zeker"},
-    {"name": "De Oude Meerdijk",                "city": "Emmen",          "country": "Nederland",   "lat": 52.7803, "lon": 6.8975,  "status": "controleren"},
-    {"name": "Fortuna Sittard Stadion",         "city": "Sittard-Geleen", "country": "Nederland",   "lat": 50.9861, "lon": 5.8556,  "status": "controleren"},
-    {"name": "Gelredome",                       "city": "Arnhem",         "country": "Nederland",   "lat": 51.9633, "lon": 5.8919,  "status": "zeker"},
-    {"name": "Het Kasteel",                     "city": "Rotterdam",      "country": "Nederland",   "lat": 51.9203, "lon": 4.4297,  "status": "controleren"},
-
-    {"name": "Bosuilstadion",                   "city": "Antwerp",        "country": "België",      "lat": 51.2306, "lon": 4.4728,  "status": "controleren"},
-    {"name": "Maurice Dufrasne",                "city": "Liege",          "country": "België",      "lat": 50.6097, "lon": 5.5439,  "status": "controleren"},
-    {"name": "Planet Group Arena",              "city": "Gent",           "country": "België",      "lat": 51.0208, "lon": 3.7267,  "status": "controleren"},
-    {"name": "Stayen",                          "city": "Sint- Truiden",  "country": "België",      "lat": 50.8181, "lon": 5.1764,  "status": "controleren"},
-    {"name": "Veoliastadion Achter De Kazerne", "city": "Mechelen",       "country": "België",      "lat": 51.0264, "lon": 4.4861,  "status": "controleren"},
-
-    {"name": "BayArena",                        "city": "Leverkusen",     "country": "Duitsland",   "lat": 51.0381, "lon": 7.0025,  "status": "zeker"},
-    {"name": "Merkur Spiel-Arena",              "city": "Dusseldorf",     "country": "Duitsland",   "lat": 51.2614, "lon": 6.7331,  "status": "zeker"},
-    {"name": "Signal Iduna Park",               "city": "Dortmund",       "country": "Duitsland",   "lat": 51.4926, "lon": 7.4518,  "status": "zeker"},
-    {"name": "Stadion Essen",                   "city": "Essen",          "country": "Duitsland",   "lat": 51.4864, "lon": 6.9758,  "status": "controleren"},
-
-    {"name": "Bernabéu",                        "city": "Madrid",         "country": "Spanje",      "lat": 40.4531, "lon": -3.6883, "status": "zeker"},
-    {"name": "Estadio de Vallecas",             "city": "Madrid",         "country": "Spanje",      "lat": 40.3919, "lon": -3.6586, "status": "controleren"},
-    {"name": "Riyadh Air Metropolitano",        "city": "Madrid",         "country": "Spanje",      "lat": 40.4362, "lon": -3.5995, "status": "zeker"},
-    {"name": "Ramón Sánchez Pizjuán",           "city": "Seville",        "country": "Spanje",      "lat": 37.3841, "lon": -5.9705, "status": "zeker"},
-
-    {"name": "Emirates Stadium",                "city": "London",         "country": "Engeland",    "lat": 51.5549, "lon": -0.1084, "status": "zeker"},
-    {"name": "The Den",                         "city": "London",         "country": "Engeland",    "lat": 51.4861, "lon": -0.0508, "status": "controleren"},
-
-    {"name": "Estádio da Luz",                  "city": "Lisbon",         "country": "Portugal",    "lat": 38.7527, "lon": -9.1847, "status": "zeker"},
-    {"name": "Letzigrund",                      "city": "Zurich",         "country": "Zwitserland", "lat": 47.3828, "lon": 8.5036,  "status": "zeker"},
-    {"name": "Stade Bollaert-Delelis",          "city": "Lens",           "country": "Frankrijk",   "lat": 50.4325, "lon": 2.8150,  "status": "zeker"},
-    {"name": "Estádio do Maracanã",             "city": "Rio de Janeiro", "country": "Brazilië",    "lat": -22.9122, "lon": -43.2302, "status": "zeker"}
-  ]
+  {
+   "name": "Covebo Stadion - De Koel",
+   "city": "Venlo",
+   "country": "Nederland",
+   "lat": 51.3711,
+   "lon": 6.1836,
+   "status": "controleren",
+   "aliases": [
+    "Seacon Stadion - De Koel"
+   ]
+  },
+  {
+   "name": "Johan Cruijff Arena",
+   "city": "Amsterdam",
+   "country": "Nederland",
+   "lat": 52.3144,
+   "lon": 4.9419,
+   "status": "zeker",
+   "aliases": [
+    "Johan Cruijff ArenA"
+   ]
+  },
+  {
+   "name": "Stadion de Goffert",
+   "city": "Nijmegen",
+   "country": "Nederland",
+   "lat": 51.8206,
+   "lon": 5.8203,
+   "status": "zeker",
+   "aliases": [
+    "Goffertstadion"
+   ]
+  },
+  {
+   "name": "De Kuip",
+   "city": "Rotterdam",
+   "country": "Nederland",
+   "lat": 51.8939,
+   "lon": 4.5231,
+   "status": "zeker"
+  },
+  {
+   "name": "Stadion Galgenwaard",
+   "city": "Utrecht",
+   "country": "Nederland",
+   "lat": 52.0817,
+   "lon": 5.1417,
+   "status": "zeker",
+   "aliases": [
+    "Stadion \"Galgenwaard\""
+   ]
+  },
+  {
+   "name": "De Adelaarshorst",
+   "city": "Deventer",
+   "country": "Nederland",
+   "lat": 52.2589,
+   "lon": 6.1839,
+   "status": "controleren"
+  },
+  {
+   "name": "De Grolsch Veste",
+   "city": "Enschede",
+   "country": "Nederland",
+   "lat": 52.2367,
+   "lon": 6.8375,
+   "status": "zeker"
+  },
+  {
+   "name": "De Oude Meerdijk",
+   "city": "Emmen",
+   "country": "Nederland",
+   "lat": 52.7803,
+   "lon": 6.8975,
+   "status": "controleren"
+  },
+  {
+   "name": "Fortuna Sittard Stadion",
+   "city": "Sittard-Geleen",
+   "country": "Nederland",
+   "lat": 50.9861,
+   "lon": 5.8556,
+   "status": "controleren"
+  },
+  {
+   "name": "Gelredome",
+   "city": "Arnhem",
+   "country": "Nederland",
+   "lat": 51.9633,
+   "lon": 5.8919,
+   "status": "zeker",
+   "aliases": [
+    "GelreDome"
+   ]
+  },
+  {
+   "name": "Het Kasteel",
+   "city": "Rotterdam",
+   "country": "Nederland",
+   "lat": 51.9203,
+   "lon": 4.4297,
+   "status": "controleren",
+   "aliases": [
+    "Sparta-stadion - Het Kasteel"
+   ]
+  },
+  {
+   "name": "Bosuilstadion",
+   "city": "Antwerp",
+   "country": "België",
+   "lat": 51.2306,
+   "lon": 4.4728,
+   "status": "controleren"
+  },
+  {
+   "name": "Maurice Dufrasne",
+   "city": "Liege",
+   "country": "België",
+   "lat": 50.6097,
+   "lon": 5.5439,
+   "status": "controleren",
+   "aliases": [
+    "Maurice Dufrasne Stadion"
+   ]
+  },
+  {
+   "name": "Planet Group Arena",
+   "city": "Gent",
+   "country": "België",
+   "lat": 51.0208,
+   "lon": 3.7267,
+   "status": "controleren",
+   "aliases": [
+    "Planet Group arena"
+   ]
+  },
+  {
+   "name": "Stayen",
+   "city": "Sint- Truiden",
+   "country": "België",
+   "lat": 50.8181,
+   "lon": 5.1764,
+   "status": "controleren",
+   "aliases": [
+    "Daio Wasabi Stayen Stadium"
+   ]
+  },
+  {
+   "name": "Veoliastadion Achter De Kazerne",
+   "city": "Mechelen",
+   "country": "België",
+   "lat": 51.0264,
+   "lon": 4.4861,
+   "status": "controleren",
+   "aliases": [
+    "Achter de Kazerne"
+   ]
+  },
+  {
+   "name": "BayArena",
+   "city": "Leverkusen",
+   "country": "Duitsland",
+   "lat": 51.0381,
+   "lon": 7.0025,
+   "status": "zeker"
+  },
+  {
+   "name": "Merkur Spiel-Arena",
+   "city": "Dusseldorf",
+   "country": "Duitsland",
+   "lat": 51.2614,
+   "lon": 6.7331,
+   "status": "zeker",
+   "aliases": [
+    "MERKUR SPIEL-ARENA"
+   ]
+  },
+  {
+   "name": "Signal Iduna Park",
+   "city": "Dortmund",
+   "country": "Duitsland",
+   "lat": 51.4926,
+   "lon": 7.4518,
+   "status": "zeker",
+   "aliases": [
+    "SIGNAL IDUNA PARK"
+   ]
+  },
+  {
+   "name": "Stadion Essen",
+   "city": "Essen",
+   "country": "Duitsland",
+   "lat": 51.4864,
+   "lon": 6.9758,
+   "status": "controleren",
+   "aliases": [
+    "Stadion an der Hafenstraße"
+   ]
+  },
+  {
+   "name": "Bernabéu",
+   "city": "Madrid",
+   "country": "Spanje",
+   "lat": 40.4531,
+   "lon": -3.6883,
+   "status": "zeker",
+   "aliases": [
+    "Santiago Bernabéu"
+   ]
+  },
+  {
+   "name": "Estadio de Vallecas",
+   "city": "Madrid",
+   "country": "Spanje",
+   "lat": 40.3919,
+   "lon": -3.6586,
+   "status": "controleren"
+  },
+  {
+   "name": "Riyadh Air Metropolitano",
+   "city": "Madrid",
+   "country": "Spanje",
+   "lat": 40.4362,
+   "lon": -3.5995,
+   "status": "zeker"
+  },
+  {
+   "name": "Ramón Sánchez Pizjuán",
+   "city": "Seville",
+   "country": "Spanje",
+   "lat": 37.3841,
+   "lon": -5.9705,
+   "status": "zeker",
+   "aliases": [
+    "Ramón Sánchez-Pizjuán"
+   ]
+  },
+  {
+   "name": "Emirates Stadium",
+   "city": "London",
+   "country": "Engeland",
+   "lat": 51.5549,
+   "lon": -0.1084,
+   "status": "zeker"
+  },
+  {
+   "name": "The Den",
+   "city": "London",
+   "country": "Engeland",
+   "lat": 51.4861,
+   "lon": -0.0508,
+   "status": "controleren"
+  },
+  {
+   "name": "Estádio da Luz",
+   "city": "Lisbon",
+   "country": "Portugal",
+   "lat": 38.7527,
+   "lon": -9.1847,
+   "status": "zeker"
+  },
+  {
+   "name": "Letzigrund",
+   "city": "Zurich",
+   "country": "Zwitserland",
+   "lat": 47.3828,
+   "lon": 8.5036,
+   "status": "zeker",
+   "aliases": [
+    "Stadion Letzigrund"
+   ]
+  },
+  {
+   "name": "Stade Bollaert-Delelis",
+   "city": "Lens",
+   "country": "Frankrijk",
+   "lat": 50.4325,
+   "lon": 2.815,
+   "status": "zeker"
+  },
+  {
+   "name": "Estádio do Maracanã",
+   "city": "Rio de Janeiro",
+   "country": "Brazilië",
+   "lat": -22.9122,
+   "lon": -43.2302,
+   "status": "zeker",
+   "aliases": [
+    "Estádio Jornalista Mário Filho"
+   ]
+  }
+ ]
 }

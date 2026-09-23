@@ -270,6 +270,20 @@ window.VENUES = {
    "visits": 11
   },
   {
+   "name": "Covebo Stadion - De Koel",
+   "lat": 51.3711,
+   "lon": 6.1836,
+   "country": "Nederland",
+   "visits": 11
+  },
+  {
+   "name": "Johan Cruijff Arena",
+   "lat": 52.3144,
+   "lon": 4.9419,
+   "country": "Nederland",
+   "visits": 3
+  },
+  {
    "name": "Johan Cruijff Arena",
    "lat": 52.3144,
    "lon": 4.9419,
@@ -284,9 +298,23 @@ window.VENUES = {
    "visits": 3
   },
   {
+   "name": "Stadion de Goffert",
+   "lat": 51.8206,
+   "lon": 5.8203,
+   "country": "Nederland",
+   "visits": 3
+  },
+  {
    "name": "De Kuip",
    "lat": 51.8939,
    "lon": 4.5231,
+   "country": "Nederland",
+   "visits": 2
+  },
+  {
+   "name": "Stadion Galgenwaard",
+   "lat": 52.0817,
+   "lon": 5.1417,
    "country": "Nederland",
    "visits": 2
   },
@@ -333,6 +361,20 @@ window.VENUES = {
    "visits": 1
   },
   {
+   "name": "Gelredome",
+   "lat": 51.9633,
+   "lon": 5.8919,
+   "country": "Nederland",
+   "visits": 1
+  },
+  {
+   "name": "Het Kasteel",
+   "lat": 51.9203,
+   "lon": 4.4297,
+   "country": "Nederland",
+   "visits": 1
+  },
+  {
    "name": "Het Kasteel",
    "lat": 51.9203,
    "lon": 4.4297,
@@ -354,6 +396,20 @@ window.VENUES = {
    "visits": 1
   },
   {
+   "name": "Maurice Dufrasne",
+   "lat": 50.6097,
+   "lon": 5.5439,
+   "country": "België",
+   "visits": 1
+  },
+  {
+   "name": "Planet Group Arena",
+   "lat": 51.0208,
+   "lon": 3.7267,
+   "country": "België",
+   "visits": 1
+  },
+  {
    "name": "Planet Group Arena",
    "lat": 51.0208,
    "lon": 3.7267,
@@ -364,6 +420,20 @@ window.VENUES = {
    "name": "Stayen",
    "lat": 50.8181,
    "lon": 5.1764,
+   "country": "België",
+   "visits": 1
+  },
+  {
+   "name": "Stayen",
+   "lat": 50.8181,
+   "lon": 5.1764,
+   "country": "België",
+   "visits": 1
+  },
+  {
+   "name": "Veoliastadion Achter De Kazerne",
+   "lat": 51.0264,
+   "lon": 4.4861,
    "country": "België",
    "visits": 1
   },
@@ -389,6 +459,20 @@ window.VENUES = {
    "visits": 1
   },
   {
+   "name": "Merkur Spiel-Arena",
+   "lat": 51.2614,
+   "lon": 6.7331,
+   "country": "Duitsland",
+   "visits": 1
+  },
+  {
+   "name": "Signal Iduna Park",
+   "lat": 51.4926,
+   "lon": 7.4518,
+   "country": "Duitsland",
+   "visits": 1
+  },
+  {
    "name": "Signal Iduna Park",
    "lat": 51.4926,
    "lon": 7.4518,
@@ -400,6 +484,20 @@ window.VENUES = {
    "lat": 51.4864,
    "lon": 6.9758,
    "country": "Duitsland",
+   "visits": 1
+  },
+  {
+   "name": "Stadion Essen",
+   "lat": 51.4864,
+   "lon": 6.9758,
+   "country": "Duitsland",
+   "visits": 1
+  },
+  {
+   "name": "Bernabéu",
+   "lat": 40.4531,
+   "lon": -3.6883,
+   "country": "Spanje",
    "visits": 1
   },
   {
@@ -420,6 +518,13 @@ window.VENUES = {
    "name": "Riyadh Air Metropolitano",
    "lat": 40.4362,
    "lon": -3.5995,
+   "country": "Spanje",
+   "visits": 1
+  },
+  {
+   "name": "Ramón Sánchez Pizjuán",
+   "lat": 37.3841,
+   "lon": -5.9705,
    "country": "Spanje",
    "visits": 1
   },
@@ -459,10 +564,24 @@ window.VENUES = {
    "visits": 1
   },
   {
+   "name": "Letzigrund",
+   "lat": 47.3828,
+   "lon": 8.5036,
+   "country": "Zwitserland",
+   "visits": 1
+  },
+  {
    "name": "Stade Bollaert-Delelis",
    "lat": 50.4325,
    "lon": 2.815,
    "country": "Frankrijk",
+   "visits": 1
+  },
+  {
+   "name": "Estádio do Maracanã",
+   "lat": -22.9122,
+   "lon": -43.2302,
+   "country": "Brazilië",
    "visits": 1
   },
   {

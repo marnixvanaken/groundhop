@@ -185,10 +185,12 @@ def bouw(naam, data, coords):
 
 def main():
     data = json.loads((ROOT / "data" / "dashboard_data.json").read_text(encoding="utf-8"))
-    coords = {
-        v["name"]: v
-        for v in json.loads((ROOT / "data" / "venue_coords.json").read_text(encoding="utf-8"))["venues"]
-    }
+    # Elk punt is vindbaar onder elke naam die het draagt, zodat een wissel
+    # van bron de kaart niet leeg trekt.
+    coords = {}
+    for v in json.loads((ROOT / "data" / "venue_coords.json").read_text(encoding="utf-8"))["venues"]:
+        for naam in [v["name"], *v.get("aliases", [])]:
+            coords[naam] = v
 
     # Alle punten met een coordinaat gaan mee voor de kaartkop; de twee
     # uitgewerkte stadions krijgen de volledige afleiding.
@@ -197,37 +199,36 @@ def main():
     # een stadion anders, dan hoort dat punt er niet bij te staan en hoort het
     # ook niet stilletjes te verdwijnen: wat niet koppelt wordt geteld en
     # gemeld, zodat duidelijk is welke namen bijgewerkt moeten worden.
-    bezoeken = {v["name"]: v["matches_count"] for v in data["venues"]}
-    kaart = [
-        {
+    # De kaart komt uit de export: wat je bezocht hebt, niet wat er toevallig
+    # een coordinaat heeft. Andersom zou elk punt dubbel tellen, want een punt
+    # draagt meerdere namen.
+    kaart = []
+    zonder_coord = []
+    for v in data["venues"]:
+        c = coords.get(v["name"])
+        if c is None:
+            zonder_coord.append(v["name"])
+            continue
+        kaart.append({
             "name": v["name"],
-            "lat": v["lat"],
-            "lon": v["lon"],
-            "country": v["country"],
-            "visits": bezoeken[v["name"]],
-        }
-        for v in coords.values()
-        if v["name"] in bezoeken
-    ]
-    zonder_coord = sorted(set(bezoeken) - set(coords))
-    ongebruikt = sorted(set(coords) - set(bezoeken))
+            "lat": c["lat"],
+            "lon": c["lon"],
+            "country": c["country"],
+            "visits": v["matches_count"],
+        })
+    zonder_coord.sort()
+    # Punten die onder geen enkele naam in de export voorkomen: die namen zijn
+    # verouderd of de bron schrijft ze weer anders.
+    herkend = {coords[v["name"]]["name"] for v in data["venues"] if v["name"] in coords}
+    ongebruikt = sorted({c["name"] for c in coords.values()} - herkend)
 
-    tonen = kies_stadions(data["venues"], coords)
-    if not tonen:
-        namen = sorted(v["name"] for v in data["venues"])[:5]
-        raise SystemExit(
-            "geen enkel stadion uit de export staat in data/venue_coords.json.\n"
-            "  Dat bestand is op Sofascore-namen gebouwd; schrijft de nieuwe bron\n"
-            "  ze anders, dan moeten de namen daar bijgewerkt worden.\n"
-            f"  In de export staat bijvoorbeeld: {', '.join(namen)}")
-    print(f"bron: {data.get('source', 'sofascore')} — toont {', '.join(tonen)}")
     payload = {
         "venues": [bouw(n, data, coords[n]) for n in tonen],
         "map": kaart,
         "totals": {
             "venues": len(data["venues"]),
             "countries": len({v["country"] for v in coords.values()}),
-            "cities": len({v["city"] for v in data["venues"]}),
+            "cities": len({v["city"] for v in data["venues"] if v.get("city")}),
             "visits": sum(v["matches_count"] for v in data["venues"]),
             "matches_without_venue": sum(
                 1 for m in data["matches"] if not m.get("venue", {}).get("name")
