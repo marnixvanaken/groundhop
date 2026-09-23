@@ -4,7 +4,8 @@
   "zeker": "bekende stadions, coordinaat uit het hoofd betrouwbaar",
   "controleren": "kleiner stadion; ligging klopt op stadsniveau maar het exacte punt is niet geverifieerd",
   "koppeling": "op de naam zoals die in venues[] staat",
-  "aliases": "Transfermarkt schrijft een stadion vaak anders dan Sofascore: de officiële naam in plaats van de courante, of met andere hoofdletters. Beide namen wijzen naar hetzelfde punt, dus ze staan er allebei in."
+  "aliases": "Transfermarkt schrijft een stadion vaak anders dan Sofascore: de officiële naam in plaats van de courante, of met andere hoofdletters. Beide namen wijzen naar hetzelfde punt, dus ze staan er allebei in.",
+  "herkomst": "Bij een stadion dat alleen Transfermarkt kent staat de wedstrijd erbij waaraan het herkend is, zodat een verkeerde plaatsing na te lopen is."
  },
  "venues": [
   {
@@ -305,6 +306,90 @@
    "aliases": [
     "Estádio Jornalista Mário Filho"
    ]
+  },
+  {
+   "name": "Euroborg",
+   "city": "Groningen",
+   "country": "Nederland",
+   "lat": 53.2064,
+   "lon": 6.5836,
+   "status": "controleren",
+   "herkomst": "FC Groningen - Roda JC, 10-05-2024"
+  },
+  {
+   "name": "MySteel Stadion",
+   "city": "Helmond",
+   "country": "Nederland",
+   "lat": 51.4839,
+   "lon": 5.6583,
+   "status": "controleren",
+   "herkomst": "Helmond Sport - MVV, 07-03-2025"
+  },
+  {
+   "name": "PSV Campus \"De Herdgang\"",
+   "city": "Eindhoven",
+   "country": "Nederland",
+   "lat": 51.4497,
+   "lon": 5.43,
+   "status": "controleren",
+   "herkomst": "PSV U19 en Jong PSV; TenCate is de sponsornaam van dezelfde plek",
+   "aliases": [
+    "TenCate Stadion \"De Herdgang\""
+   ]
+  },
+  {
+   "name": "Sportpark \"De Westmaat\"",
+   "city": "Spakenburg",
+   "country": "Nederland",
+   "lat": 52.2478,
+   "lon": 5.3708,
+   "status": "controleren",
+   "herkomst": "IJsselmeervogels - Noordwijk, 13-05-2023"
+  },
+  {
+   "name": "Sportpark \"Zoudenbalch\"",
+   "city": "Utrecht",
+   "country": "Nederland",
+   "lat": 52.0856,
+   "lon": 5.1436,
+   "status": "controleren",
+   "herkomst": "Jong FC Utrecht - Jong Ajax, 24-04-2023"
+  },
+  {
+   "name": "Stade François-Blin",
+   "city": "Lens",
+   "country": "Frankrijk",
+   "lat": 50.43,
+   "lon": 2.83,
+   "status": "controleren",
+   "herkomst": "RC Lens U19 - PSV U19, 24-10-2023; ligging het minst zeker van allemaal"
+  },
+  {
+   "name": "Stadion \"De Vliert\"",
+   "city": "'s-Hertogenbosch",
+   "country": "Nederland",
+   "lat": 51.6931,
+   "lon": 5.3186,
+   "status": "controleren",
+   "herkomst": "FC Den Bosch, drie duels"
+  },
+  {
+   "name": "Stadion \"Woudestein\"",
+   "city": "Rotterdam",
+   "country": "Nederland",
+   "lat": 51.9186,
+   "lon": 4.5164,
+   "status": "controleren",
+   "herkomst": "Excelsior - PSV, 15-08-2026"
+  },
+  {
+   "name": "Ta Qali",
+   "city": "Ta' Qali",
+   "country": "Malta",
+   "lat": 35.895,
+   "lon": 14.4153,
+   "status": "controleren",
+   "herkomst": "Floriana - Sliema Wanderers, 17-12-2024"
   }
  ]
 }
