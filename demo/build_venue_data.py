@@ -192,13 +192,6 @@ def main():
         for naam in [v["name"], *v.get("aliases", [])]:
             coords[naam] = v
 
-    # Alle punten met een coordinaat gaan mee voor de kaartkop; de twee
-    # uitgewerkte stadions krijgen de volledige afleiding.
-    #
-    # De coordinatenlijst is op Sofascore-namen gebouwd. Schrijft de nieuwe bron
-    # een stadion anders, dan hoort dat punt er niet bij te staan en hoort het
-    # ook niet stilletjes te verdwijnen: wat niet koppelt wordt geteld en
-    # gemeld, zodat duidelijk is welke namen bijgewerkt moeten worden.
     # De kaart komt uit de export: wat je bezocht hebt, niet wat er toevallig
     # een coordinaat heeft. Andersom zou elk punt dubbel tellen, want een punt
     # draagt meerdere namen.
@@ -221,6 +214,14 @@ def main():
     # verouderd of de bron schrijft ze weer anders.
     herkend = {coords[v["name"]]["name"] for v in data["venues"] if v["name"] in coords}
     ongebruikt = sorted({c["name"] for c in coords.values()} - herkend)
+
+    tonen = kies_stadions(data["venues"], coords)
+    if not tonen:
+        namen = sorted(v["name"] for v in data["venues"])[:5]
+        raise SystemExit(
+            "geen enkel stadion uit de export staat in data/venue_coords.json.\n"
+            f"  In de export staat bijvoorbeeld: {', '.join(namen)}")
+    print(f"bron: {data.get('source', 'sofascore')} — toont {', '.join(tonen)}")
 
     payload = {
         "venues": [bouw(n, data, coords[n]) for n in tonen],
