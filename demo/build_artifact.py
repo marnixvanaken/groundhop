@@ -89,7 +89,8 @@ def main():
     # De andere schermen worden als los bestand geserveerd, dus complete
     # documenten, met hun verwijzing naar de hoofdpagina omgezet.
     for bestand, titel in [("stadiondetail.html", "Stadiondetail"),
-                           ("grounds.html", "Grounds")]:
+                           ("grounds.html", "Grounds"),
+                           ("toevoegen.html", "Toevoegen")]:
         eigen, body, _ = onderdelen(DEMO / bestand)
         body = body.replace('href="wedstrijddetail.html"', 'href="index.html"')
         (doel / bestand).write_text(
@@ -99,7 +100,7 @@ def main():
             f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
             encoding="utf-8")
 
-    for naam in ["groundhop.js", "match-data.js", "venue-data.js"]:
+    for naam in ["groundhop.js", "match-data.js", "venue-data.js", "add-data.js"]:
         shutil.copyfile(DEMO / naam, doel / naam)
 
     # Alle beeldmappen mee, niet alleen de clublogo's: zonder de portretten

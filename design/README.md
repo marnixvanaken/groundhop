@@ -126,6 +126,42 @@ Toestanden die bij elk scherm horen:
 - [ ] Leeg, laden, fout
 - [ ] Ontbrekende velden: geen publiek, geen scheidsrechter, geen stadionnaam
 
+## Wedstrijd toevoegen
+
+Het oude paneel (`TabZoeken` in `dashboard.html`) liep in drie stappen: eerst
+een clubnaam typen en op **Zoeken** drukken, dan uit 25 seizoenskaarten kiezen,
+dan de wedstrijdenlijst. Elke stap verving de vorige, en de eerste stap begon
+altijd leeg.
+
+`demo/toevoegen.html` draait dat om. Vier wijzigingen, elk met een reden:
+
+- **Geen zoekknop.** Typen zoekt. (`apple-design/searching.md` en
+  `search-fields.md`: *"If possible, start search immediately when a person
+  types."*)
+- **Het zoekveld blijft staan**, in de bovenbalk, ook als er al een club
+  gekozen is. Een andere club zoeken kost geen stap terug meer.
+- **Suggesties voor je begint te typen.** Je eigen clubs, vaakst bezocht eerst.
+  120 van de 180 duels zijn PSV; het lege veld wist dat al en liet het niet
+  zien.
+- **Seizoenen als één schuivende rij** in plaats van 25 kaarten onder elkaar.
+  Het speelschema staat er direct onder: één scherm in plaats van drie.
+
+Daarnaast een uitweg die er niet was: **Zelf invullen**. Italië–Albanië op het
+EK 2024 hangt aan geen enkele club, dus het clubzoekveld vond het nooit — die
+wedstrijd moest met de hand in de data.
+
+Groen blijft één ding betekenen. Een duel dat al in je verzameling zit heeft een
+groen vinkje; een duel dat je nu aanwijst krijgt een neutraal bolletje. Pas de
+knop die ze toevoegt is weer groen, want die maakt er geschiedenis van.
+
+De demo draait op je eigen export: 109 clubs, 180 duels. Die heb je per
+definitie allemaal bijgewoond, dus de schakelaar onderaan de kaart zet de lijst
+in de andere toestand. Er wordt niets verzonnen en niets opgeslagen.
+
+```bash
+python3 demo/build_add_data.py     # schrijft demo/add-data.js
+```
+
 ## Figma-opzet
 
 Pages: `00 · Cover`, `01 · Foundations`, `02 · Components`, `03 · Wireframes`,

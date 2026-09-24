@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Toevoegen — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Eén beslissing draagt dit scherm: het zoekveld blijft altijd staan.
+   Het oude paneel liep in drie stappen — zoeken, dan seizoen kiezen, dan de
+   lijst — en elke stap verving de vorige. Hier is zoeken de plek zelf, en de
+   rest verschijnt eronder. (searching.md › "Make search available where people
+   expect it".) Typen zoekt meteen; er is geen knop meer om op te drukken.
+   (search-fields.md › "start search immediately when a person types".) */
+
+:root{--on-accent:#ffffff;}
+@media (prefers-color-scheme: dark){:root{--on-accent:#0e1013;}}
+
+/* ── Bovenbalk met twee regels: titel en zoekveld ──────────────────────── */
+:root{--bar-h:calc(102px + env(safe-area-inset-top,0px));}
+.bar{flex-direction:column; align-items:stretch; gap:0; padding:0;
+     padding-top:env(safe-area-inset-top,0px);}
+.bar-titel{display:flex; align-items:center; gap:4px; height:52px; padding:0 8px;}
+.zoekveld{position:relative; margin:0 16px 10px;}
+.zoekveld input{
+  width:100%; height:40px; border:0; border-radius:11px;
+  padding:0 38px;
+  background:var(--card-sunken); color:var(--content);
+  font:inherit; font-size:16px;   /* onder 16px zoomt iOS bij focus in */
+  -webkit-appearance:none; appearance:none;
+}
+.zoekveld input::-webkit-search-decoration,
+.zoekveld input::-webkit-search-cancel-button{-webkit-appearance:none;}
+.zoekveld input::placeholder{color:var(--content-2);}
+.zoekveld .loep{
+  position:absolute; left:12px; top:11px; width:18px; height:18px; pointer-events:none;
+  fill:none; stroke:var(--content-2); stroke-width:2; stroke-linecap:round;
+}
+.wis{
+  position:absolute; right:4px; top:50%; transform:translateY(-50%);
+  width:32px; height:32px; border:0; border-radius:50%; cursor:pointer;
+  background:none; color:var(--content-2); font:inherit; font-size:17px; line-height:1;
+}
+
+/* ── Club in een lijst ─────────────────────────────────────────────────── */
+.club{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
+      width:100%; border:0; background:none; color:inherit; font:inherit;
+      text-align:left; cursor:pointer;}
+.club + .club{border-top:0.5px solid var(--separator);}
+/* Eén helper tekent alle logo's; hier mogen ze iets groter dan 'mini'. */
+.club .crest-mini,.club .crest-fallback.mini{width:30px; height:30px; font-size:11px;}
+.club-naam{flex:1; min-width:0; font-size:15px; font-weight:500; overflow-wrap:break-word;}
+.club-tal{
+  font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:13px; font-weight:600; color:var(--accent);
+  background:var(--accent-soft); border-radius:7px; padding:3px 7px;
+}
+
+/* ── Gekozen club ──────────────────────────────────────────────────────── */
+.clubkop{display:flex; align-items:center; gap:14px; padding:16px;}
+.clubkop-naam{font-family:var(--display); font-size:21px; font-weight:700;
+              letter-spacing:-0.01em; line-height:1.15; overflow-wrap:break-word;}
+.clubkop-sub{font-size:13px; color:var(--content-2); margin-top:3px;}
+.kop-tel{font-size:12px; color:var(--content-2); text-align:right;}
+
+/* Seizoenen als één rij in plaats van 25 kaarten onder elkaar. Ze passen niet
+   allemaal in beeld, en dat hoeft ook niet: de rij schuift. */
+.seizoenen{display:flex; gap:2px; margin:10px 16px 12px; padding:2px;
+           background:var(--card-sunken); border-radius:9px;
+           overflow-x:auto; scrollbar-width:none;}
+.seizoenen::-webkit-scrollbar{display:none;}
+.seizoenen button{
+  flex:none; min-height:32px; padding:0 12px; border:0; border-radius:7px; cursor:pointer;
+  background:none; color:var(--content); font:inherit; font-size:13px; font-weight:600;
+  font-variant-numeric:tabular-nums; white-space:nowrap;
+}
+.seizoenen button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+
+/* ── Een duel in het speelschema ───────────────────────────────────────── */
+.duel{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center;
+      width:100%; padding:10px 16px; min-height:56px; border:0; background:none;
+      color:inherit; font:inherit; text-align:left;}
+.duel + .duel{border-top:0.5px solid var(--separator);}
+button.duel{cursor:pointer;}
+.duel-logos{display:flex; flex-direction:column; gap:3px;}
+.duel-main{min-width:0;}
+.duel-teams{display:block; font-size:15px; font-weight:500; overflow-wrap:break-word;}
+.duel-meta{display:block; font-size:12px; color:var(--content-2); margin-top:2px;
+           overflow-wrap:break-word;}
+
+/* Het bolletje rechts. Groen is al van jou; neutraal is wat je nu aanwijst.
+   Daarmee blijft groen één ding betekenen, ook op dit scherm. */
+.bol{width:26px; height:26px; border-radius:50%; flex-shrink:0;
+     display:flex; align-items:center; justify-content:center;
+     font-size:14px; line-height:1;}
+.bol.leeg{border:1.5px solid var(--content-2); opacity:0.5;}
+.bol.aan{background:var(--content); color:var(--card);}
+.bol.mijn{background:var(--accent-soft); color:var(--accent);}
+
+/* ── Demo-schakelaar ───────────────────────────────────────────────────── */
+.demo{display:flex; align-items:center; gap:10px; padding:10px 16px 12px;
+      border-top:0.5px solid var(--separator);}
+.demo span{flex:1; font-size:12px; color:var(--content-2);}
+.demo .seg{margin:0; flex:none;}
+.demo .seg button{padding:0 10px; font-size:12px; min-height:28px;}
+
+/* ── De knop die iets aan jouw geschiedenis toevoegt ───────────────────── */
+.cta{
+  position:fixed; left:50%; transform:translateX(-50%);
+  bottom:calc(var(--tab-h) + 8px); z-index:9;
+  min-height:48px; padding:0 22px; border:0; border-radius:24px; cursor:pointer;
+  background:var(--accent); color:var(--on-accent);
+  font:inherit; font-size:16px; font-weight:600;
+  box-shadow:0 8px 24px rgba(0,0,0,0.22);
+}
+.cta[hidden]{display:none;}
+body.met-cta main{padding-bottom:calc(var(--tab-h) + 80px);}
+
+/* Een melding in plaats van een systeemdialoog: dit is een ontwerp, dus ook
+   het bericht dat er niets wordt opgeslagen hoort bij het ontwerp. */
+.toast{
+  position:fixed; left:50%; bottom:calc(var(--tab-h) + 66px); z-index:12;
+  transform:translate(-50%,6px); opacity:0; pointer-events:none;
+  max-width:calc(100% - 48px);
+  padding:10px 16px; border-radius:20px;
+  background:var(--content); color:var(--card);
+  font-size:13px; font-weight:500; text-align:center;
+  box-shadow:0 8px 24px rgba(0,0,0,0.2);
+  transition:opacity .2s ease, transform .2s ease;
+}
+.toast.zien{opacity:1; transform:translate(-50%,0);}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="bar-titel">
+    <button class="back" id="terug" type="button">
+      <svg width="11" height="18" viewBox="0 0 11 18" fill="none" stroke="currentColor"
+           stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+        <path d="M9.5 1.5 2 9l7.5 7.5"/></svg>
+      <span id="terug-label">Grounds</span>
+    </button>
+    <h1 id="titel">Toevoegen</h1>
+  </div>
+  <div class="zoekveld">
+    <svg class="loep" viewBox="0 0 18 18" aria-hidden="true">
+      <circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2 16 16"/></svg>
+    <input id="zoek" type="search" inputmode="search" autocomplete="off"
+           enterkeyhint="search" placeholder="Zoek een club" aria-label="Zoek een club">
+    <button class="wis" id="wis" type="button" aria-label="Zoekveld wissen" hidden>✕</button>
+  </div>
+</div>
+
+<main id="app"></main>
+
+<button class="cta" id="cta" type="button" hidden></button>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie">
+  <a href="#"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</a>
+  <a href="wedstrijddetail.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>Duels</a>
+  <a href="grounds.html"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Grounds</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Spelers</a>
+  <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
+</nav>
+
+<script src="groundhop.js"></script>
+<script src="add-data.js"></script>
+<script>
+const DATA = window.ADD;
+const app   = document.getElementById('app');
+const veld  = document.getElementById('zoek');
+const wis   = document.getElementById('wis');
+const cta   = document.getElementById('cta');
+const terug = document.getElementById('terug');
+const terugLabel = document.getElementById('terug-label');
+
+/* Eén toestand voor het hele scherm. 'demo' is de enige die niet over de app
+   gaat maar over deze demo: alle duels in de export heb je per definitie al
+   bijgewoond, dus zonder schakelaar zou je de andere toestand nooit zien. */
+const S = {
+  vraag: '',
+  club: null,
+  seizoen: null,
+  demo: 'mijn',        // 'mijn' = staat al in je verzameling, 'nieuw' = nog niet
+  gekozen: new Set(),
+};
+
+/* Diakrieten weg, zodat 'goahead' ook Go Ahead Eagles vindt en 'munchen'
+   München. */
+const plat = t => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+                   .replace(/[^a-z0-9]/g, '');
+
+const seizoenLabel = j => `${j}/${String(j + 1).slice(2)}`;
+
+function zoekClubs(vraag){
+  const q = plat(vraag);
+  const treffers = DATA.clubs.filter(c => plat(c.name).includes(q));
+  // Wie met de naam begint staat boven wie hem ergens in het midden heeft.
+  return treffers.sort((a, b) => {
+    const va = plat(a.name).startsWith(q), vb = plat(b.name).startsWith(q);
+    return va === vb ? b.count - a.count : (va ? -1 : 1);
+  }).slice(0, 25);
+}
+
+function clubRij(c){
+  return `
+    <button class="club" data-club="${c.id}" type="button">
+      ${logo(c.crest, c.name, true)}
+      <span class="club-naam">${c.name}</span>
+      <span class="club-tal">${c.count}×</span>
+      <span class="chev" aria-hidden="true">›</span>
+    </button>`;
+}
+
+/* De uitweg. Italië–Albanië op het EK staat bij geen enkele club, en precies
+   daarop liep het oude paneel vast: je kon alleen via een clubnaam zoeken. */
+function handmatig(){
+  return `
+    <section class="card">
+      <button class="club" type="button" data-handmatig="1">
+        <span class="crest-fallback mini" aria-hidden="true">+</span>
+        <span class="club-naam">Zelf invullen</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </button>
+      <div class="note">Voor interlands en toernooiduels die onder geen club vallen —
+        Italië–Albanië op het EK 2024 bijvoorbeeld.</div>
+    </section>`;
+}
+
+function zoekscherm(){
+  if (!S.vraag){
+    return `
+      <section class="card">
+        <div class="card-head"><h2>Vaakst bezocht</h2></div>
+        ${DATA.clubs.slice(0, 8).map(clubRij).join('')}
+        <div class="note">${DATA.totals.clubs} clubs in je verzameling,
+          ${DATA.totals.matches} duels.</div>
+      </section>` + handmatig();
+  }
+  const treffers = zoekClubs(S.vraag);
+  if (!treffers.length){
+    return `
+      <section class="card">
+        <div class="note" style="border-top:0">Geen club gevonden voor
+          “${S.vraag}”.</div>
+      </section>` + handmatig();
+  }
+  return `
+    <section class="card">
+      <div class="card-head"><h2>${treffers.length === 1 ? '1 club' : treffers.length + ' clubs'}</h2></div>
+      ${treffers.map(clubRij).join('')}
+    </section>` + handmatig();
+}
+
+const duelsVan = (club, jaar) => DATA.fixtures.filter(
+  f => (f.home_id === club.id || f.away_id === club.id) && f.season === jaar);
+
+function duelRij(f){
+  const mijn = S.demo === 'mijn';
+  const aan  = S.gekozen.has(f.id);
+  const bol  = mijn ? `<span class="bol mijn" aria-hidden="true">✓</span>`
+                    : `<span class="bol ${aan ? 'aan' : 'leeg'}" aria-hidden="true">${aan ? '✓' : ''}</span>`;
+  const tag  = mijn ? 'div' : 'button';
+  const extra = mijn
+    ? ' aria-label="' + `${f.home} tegen ${f.away}, staat in je verzameling` + '"'
+    : ` type="button" aria-pressed="${aan}" data-duel="${f.id}"`;
+  return `
+    <${tag} class="duel"${extra}>
+      <span class="duel-logos">
+        ${logo(f.home_crest, f.home, true)}
+        ${logo(f.away_crest, f.away, true)}
+      </span>
+      <span class="duel-main">
+        <span class="duel-teams">${f.home} – ${f.away}</span>
+        <span class="duel-meta">${datum(f.date)} · ${comp(f.tournament)} · ${f.score}</span>
+      </span>
+      ${bol}
+    </${tag}>`;
+}
+
+function kopTekst(){
+  const n = duelsVan(S.club, S.seizoen).length;
+  if (S.demo === 'mijn') return `${n} van ${n} in je verzameling`;
+  return S.gekozen.size ? `${S.gekozen.size} gekozen` : 'Kies wat je zag';
+}
+
+function clubscherm(){
+  const c = S.club;
+  const jaar = S.seizoen;
+  const duels = duelsVan(c, jaar);
+  const mijn = S.demo === 'mijn';
+  const kop = kopTekst();
+
+  return `
+    <section class="card">
+      <div class="clubkop">
+        ${logo(c.crest, c.name)}
+        <div style="min-width:0">
+          <div class="clubkop-naam">${c.name}</div>
+          <div class="clubkop-sub">${c.count} duels bijgewoond ·
+            ${c.seasons.length} ${c.seasons.length === 1 ? 'seizoen' : 'seizoenen'}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="card-head">
+        <h2>Speelschema</h2>
+        <span class="kop-tel">${kop}</span>
+      </div>
+      <div class="seizoenen" role="group" aria-label="Seizoen">
+        ${c.seasons.map(j => `
+          <button type="button" data-seizoen="${j}" aria-pressed="${j === jaar}">
+            ${seizoenLabel(j)}</button>`).join('')}
+      </div>
+      ${duels.map(duelRij).join('')}
+      <div class="demo">
+        <span>Demo — je export bevat alleen duels die je zag</span>
+        <div class="seg" role="group" aria-label="Demotoestand">
+          <button type="button" data-demo="mijn" aria-pressed="${mijn}">bijgewoond</button>
+          <button type="button" data-demo="nieuw" aria-pressed="${!mijn}">nieuw</button>
+        </div>
+      </div>
+    </section>`;
+}
+
+function render(){
+  app.innerHTML = S.club ? clubscherm() : zoekscherm();
+  wis.hidden = !S.vraag;
+  terugLabel.textContent = S.club ? 'Zoeken' : 'Grounds';
+  document.getElementById('titel').textContent = S.club ? 'Speelschema' : 'Toevoegen';
+
+  bijwerken();
+}
+
+/* Aanvinken hertekent de lijst niet. Bij 29 rijen kost dat onnodig werk, en
+   erger: de knop die je net indrukte bestaat daarna niet meer, dus de focus
+   springt weg. Alleen het bolletje, de teller en de knop veranderen. */
+function bijwerken(){
+  const n = S.club && S.demo === 'nieuw' ? S.gekozen.size : 0;
+  cta.hidden = n === 0;
+  cta.textContent = n === 1 ? '1 duel toevoegen' : `${n} duels toevoegen`;
+  document.body.classList.toggle('met-cta', n > 0);
+  const tel = document.querySelector('.kop-tel');
+  if (tel && S.club) tel.textContent = kopTekst();
+}
+
+/* Zoeken gebeurt terwijl je typt; er is geen knop. Bij een nieuwe vraag valt
+   de gekozen club weg, want je bent iets anders aan het zoeken. */
+veld.addEventListener('input', () => {
+  S.vraag = veld.value.trim();
+  if (S.vraag) { S.club = null; S.gekozen.clear(); }
+  render();
+  app.scrollTop = 0;
+});
+veld.addEventListener('keydown', e => { if (e.key === 'Escape') leeg(); });
+
+function leeg(){
+  veld.value = ''; S.vraag = ''; veld.focus(); render();
+}
+wis.addEventListener('click', leeg);
+
+terug.addEventListener('click', () => {
+  if (S.club){ S.club = null; S.gekozen.clear(); render(); }
+  else { location.href = 'grounds.html'; }
+});
+
+app.addEventListener('click', e => {
+  const club = e.target.closest('[data-club]');
+  if (club){
+    S.club = DATA.clubs.find(c => c.id === Number(club.dataset.club));
+    S.seizoen = S.club.seasons[0];
+    S.gekozen.clear();
+    veld.value = ''; S.vraag = '';
+    veld.blur();
+    render();
+    app.scrollTop = 0;
+    return;
+  }
+  const jaar = e.target.closest('[data-seizoen]');
+  if (jaar){ S.seizoen = Number(jaar.dataset.seizoen); S.gekozen.clear(); render(); return; }
+
+  const duel = e.target.closest('[data-duel]');
+  if (duel){
+    const id = Number(duel.dataset.duel);
+    const aan = !S.gekozen.has(id);
+    aan ? S.gekozen.add(id) : S.gekozen.delete(id);
+    duel.setAttribute('aria-pressed', String(aan));
+    const bol = duel.querySelector('.bol');
+    bol.className = 'bol ' + (aan ? 'aan' : 'leeg');
+    bol.textContent = aan ? '✓' : '';
+    bijwerken();
+    return;
+  }
+  const demo = e.target.closest('[data-demo]');
+  if (demo){ S.demo = demo.dataset.demo; S.gekozen.clear(); render(); return; }
+
+  if (e.target.closest('[data-handmatig]')){
+    melding('Zelf invullen — in deze ontwerpdemo nog niet uitgewerkt.');
+  }
+});
+
+/* De demo slaat niets op; dat zeggen we hardop in plaats van te doen alsof. */
+const toast = document.getElementById('toast');
+let toastTijd;
+function melding(tekst){
+  toast.textContent = tekst;
+  toast.classList.add('zien');
+  clearTimeout(toastTijd);
+  toastTijd = setTimeout(() => toast.classList.remove('zien'), 2600);
+}
+
+cta.addEventListener('click', () => {
+  const n = S.gekozen.size;
+  melding(`${n} ${n === 1 ? 'duel' : 'duels'} — deze ontwerpdemo slaat niets op.`);
+});
+
+if (DATA && DATA.clubs && DATA.clubs.length){
+  render();
+} else {
+  app.innerHTML = '<div class="card"><div class="note">Geen data gevonden. '
+    + 'Draai <code>python3 demo/build_add_data.py</code>.</div></div>';
+}
+</script>
+</body>
+</html>
