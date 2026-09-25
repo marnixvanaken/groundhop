@@ -24,7 +24,6 @@ import collections
 import json
 import shutil
 from pathlib import Path
-from urllib.parse import quote
 
 ROOT = Path(__file__).resolve().parent.parent
 DEMO = Path(__file__).resolve().parent
@@ -61,18 +60,31 @@ def kopieer(soort, ident, bronmap):
     return f"{soort}/{ident}{ext}"
 
 
-def ext_url(url):
-    """Via de eigen server, die de host toetst. In de gepubliceerde demo zonder
-    server levert dit niets op en valt het scherm terug op initialen."""
-    return f"/img/ext?u={quote(url, safe='')}" if url else None
+BRON = {"naam": "sofascore"}
 
 
 def crest(team_id):
-    return kopieer("crests", team_id, "team") or ext_url(LOGO_URL.get(team_id))
+    """Het clublogo.
+
+    De bestanden in img/ zijn op Sofascore-id opgeslagen. Een Transfermarkt-id
+    is een ander nummer, en kan toevallig het id van een andere Sofascore-club
+    zijn: dan zou PSV het logo van een wildvreemde club krijgen. Die map geldt
+    dus alleen voor een Sofascore-export.
+
+    Sofascore zonder lokaal bestand: /img/team/<id>. Dat pad bedient server.py
+    lokaal en api/img op Vercel. Transfermarkt: de URL uit de export zelf; hun
+    beeldserver laat een <img> gewoon toe.
+    """
+    if BRON["naam"] == "sofascore":
+        return kopieer("crests", team_id, "team") or f"/img/team/{team_id}"
+    return LOGO_URL.get(team_id)
 
 
 def foto(speler):
-    return kopieer("players", speler["id"], "player") or ext_url(speler.get("photo_url"))
+    """Het portret; zelfde redenering als bij crest()."""
+    if BRON["naam"] == "sofascore":
+        return kopieer("players", speler["id"], "player") or f"/img/player/{speler['id']}"
+    return speler.get("photo_url")
 
 
 def seizoen(datum):
@@ -94,6 +106,7 @@ def toonnaam(naam, coord=None):
 
 def main():
     d = json.loads(SOURCE.read_text(encoding="utf-8"))
+    BRON["naam"] = d.get("source", "sofascore")
     LOGO_URL.update({c["id"]: c["logo_url"] for c in d.get("teams_visited", []) if c.get("logo_url")})
 
     coords = {}
@@ -252,10 +265,10 @@ def main():
     schrijf("app-data.js", "APP", app)
     schrijf("speler-data.js", "SPELERS", spelers)
 
-    lokaal = sum(1 for c in clubs.values() if (c["crest"] or "").startswith("crests/"))
-    foto_lokaal = sum(1 for p in spelers.values() if (p["img"] or "").startswith("players/"))
-    print(f"  clublogo's lokaal: {lokaal} van {len(clubs)}; spelersfoto's lokaal: "
-          f"{foto_lokaal} van {len(spelers)}")
+    zonder_logo = sum(1 for c in clubs.values() if not c["crest"])
+    zonder_foto = sum(1 for p in spelers.values() if not p["img"])
+    print(f"  clublogo's: {len(clubs) - zonder_logo} van {len(clubs)}; spelersfoto's: "
+          f"{len(spelers) - zonder_foto} van {len(spelers)} (rest: initialen)")
     for namen_ in samengevoegd.values():
         print(f"  één competitie: {' + '.join(namen_)}")
     if zonder_coord:
