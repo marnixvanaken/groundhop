@@ -81,10 +81,20 @@ def crest(team_id):
 
 
 def foto(speler):
-    """Het portret; zelfde redenering als bij crest()."""
+    """Het portret; zelfde redenering als bij crest().
+
+    De export van Transfermarkt wijst naar de kleinste maat (/portrait/small/),
+    die op het spelersscherm (88 pixels, dubbel zo scherp op een telefoon)
+    korrelig wordt. /portrait/big/ staat op hetzelfde adres. Het standaard-
+    silhouet van Transfermarkt ('default') telt als geen foto: initialen
+    zeggen meer dan een grijze schim.
+    """
     if BRON["naam"] == "sofascore":
         return kopieer("players", speler["id"], "player") or f"/img/player/{speler['id']}"
-    return speler.get("photo_url")
+    url = speler.get("photo_url") or ""
+    if not url or "default" in url.rsplit("/", 1)[-1]:
+        return None
+    return url.replace("/portrait/small/", "/portrait/big/")
 
 
 def seizoen(datum):

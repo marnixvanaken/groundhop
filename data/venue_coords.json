@@ -392,6 +392,54 @@
    "lon": 14.4153,
    "status": "controleren",
    "herkomst": "Floriana - Sliema Wanderers, 17-12-2024"
+  },
+  {
+   "name": "Rat Verlegh Stadion",
+   "city": "Breda",
+   "country": "Nederland",
+   "lat": 51.5815,
+   "lon": 4.7494,
+   "status": "zeker",
+   "herkomst": "NAC Breda - VVV-Venlo, 14-08-2026"
+  },
+  {
+   "name": "Koning Willem II Stadion",
+   "city": "Tilburg",
+   "country": "Nederland",
+   "lat": 51.5434,
+   "lon": 5.0676,
+   "status": "zeker",
+   "herkomst": "Willem II - FC Twente, 15-10-2017"
+  },
+  {
+   "name": "Mandemakers Stadion",
+   "city": "Waalwijk",
+   "country": "Nederland",
+   "lat": 51.6895,
+   "lon": 5.0583,
+   "status": "controleren",
+   "herkomst": "Nederland Onder 21 - Moldavië U21, 08-09-2023"
+  },
+  {
+   "name": "Jan Breydelstadion",
+   "city": "Brugge",
+   "country": "België",
+   "lat": 51.1932,
+   "lon": 3.1806,
+   "status": "zeker",
+   "herkomst": "Club Brugge - Sint-Truidense VV, 09-05-2026"
+  },
+  {
+   "name": "MSV-Arena",
+   "city": "Duisburg",
+   "country": "Duitsland",
+   "lat": 51.4099,
+   "lon": 6.7775,
+   "status": "controleren",
+   "aliases": [
+    "Schauinsland-Reisen-Arena"
+   ],
+   "herkomst": "MSV Duisburg - SV Waldhof Mannheim 07, 07-11-2025"
   }
  ]
 }
