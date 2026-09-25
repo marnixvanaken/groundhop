@@ -1,0 +1,292 @@
+{
+ "seizoen": 2026,
+ "opgehaald": "2026-09-26",
+ "competities": {
+  "eredivisie": [
+   {
+    "naam": "PSV",
+    "tm": 383,
+    "stadion": "Philips Stadion"
+   },
+   {
+    "naam": "Feyenoord",
+    "tm": 234,
+    "stadion": "Stadion Feijenoord \"De Kuip\""
+   },
+   {
+    "naam": "AFC Ajax",
+    "tm": 610,
+    "stadion": "Johan Cruijff ArenA"
+   },
+   {
+    "naam": "AZ Alkmaar",
+    "tm": 1090,
+    "stadion": "AFAS Stadion"
+   },
+   {
+    "naam": "FC Twente",
+    "tm": 317,
+    "stadion": "De Grolsch Veste"
+   },
+   {
+    "naam": "FC Utrecht",
+    "tm": 200,
+    "stadion": "Stadion \"Galgenwaard\""
+   },
+   {
+    "naam": "sc Heerenveen",
+    "tm": 306,
+    "stadion": "Abe Lenstra Stadion"
+   },
+   {
+    "naam": "NEC Nijmegen",
+    "tm": 467,
+    "stadion": "Goffertstadion"
+   },
+   {
+    "naam": "FC Groningen",
+    "tm": 202,
+    "stadion": "Euroborg"
+   },
+   {
+    "naam": "Sparta Rotterdam",
+    "tm": 468,
+    "stadion": "Spartastadion Het Kasteel"
+   },
+   {
+    "naam": "PEC Zwolle",
+    "tm": 1269,
+    "stadion": "MAC³PARK stadion"
+   },
+   {
+    "naam": "Go Ahead Eagles",
+    "tm": 1435,
+    "stadion": "De Adelaarshorst"
+   },
+   {
+    "naam": "Willem II",
+    "tm": 403,
+    "stadion": "Koning Willem II Stadion"
+   },
+   {
+    "naam": "Excelsior Rotterdam",
+    "tm": 798,
+    "stadion": "Stadion \"Woudestein\""
+   },
+   {
+    "naam": "ADO Den Haag",
+    "tm": 1268,
+    "stadion": "WerkTalent Stadion"
+   },
+   {
+    "naam": "Fortuna Sittard",
+    "tm": 385,
+    "stadion": "Fortuna Sittard Stadion"
+   },
+   {
+    "naam": "SC Cambuur Leeuwarden",
+    "tm": 133,
+    "stadion": "Kooi Stadion"
+   },
+   {
+    "naam": "SC Telstar",
+    "tm": 1434,
+    "stadion": "BUKO Stadion"
+   }
+  ],
+  "kkd": [
+   {
+    "naam": "Jong AZ",
+    "tm": 11368,
+    "stadion": "Sportpark \"De Kalverhoek\" (AFAS Trainingscomplex)"
+   },
+   {
+    "naam": "Jong Ajax",
+    "tm": 8817,
+    "stadion": "Sportpark \"De Toekomst\""
+   },
+   {
+    "naam": "NAC Breda",
+    "tm": 132,
+    "stadion": "Rat Verlegh Stadion"
+   },
+   {
+    "naam": "Almere City FC",
+    "tm": 723,
+    "stadion": "Yanmar Hanasaka Stadion"
+   },
+   {
+    "naam": "RKC Waalwijk",
+    "tm": 235,
+    "stadion": "Mandemakers Stadion"
+   },
+   {
+    "naam": "Roda JC",
+    "tm": 192,
+    "stadion": "Parkstad Limburg Stadion"
+   },
+   {
+    "naam": "De Graafschap",
+    "tm": 642,
+    "stadion": "Stadion \"De Vijverberg\""
+   },
+   {
+    "naam": "Jong PSV",
+    "tm": 9715,
+    "stadion": "TenCate Stadion \"De Herdgang\""
+   },
+   {
+    "naam": "Vitesse Arnhem",
+    "tm": 499,
+    "stadion": "GelreDome"
+   },
+   {
+    "naam": "Heracles Almelo",
+    "tm": 1304,
+    "stadion": "Asito Stadion"
+   },
+   {
+    "naam": "FC Volendam",
+    "tm": 724,
+    "stadion": "Kras Stadion"
+   },
+   {
+    "naam": "FC Dordrecht",
+    "tm": 1455,
+    "stadion": "M-Scores Stadion"
+   },
+   {
+    "naam": "FC Den Bosch",
+    "tm": 404,
+    "stadion": "Stadion \"De Vliert\""
+   },
+   {
+    "naam": "VVV-Venlo",
+    "tm": 1426,
+    "stadion": "Seacon Stadion - De Koel"
+   },
+   {
+    "naam": "FC Emmen",
+    "tm": 1283,
+    "stadion": "De Oude Meerdijk"
+   },
+   {
+    "naam": "Helmond Sport",
+    "tm": 500,
+    "stadion": "MySteel Stadion"
+   },
+   {
+    "naam": "MVV Maastricht",
+    "tm": 384,
+    "stadion": "Stadion \"De Geusselt\""
+   },
+   {
+    "naam": "Jong FC Utrecht",
+    "tm": 17596,
+    "stadion": "Sportpark \"Zoudenbalch\""
+   },
+   {
+    "naam": "TOP Oss",
+    "tm": 1228,
+    "stadion": "Frans Heesen Stadion"
+   },
+   {
+    "naam": "FC Eindhoven",
+    "tm": 3892,
+    "stadion": "Jan Louwers Stadion"
+   }
+  ],
+  "pro-league": [
+   {
+    "naam": "Club Brugge",
+    "tm": 2282,
+    "stadion": "Jan Breydelstadion"
+   },
+   {
+    "naam": "KRC Genk",
+    "tm": 1184,
+    "stadion": "Cegeka Arena"
+   },
+   {
+    "naam": "RSC Anderlecht",
+    "tm": 58,
+    "stadion": "Lotto Park"
+   },
+   {
+    "naam": "Union Saint-Gilloise",
+    "tm": 3948,
+    "stadion": "Stade Joseph Mariën"
+   },
+   {
+    "naam": "R Antwerp FC",
+    "tm": 1096,
+    "stadion": "Bosuilstadion"
+   },
+   {
+    "naam": "KAA Gent",
+    "tm": 157,
+    "stadion": "Planet Group arena"
+   },
+   {
+    "naam": "Standard Luik",
+    "tm": 3057,
+    "stadion": "Maurice Dufrasne Stadion"
+   },
+   {
+    "naam": "KVC Westerlo",
+    "tm": 968,
+    "stadion": "Het Kuipje"
+   },
+   {
+    "naam": "KV Mechelen",
+    "tm": 354,
+    "stadion": "Achter de Kazerne"
+   },
+   {
+    "naam": "Sint-Truidense VV",
+    "tm": 475,
+    "stadion": "Daio Wasabi Stayen Stadium"
+   },
+   {
+    "naam": "Cercle Brugge",
+    "tm": 520,
+    "stadion": "Jan Breydelstadion"
+   },
+   {
+    "naam": "Oud-Heverlee Leuven",
+    "tm": 2727,
+    "stadion": "King Power at Den Dreef Stadion"
+   },
+   {
+    "naam": "R Charleroi SC",
+    "tm": 172,
+    "stadion": "Stade du Pays de Charleroi"
+   },
+   {
+    "naam": "Lommel SK",
+    "tm": 5026,
+    "stadion": "Soeverein stadion"
+   },
+   {
+    "naam": "Zulte Waregem",
+    "tm": 3508,
+    "stadion": "Elindus Arena"
+   },
+   {
+    "naam": "KV Kortrijk",
+    "tm": 601,
+    "stadion": "Guldensporenstadion"
+   },
+   {
+    "naam": "RAAL La Louvière",
+    "tm": 3901,
+    "stadion": "Easi Arena"
+   },
+   {
+    "naam": "SK Beveren",
+    "tm": 28643,
+    "stadion": "Freethielstadion"
+   }
+  ]
+ }
+}
