@@ -20,11 +20,22 @@ fi
 # Nieuwste versie. --autostash zet je eigen, nog niet gepubliceerde data even
 # opzij en daarna terug. Lukt het niet (je kopie wijkt af), dan start hij de
 # versie die er staat en zegt hij dat.
-if git pull --ff-only --autostash -q 2>/tmp/groundhop-pull.log; then
-  echo "  ✓ Nieuwste versie"
-else
-  echo "  ! Bijwerken lukte niet; ik start de versie die er staat."
-  sed 's/^/    /' /tmp/groundhop-pull.log
+#
+# Verandert dit bestand zelf mee, dan start het opnieuw: bash leest het script
+# dat al draait, niet de nieuwe versie op schijf, en zou anders de nieuwe
+# stappen pas bij de volgende start doen.
+if [ "$1" != "--bijgewerkt" ]; then
+  voor=$(git hash-object "$0" 2>/dev/null)
+  if git pull --ff-only --autostash -q 2>/tmp/groundhop-pull.log; then
+    echo "  ✓ Nieuwste versie"
+    if [ "$(git hash-object "$0" 2>/dev/null)" != "$voor" ]; then
+      echo "  ↻ het startbestand is bijgewerkt — opnieuw starten"
+      exec bash "$0" --bijgewerkt
+    fi
+  else
+    echo "  ! Bijwerken lukte niet; ik start de versie die er staat."
+    sed 's/^/    /' /tmp/groundhop-pull.log
+  fi
 fi
 
 if ! python3 -c "import curl_cffi, bs4, lxml, rich" 2>/dev/null; then
