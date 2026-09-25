@@ -145,10 +145,31 @@ def run_sync():
     try:
         _sync_status["error"] = draai_keten("sync")
         _sync_status["last"] = time.strftime("%d-%m %H:%M:%S")
+        # Gelukt en gekoppeld met GitHub: meteen live zetten. Dan hoeft er na
+        # het toevoegen niets meer met de hand naar GitHub.
+        if not _sync_status["error"]:
+            zet_live()
     except Exception as e:
         _sync_status["error"] = str(e)
     finally:
         _sync_status["running"] = False
+
+
+def zet_live():
+    """Zet dashboard_data.json op GitHub als er een sleutel is; noteer de uitkomst."""
+    import publiceer
+    if not publiceer.gekoppeld():
+        _sync_status["live"] = {"ok": False, "gekoppeld": False}
+        return _sync_status["live"]
+    try:
+        uit = publiceer.publiceer()
+        _sync_status["live"] = {"ok": True, "gekoppeld": True, "status": uit["status"],
+                                "tijd": time.strftime("%d-%m %H:%M")}
+        print(f"  ✓ live gezet: {uit['status']}")
+    except publiceer.Fout as e:
+        _sync_status["live"] = {"ok": False, "gekoppeld": True, "fout": str(e)}
+        print(f"  ✗ live zetten: {e}")
+    return _sync_status["live"]
 
 PORT = 4000
 DATA_DIR = Path("data")
@@ -235,6 +256,30 @@ class Handler(SimpleHTTPRequestHandler):
         raw = self.rfile.read(length)
         body = json.loads(raw.decode("utf-8")) if raw.strip() else {}
         path = urlparse(self.path).path
+
+        # Koppelen en live zetten mag alleen vanaf deze computer zelf: de server
+        # luistert op het hele netwerk.
+        if path.startswith("/api/live/") and self.client_address[0] not in ("127.0.0.1", "::1"):
+            self.send_json({"error": "Alleen vanaf je eigen laptop."}, 403)
+            return
+
+        if path == "/api/live/koppel":
+            import publiceer
+            try:
+                self.send_json({"ok": True, "repo": publiceer.koppel(body.get("token", ""))})
+            except publiceer.Fout as e:
+                self.send_json({"ok": False, "error": str(e)})
+            return
+
+        if path == "/api/live/ontkoppel":
+            import publiceer
+            publiceer.ontkoppel()
+            self.send_json({"ok": True})
+            return
+
+        if path == "/api/live/nu":
+            self.send_json(zet_live())
+            return
 
         if path == "/api/cookies/save":
             cookies_str = body.get("cookies", "").strip()
@@ -446,6 +491,13 @@ class Handler(SimpleHTTPRequestHandler):
 
         elif path == "/api/bron":
             self.send_json({"bron": huidige_bron()})
+
+        elif path == "/api/live":
+            # Nooit de sleutel zelf: alleen of hij er is.
+            import publiceer
+            self.send_json({"gekoppeld": publiceer.gekoppeld(), "repo": publiceer.repo(),
+                            "laatst": _sync_status.get("live"),
+                            "lokaal": self.client_address[0] in ("127.0.0.1", "::1")})
 
         elif path == "/api/tm/selectie":
             # De selectie is het eerlijke antwoord op "heb ik deze al?": hij is

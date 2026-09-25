@@ -518,7 +518,9 @@ async function volgOphalen(){
   const s = await api('/api/sync-status');
   if (s?.running){ setTimeout(volgOphalen, 3000); return; }
   if (s?.error) melding(`Ophalen stopte: ${s.error}`, true);
-  else melding('Klaar: de nieuwe duels staan in je verzameling.', true);
+  else if (s?.live?.ok) melding('Klaar, en live gezet. De site is over een minuut bijgewerkt.', true);
+  else if (s?.live?.gekoppeld) melding(`Klaar, maar live zetten lukte niet: ${s.live.fout}`, true);
+  else melding('Klaar: de nieuwe duels staan in je verzameling. Koppel GitHub in Meer om ze ook live te zetten.', true);
 }
 
 async function start(){

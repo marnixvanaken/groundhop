@@ -135,13 +135,23 @@ bereikbaar op `/dashboard.html`; oude `/app/`-links sturen door.
 
 Elke wedstrijd, elk stadion en elke speler is aan te klikken.
 
+**Starten op je laptop:** dubbelklik `GroundHop.command` in de projectmap. Die
+haalt de nieuwste versie op, installeert wat ontbreekt, start de server en
+opent de app.
+
+**Live zetten gaat vanzelf** zodra je in Meer één keer GitHub koppelt met een
+fine-grained token (alleen deze repo, *Contents: Read and write*). Na elke
+toevoeging, en na de nachtelijke sync, zet `publiceer.py` het databestand via
+de GitHub-API op main; Vercel bouwt daarna opnieuw. De sleutel staat in
+`~/.groundhop/github_token`, buiten de projectmap, omdat server.py die map aan
+je netwerk serveert. Koppelen kan alleen vanaf de laptop zelf.
+
 **Toevoegen** werkt op je laptop: `python3 server.py`, dan localhost:4000 (daar
 staat dezelfde app als live; het oude dashboard op /dashboard.html). Het scherm
 zoekt dan bij Transfermarkt terwijl je typt, toont het speelschema per seizoen
 en slaat op via `/api/tm/toevoegen`. De server haalt daarna de wedstrijden op
 en bouwt `app/app-data.js` opnieuw. Op de live site kan dat niet (geen server);
-daar zegt het scherm waar het wel kan. Nieuwe wedstrijden komen live door
-`data/dashboard_data.json` naar GitHub te pushen of te uploaden.
+daar zegt het scherm waar het wel kan.
 
 ```bash
 python3 app/build_app_data.py     # data uit data/dashboard_data.json

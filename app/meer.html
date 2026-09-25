@@ -20,6 +20,22 @@
   background:var(--accent); color:var(--card);}
 .icoon svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.4;
   stroke-linecap:round;}
+
+/* ── Live zetten ─────────────────────────────────────────────────────────
+   Alleen zichtbaar als server.py draait. Eén keer een sleutel plakken; daarna
+   gaat alles wat je toevoegt vanzelf naar de live site. */
+.live{padding:4px 16px 14px; font-size:13px; color:var(--content-2);}
+.live ol{margin:6px 0 10px 18px;}
+.live li{margin:3px 0;}
+.live a{color:var(--accent);}
+.live-rij{display:flex; gap:8px; margin-top:8px;}
+.live-rij input{flex:1; min-width:0; height:40px; border:0; border-radius:11px; padding:0 12px;
+  background:var(--card-sunken); color:var(--content); font:inherit; font-size:16px;}
+.knop{height:40px; padding:0 16px; border:0; border-radius:11px; cursor:pointer;
+  background:var(--accent); color:var(--card); font:inherit; font-size:15px; font-weight:600;}
+.knop.stil{background:var(--card-sunken); color:var(--content);}
+.knop:disabled{opacity:.5;}
+.live-status{margin-top:8px;}
 </style>
 </head>
 <body>
@@ -37,6 +53,85 @@ const app = document.getElementById('app');
 tabbalk('meer');
 
 const BRON = {transfermarkt: 'Transfermarkt', sofascore: 'Sofascore'};
+
+async function api(pad, opties){
+  try { const r = await fetch(pad, opties); return r.ok ? await r.json() : null; }
+  catch { return null; }
+}
+
+/* De kaart voor live zetten. Zonder server.py (de live site) antwoordt
+   /api/live niet, en dan verschijnt hij ook niet. */
+function liveKaart(info){
+  if (!info) return '';
+  if (!info.lokaal) return `
+    <section class="card"><div class="card-head"><h2>Live zetten</h2></div>
+      <div class="live">Koppelen kan alleen op de laptop waar server.py draait.</div></section>`;
+  const laatst = info.laatst;
+  const status = !laatst ? '' : laatst.ok
+    ? `Laatst live gezet: ${laatst.tijd}${laatst.status === 'al live' ? ' (er was niets nieuws)' : ''}.`
+    : laatst.fout ? `Live zetten mislukte: ${esc(laatst.fout)}` : '';
+  if (info.gekoppeld) return `
+    <section class="card" id="live">
+      <div class="card-head"><h2>Live zetten</h2><span class="kop-tel">gekoppeld</span></div>
+      <div class="live">
+        Alles wat je toevoegt gaat vanzelf naar de live site (${esc(info.repo)}).
+        Vercel is een minuut later bijgewerkt.
+        <div class="live-status" id="live-status">${status}</div>
+        <div class="live-rij">
+          <button class="knop" type="button" id="live-nu">Nu live zetten</button>
+          <button class="knop stil" type="button" id="live-los">Ontkoppel</button>
+        </div>
+      </div>
+    </section>`;
+  return `
+    <section class="card" id="live">
+      <div class="card-head"><h2>Live zetten</h2></div>
+      <div class="live">
+        Koppel GitHub één keer, dan komt alles wat je toevoegt vanzelf op de live site.
+        <ol>
+          <li><a href="https://github.com/settings/personal-access-tokens/new" target="_blank" rel="noopener">Maak een sleutel aan</a>
+            (fine-grained token).</li>
+          <li>Kies bij <i>Repository access</i> alleen <b>${esc(info.repo.split('/')[1])}</b>.</li>
+          <li>Zet bij <i>Permissions → Contents</i> <b>Read and write</b>, en klik <i>Generate token</i>.</li>
+          <li>Plak de sleutel hieronder.</li>
+        </ol>
+        <div class="live-rij">
+          <input id="live-sleutel" type="password" autocomplete="off" placeholder="github_pat_…" aria-label="GitHub-sleutel">
+          <button class="knop" type="button" id="live-koppel">Koppel</button>
+        </div>
+        <div class="live-status" id="live-status"></div>
+      </div>
+    </section>`;
+}
+
+async function toonLive(){
+  const info = await api('/api/live');
+  const oud = document.getElementById('live');
+  const html = liveKaart(info);
+  if (oud) oud.outerHTML = html || '';
+  else if (html) app.insertAdjacentHTML('afterbegin', html);
+}
+
+app.addEventListener('click', async e => {
+  const status = t => { const el = document.getElementById('live-status'); if (el) el.textContent = t; };
+  if (e.target.id === 'live-koppel'){
+    e.target.disabled = true; status('Controleren…');
+    const r = await api('/api/live/koppel', {method: 'POST', headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({token: document.getElementById('live-sleutel').value})});
+    if (r?.ok) toonLive(); else { e.target.disabled = false; status(r?.error || 'Koppelen lukte niet.'); }
+  }
+  if (e.target.id === 'live-nu'){
+    e.target.disabled = true; status('Bezig met live zetten…');
+    const r = await api('/api/live/nu', {method: 'POST'});
+    status(r?.ok ? (r.status === 'al live' ? 'Er was niets nieuws: de live site is al bij.'
+                                           : 'Live gezet. Vercel is over een minuut bijgewerkt.')
+                 : (r?.fout || 'Live zetten lukte niet.'));
+    e.target.disabled = false;
+  }
+  if (e.target.id === 'live-los'){
+    await api('/api/live/ontkoppel', {method: 'POST'}); toonLive();
+  }
+});
 
 function scheidsrechters(){
   const t = {};
@@ -96,11 +191,11 @@ function render(alleClubs){
   </section>`;
   const alle = document.getElementById('alle');
   if (alle) alle.addEventListener('click', () => {
-    const y = app.scrollTop; render(true); app.scrollTop = y;
+    const y = app.scrollTop; render(true); toonLive(); app.scrollTop = y;
   });
 }
 
-if (window.APP) render(false);
+if (window.APP){ render(false); toonLive(); }
 else app.innerHTML = zonderData('meer.html');
 </script>
 </body>
