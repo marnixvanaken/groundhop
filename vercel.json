@@ -1,6 +1,14 @@
 {
+  "buildCommand": "python3 demo/build_app_data.py",
+  "outputDirectory": ".",
   "rewrites": [
-    { "source": "/img/:type/:id", "destination": "/api/img?type=:type&id=:id" },
-    { "source": "/", "destination": "/dashboard.html" }
+    {
+      "source": "/img/:type/:id",
+      "destination": "/api/img?type=:type&id=:id"
+    },
+    {
+      "source": "/",
+      "destination": "/dashboard.html"
+    }
   ]
 }

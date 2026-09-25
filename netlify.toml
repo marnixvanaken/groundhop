@@ -1,4 +1,6 @@
 [build]
+  # De demodata staat niet in git (zie .gitignore); die wordt hier gebouwd.
+  command = "python3 demo/build_app_data.py"
   publish = "."
   functions = "netlify/functions"
 
