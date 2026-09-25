@@ -115,6 +115,17 @@ def toonnaam(naam, coord=None):
     return naam
 
 
+# Transfermarkt laat bij een paar landen de landcode leeg terwijl de naam er
+# wel staat. Sint Maarten ontbreekt hier bewust: zijn ISO-code 'sx' is bij
+# Transfermarkt al Schotland.
+LANDCODE_OP_NAAM = {"Gibraltar": "gi"}
+
+
+def landcode(speler):
+    code = speler.get("nationality_alpha2") or LANDCODE_OP_NAAM.get(speler.get("nationality") or "")
+    return code.lower() if code else None
+
+
 def plat(tekst):
     """Alleen letters en cijfers, zonder accenten: 'Stadion "Galgenwaard"' en
     'Stadion Galgenwaard' zijn dan hetzelfde."""
@@ -196,8 +207,8 @@ def albums(d, clubs, coords, venues):
 
     landen = defaultdict(int)
     for p in d["players"]:
-        if p.get("nationality_alpha2"):
-            landen[p["nationality_alpha2"].lower()] += 1
+        if landcode(p):
+            landen[landcode(p)] += 1
     for w in ref["werelddelen"]:
         uit.append({"id": f"landen-{w['id']}", "soort": "landen", "groep": "Spelers uit elk land",
                     "titel": w["naam"],
@@ -371,7 +382,7 @@ def main():
         spelers[p["id"]] = {
             "n": p.get("name"),
             "s": p.get("short_name") or p.get("name"),
-            "c": p.get("nationality_alpha2"),
+            "c": landcode(p),
             "pos": p.get("position") or "",
             "img": foto(p),
             "dob": p.get("date_of_birth"),
@@ -400,6 +411,11 @@ def main():
     zonder_foto = sum(1 for p in spelers.values() if not p["img"])
     print(f"  clublogo's: {len(clubs) - zonder_logo} van {len(clubs)}; spelersfoto's: "
           f"{len(spelers) - zonder_foto} van {len(spelers)} (rest: initialen)")
+    vlagnaam = {"en": "gb-eng", "sx": "gb-sct", "wa": "gb-wls", "wl": "gb-wls", "nx": "gb-nir"}
+    zonder_vlag = sorted({p["c"] for p in spelers.values() if p["c"]
+                          and not (DEMO / "vlaggen" / f"{vlagnaam.get(p['c'], p['c'])}.svg").exists()})
+    if zonder_vlag:
+        print(f"  ! nationaliteiten zonder vlag in app/vlaggen/: {', '.join(zonder_vlag)}")
     for a in app["albums"]:
         print(f"  album {a['groep']} · {a['titel']}: {a['gezien']} van {a['totaal']}")
     for namen_ in samengevoegd.values():

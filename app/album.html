@@ -49,15 +49,13 @@ a.tegel:active{background:var(--card-sunken);}
 .tegel.mist .tegel-naam{color:var(--content-2);}
 .tegel.mist .tegel-tal{visibility:hidden;}
 
-.rij-mist .lijst-naam{color:var(--content-2);}
 
-/* Clublogo's bij een stadion; twee kleinere als het stadion gedeeld wordt. */
-.wapens{display:flex; align-items:center; justify-content:center; width:36px; flex-shrink:0;}
-.wapens .crest-mini,.wapens .crest-fallback.mini{width:30px; height:30px; font-size:11px;}
-.wapens.twee .crest-mini,.wapens.twee .crest-fallback.mini{width:21px; height:21px; font-size:8px;}
-.wapens.twee > :last-child{margin-left:-4px;}
-.rij-mist .wapens{filter:grayscale(1); opacity:.4;}
-.nog{font-size:12px; color:var(--content-2); white-space:nowrap;}
+/* Clublogo's bij een stadion: één groot, of twee kleinere naast elkaar als het
+   stadion gedeeld wordt. Grijs zolang je er niet was. */
+.wapens{display:flex; align-items:center; justify-content:center; height:44px;}
+.wapens.twee .crest-mini,.wapens.twee .crest-fallback.mini{width:32px; height:32px; font-size:10px;}
+.wapens.twee > :last-child{margin-left:-6px;}
+.tegel.mist .wapens{filter:grayscale(1); opacity:.35;}
 </style>
 </head>
 <body>
@@ -97,19 +95,18 @@ function tegel(a, i){
                   : `<div class="${klasse}" aria-label="${esc(naam)}, nog niet gezien">${inhoud}</div>`;
 }
 
-function stadionRij(i){
+/* Een stadion als tegel, net als een club: de clublogo's als beeld (twee
+   kleinere bij een gedeeld stadion), de naam eronder. */
+function stadionTegel(i){
   const clubs = i.clubs || [];
   const inhoud = `
     <span class="wapens${clubs.length > 1 ? ' twee' : ''}" aria-hidden="true">
-      ${clubs.map(k => logo(k.crest, k.naam, true)).join('')}</span>
-    <span class="lijst-main">
-      <span class="lijst-naam">${esc(i.naam)}</span>
-      <span class="lijst-sub">${esc(i.sub)}</span>
-    </span>
-    ${i.gezien ? `<span class="badge">${i.n}×</span><span class="chev" aria-hidden="true">›</span>`
-               : '<span class="nog">nog niet</span>'}`;
-  return i.gezien ? `<a class="lijst-rij" href="${stadionHref(i.key)}">${inhoud}</a>`
-                  : `<div class="lijst-rij rij-mist">${inhoud}</div>`;
+      ${clubs.map(k => logo(k.crest, k.naam, clubs.length > 1)).join('')}</span>
+    <span class="tegel-naam">${esc(i.naam)}</span>
+    <span class="tegel-tal">${i.n}×</span>`;
+  const label = `${esc(i.naam)} (${esc(i.sub)})${i.gezien ? '' : ', nog niet bezocht'}`;
+  return i.gezien ? `<a class="tegel" href="${stadionHref(i.key)}" aria-label="${label}">${inhoud}</a>`
+                  : `<div class="tegel mist" aria-label="${label}">${inhoud}</div>`;
 }
 
 function render(){
@@ -122,8 +119,8 @@ function render(){
   let lijst;
   if (!zichtbaar.length) lijst = `<div class="note" style="border-top:0">${FILTER === 'mist'
       ? 'Niets meer te gaan: dit album is vol.' : 'Nog niets in dit album.'}</div>`;
-  else if (a.soort === 'stadions') lijst = '<div style="height:4px"></div>' + zichtbaar.map(stadionRij).join('');
-  else lijst = `<div class="tegels${a.soort === 'landen' ? ' landen' : ''}">${zichtbaar.map(i => tegel(a, i)).join('')}</div>`;
+  else lijst = `<div class="tegels${a.soort === 'landen' ? ' landen' : ''}">${zichtbaar.map(i =>
+      a.soort === 'stadions' ? stadionTegel(i) : tegel(a, i)).join('')}</div>`;
 
   app.innerHTML = `
   <section class="card">
