@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Home is een samenvatting van jouw verzameling, niet van het voetbal. Alle
+   getallen hier gaan over wat jij zag, en zijn dus groen. */
+
+.merk{font-family:var(--display); font-size:20px; font-weight:800; letter-spacing:-0.02em;
+  padding-left:8px;}
+.merk span{color:var(--accent);}
+
+.sinds{font-size:12px; color:var(--content-2);}
+.tally + .tally{border-top:0.5px solid var(--separator);}
+
+/* Het laatste duel groot: dit is wat je het vaakst terug wilt zien. */
+.laatste{display:block; padding:14px 16px 16px; color:inherit; text-decoration:none;}
+.laatste-crests{display:flex; align-items:center; gap:10px; margin:8px 0 10px;}
+.laatste-crests .result{font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:34px; font-weight:700; letter-spacing:-0.02em; margin-left:auto;}
+.laatste .teams{font-size:17px; font-weight:600; line-height:1.25;}
+.laatste .duel-meta{margin-top:3px;}
+.context{padding:10px 16px 14px; border-top:0.5px solid var(--separator);
+  font-size:13px; color:var(--content-2);}
+.context b{color:var(--accent); font-family:var(--display); font-variant-numeric:tabular-nums;}
+
+.record{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
+  color:inherit; text-decoration:none;}
+.record + .record{border-top:0.5px solid var(--separator);}
+.record-waarde{font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:20px; font-weight:700; min-width:56px;}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1 class="merk"><span>Ground</span>Hop</h1>
+  <a class="back bar-actie" href="toevoegen.html" aria-label="Wedstrijd toevoegen">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+  </a>
+</div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('home');
+
+function verzameling(){
+  const t = APP.totals;
+  const [j, m] = t.first.split('-');
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Jouw verzameling</h2>
+      <span class="sinds">sinds ${KORT[+m - 1]} ${j}</span></div>
+    <div style="height:10px"></div>
+    <div class="tally">
+      <div><b class="num">${getal(t.matches)}</b><span>duels</span></div>
+      <div><b class="num">${getal(t.venues)}</b><span>grounds</span></div>
+      <div><b class="num">${getal(t.goals)}</b><span>goals gezien</span></div>
+    </div>
+    <div class="tally">
+      <div><b class="num">${getal(t.clubs)}</b><span>clubs</span></div>
+      <div><b class="num">${getal(t.countries)}</b><span>landen</span></div>
+      <div><b class="num">${getal(Object.keys(SPELERS).length)}</b><span>spelers</span></div>
+    </div>
+  </section>`;
+}
+
+function laatste(){
+  const m = APP.matches[0], h = club(m.hid), a = club(m.aid);
+  const v = m.venue ? stadion(m.venue) : null;
+  const bezoek = m.venue ? APP.matches.filter(x => x.venue === m.venue).length : 0;
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Laatste duel</h2></div>
+    <a class="laatste" href="${wedstrijdHref(m.id)}">
+      <div class="laatste-crests">${logo(h.crest, h.name)}${logo(a.crest, a.name)}
+        <span class="result">${m.hs}–${m.as}</span></div>
+      <div class="teams">${esc(h.name)} – ${esc(a.name)}</div>
+      <div class="duel-meta">${datum(m.date, true)} · ${esc(comp(m.t))}</div>
+    </a>
+    <div class="context">Je <b>${APP.totals.matches}e</b> duel${v
+      ? ` en je <b>${bezoek}e</b> bezoek aan ${esc(v.name)}` : ''}.</div>
+  </section>`;
+}
+
+function reeks(){
+  const r = seizoensreeks(APP.matches.map(m => m.date));
+  if (!r) return '';
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Duels per seizoen</h2><h2>${r.rijen.length} seizoenen</h2></div>
+    ${r.html}
+    ${r.leeg ? `<div class="note">${r.leeg} seizoenen zonder duel, als nul in de reeks.</div>`
+             : '<div style="height:10px"></div>'}
+  </section>`;
+}
+
+/* Vaakst gezien: drie ranglijsten achter één keuzeschakelaar, zodat Home kort
+   blijft. Elke rij leidt naar zijn eigen scherm, behalve clubs: die hebben
+   (nog) geen detailscherm. */
+const TOP = {
+  clubs: () => APP.clubs.slice(0, 5).map(c => ({
+    name: esc(c.name), count: c.count, beeld: logo(c.crest, c.name, true)})),
+  grounds: () => APP.venues.slice(0, 5).map(v => ({
+    name: esc(v.name), count: v.visits, href: stadionHref(v.key)})),
+  spelers: () => Object.entries(SPELERS).sort((a, b) => b[1].seen - a[1].seen).slice(0, 5)
+    .map(([id, p]) => ({name: esc(p.n), count: p.seen, href: spelerHref(id),
+                        beeld: portret(p.img, p.n)})),
+};
+
+function vaakst(keuze){
+  return `
+  <section class="card" id="vaakst">
+    <div class="card-head"><h2>Vaakst gezien</h2></div>
+    <div class="seg" role="group" aria-label="Kies een lijst">
+      ${[['clubs', 'Clubs'], ['grounds', 'Grounds'], ['spelers', 'Spelers']].map(([k, l]) =>
+        `<button type="button" data-top="${k}" aria-pressed="${k === keuze}">${l}</button>`).join('')}
+    </div>
+    ${ranglijst(TOP[keuze]())}
+  </section>`;
+}
+
+/* Records rekent het scherm zelf uit, zodat elke regel naar zijn wedstrijd
+   kan wijzen. */
+function records(){
+  const rijen = [];
+  const metStand = APP.matches.filter(m => m.hs != null && m.as != null);
+  const goals = metStand.reduce((b, m) => m.hs + m.as > b.hs + b.as ? m : b, metStand[0]);
+  const zege = metStand.reduce((b, m) => Math.abs(m.hs - m.as) > Math.abs(b.hs - b.as) ? m : b, metStand[0]);
+  const publiek = APP.matches.filter(m => m.att).reduce((b, m) => !b || m.att > b.att ? m : b, null);
+  const regel = (m, waarde, label) => `
+    <a class="record" href="${wedstrijdHref(m.id)}">
+      <span class="record-waarde">${waarde}</span>
+      <span class="lijst-main">
+        <span class="lijst-naam">${label}</span>
+        <span class="lijst-sub">${esc(club(m.hid).name)} – ${esc(club(m.aid).name)} · ${datum(m.date)}</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`;
+  if (goals) rijen.push(regel(goals, goals.hs + goals.as, 'Meeste goals in één duel'));
+  if (zege && zege !== goals) rijen.push(regel(zege, `${zege.hs}–${zege.as}`, 'Grootste zege'));
+  if (publiek) rijen.push(regel(publiek, getal(publiek.att), 'Meeste publiek'));
+  const jong = APP.records?.youngest_player;
+  if (jong){
+    const id = Object.keys(SPELERS).find(k => SPELERS[k].n === jong.name);
+    rijen.push(`
+    <a class="record" href="${id ? spelerHref(id) : '#'}">
+      <span class="record-waarde">${jong.age_years}</span>
+      <span class="lijst-main">
+        <span class="lijst-naam">Jongste speler: ${esc(jong.name)}</span>
+        <span class="lijst-sub">${jong.age_years} jaar en ${jong.age_days} dagen · ${datum(jong.match_date)}</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`);
+  }
+  return rijen.length ? `
+  <section class="card">
+    <div class="card-head"><h2>Records</h2></div>
+    <div style="height:6px"></div>
+    ${rijen.join('')}
+  </section>` : '';
+}
+
+function recent(){
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Recent</h2></div>
+    <div style="height:8px"></div>
+    ${APP.matches.slice(1, 6).map(duelLink).join('')}
+    <a class="meer-knop" href="duels.html">Alle ${APP.totals.matches} duels</a>
+  </section>`;
+}
+
+function render(){
+  app.innerHTML = verzameling() + laatste() + reeks() + vaakst('clubs') + records() + recent();
+  app.addEventListener('click', e => {
+    const b = e.target.closest('[data-top]');
+    if (b) document.getElementById('vaakst').outerHTML = vaakst(b.dataset.top);
+  });
+}
+
+if (window.APP && window.SPELERS) render();
+else app.innerHTML = zonderData('index.html');
+</script>
+</body>
+</html>

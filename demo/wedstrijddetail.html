@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
-<title>Wedstrijddetail — GroundHop</title>
+<title>Wedstrijd — GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
@@ -80,186 +80,214 @@
 }
 .rating.leeg{color:var(--content-2); font-weight:600;}
 .zonder-rating .player{grid-template-columns:16px 34px 1fr auto;}
+.player{color:inherit; text-decoration:none;}
+.goal{color:inherit;}
+.buren{display:grid; grid-template-columns:1fr 1fr;}
+.buren a{display:block; padding:12px 16px; color:inherit; text-decoration:none; min-width:0;}
+.buren a + a{border-left:0.5px solid var(--separator); text-align:right;}
+.buren .row-label{margin-bottom:1px;}
+.buren .row-value{font-size:14px;}
 </style>
 </head>
 <body>
 
-<div class="bar">
-  <button class="back" aria-label="Terug naar Duels">
-    <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-      <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2"
-            stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Duels
-  </button>
-  <h1>Wedstrijd</h1>
-</div>
+<div class="bar" id="bar"></div>
 
 <main id="app"></main>
 
-<nav class="tabbar" aria-label="Hoofdnavigatie">
-  <a href="#"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</a>
-  <a href="wedstrijddetail.html" aria-current="page"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>Duels</a>
-  <a href="grounds.html"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Grounds</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Spelers</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
-</nav>
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
 
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
 <script src="groundhop.js"></script>
-<script src="match-data.js"></script>
 <script>
-const M = window.MATCH;
 const app = document.getElementById('app');
-
+tabbalk('duels');
+document.getElementById('bar').innerHTML = terugknop('Duels', 'duels.html') + '<h1>Wedstrijd</h1>';
 
 // De bron levert landnamen in het Engels; de rest van het scherm is Nederlands.
-// Dit dekt alle 22 landen die in de scheidsrechterslijst voorkomen.
 const LAND = {
   Netherlands:'Nederland', Spain:'Spanje', Germany:'Duitsland', England:'Engeland',
   Italy:'Italië', Belgium:'België', Russia:'Rusland', Sweden:'Zweden',
   Slovenia:'Slovenië', Romania:'Roemenië', Brazil:'Brazilië', Portugal:'Portugal',
   Switzerland:'Zwitserland', Serbia:'Servië', Poland:'Polen', 'Türkiye':'Turkije',
   Scotland:'Schotland', Bulgaria:'Bulgarije', France:'Frankrijk',
-  Slovakia:'Slowakije', Belarus:'Belarus',
+  Slovakia:'Slowakije', Belarus:'Belarus', Denmark:'Denemarken', Norway:'Noorwegen',
+  Austria:'Oostenrijk', Croatia:'Kroatië', Greece:'Griekenland', Ukraine:'Oekraïne',
 };
-function land(naam){ return LAND[naam] || naam; }
-function minuut(g){ return g.minute + (g.added_time ? '+' + g.added_time : '') + "'"; }
+const land = naam => LAND[naam] || naam;
+const minuut = g => g.min + (g.add ? '+' + g.add : '') + "'";
 
-// De logo's staan naast deze pagina in crests/, gekopieerd uit img/team/.
-const CREST = {};
-const clublogo = (naam, mini) => logo(CREST[naam], naam, mini);
+/* Hoeveelste keer iets voorkomt, chronologisch geteld tot en met deze
+   wedstrijd. Dat is wat deze app kan en een uitslagensite niet. De sleutel
+   geeft voor deze wedstrijd iets terug; elke eerdere met dezelfde waarde telt. */
+function hoeveelste(m, sleutel){
+  const k = sleutel(m);
+  return APP.matches.filter(x => x.date <= m.date && sleutel(x) === k).length;
+}
+
+/* De opstelling komt vanaf de spelerskant: elke speler weet in welke
+   wedstrijden hij stond, met minuten en goals. */
+function opstelling(m){
+  const teams = {};
+  for (const [id, p] of Object.entries(SPELERS)){
+    const r = p.m.find(x => x[0] === m.id);
+    if (!r) continue;
+    (teams[r[1]] ||= []).push({
+      id, name: p.s, position: p.pos, country: p.c, photo: p.img, seen: p.seen,
+      minutes: r[2], goals: r[3], assists: r[4], starter: !!r[5], rating: r[6],
+    });
+  }
+  const orde = {G: 0, D: 1, M: 2, F: 3};
+  Object.values(teams).forEach(t => t.sort((a, b) =>
+    (b.starter - a.starter) || ((orde[a.position] ?? 4) - (orde[b.position] ?? 4))
+    || ((b.minutes || 0) - (a.minutes || 0))));
+  return teams;
+}
+
+let LINEUP = {};
 
 function render(){
-  const c = M.context;
-  CREST[M.home.name] = M.home.crest;
-  CREST[M.away.name] = M.away.crest;
-  const comp = M.tournament.replace('VriendenLoterij ','').replace('Eurojackpot ','');
-  const rondeTekst = M.round ? ` · Ronde ${M.round}` : '';
+  const m = wedstrijd(Number(param('id'))) || APP.matches[0];
+  const h = club(m.hid), a = club(m.aid);
+  const v = m.venue ? stadion(m.venue) : null;
+  const naamComp = comp(m.t);
 
-  // ── Scorebord met de tellers eronder ───────────────────────────────────
+  const ctx = {
+    venue: m.venue ? hoeveelste(m, x => x.venue) : null,
+    club: hoeveelste(m, x => x.hid === m.hid || x.aid === m.hid),
+    comp: hoeveelste(m, x => x.t),
+    nr: hoeveelste(m, () => true),
+  };
+
+  const tellers = [
+    ctx.venue ? [ctx.venue, `bezoek<br>${esc(v ? v.name : m.venue)}`] : null,
+    [ctx.club, `duel van<br>${esc(h.name)}`],
+    [ctx.comp, `duel in<br>${esc(naamComp)}`],
+  ].filter(Boolean);
+
   let html = `
   <section class="card">
     <div class="score-meta">
-      <div class="comp-regel">${compLogo(M.tournament_logo)}<span class="comp">${comp}${rondeTekst}</span></div>
-      <div class="date">${datum(M.date, true)}</div>
+      <div class="comp-regel"><span class="comp">${esc(naamComp)}${m.round ? ` · Ronde ${m.round}` : ''}</span></div>
+      <div class="date">${datum(m.date, true)}</div>
     </div>
     <div class="score">
-      <div class="side">
-        ${clublogo(M.home.name)}
-        <div class="side-name">${M.home.name}</div>
-      </div>
-      <div class="result">${M.home.score} – ${M.away.score}</div>
-      <div class="side">
-        ${clublogo(M.away.name)}
-        <div class="side-name">${M.away.name}</div>
-      </div>
+      <div class="side">${logo(h.crest, h.name)}<div class="side-name">${esc(h.name)}</div></div>
+      <div class="result">${m.hs ?? '–'} – ${m.as ?? '–'}</div>
+      <div class="side">${logo(a.crest, a.name)}<div class="side-name">${esc(a.name)}</div></div>
     </div>
-    ${M.half_time && M.half_time.home != null && M.half_time.away != null
-      ? `<div class="half">rust ${M.half_time.home}–${M.half_time.away}</div>` : ''}
-    <div class="tally">
-      <div>
-        <b class="num">${c.venue_visit}<sup>e</sup></b>
-        <span>bezoek<br>${M.venue.name}</span>
-      </div>
-      <div>
-        <b class="num">${c.club_match}<sup>e</sup></b>
-        <span>duel van<br>${M.home.name.replace(' Eindhoven','')}</span>
-      </div>
-      <div>
-        <b class="num">${c.tournament_match}<sup>e</sup></b>
-        <span>duel in<br>${comp}</span>
-      </div>
+    ${m.ht ? `<div class="half">rust ${m.ht[0]}–${m.ht[1]}</div>` : '<div style="height:14px"></div>'}
+    <div class="tally" style="grid-template-columns:repeat(${tellers.length},1fr)">
+      ${tellers.map(([n, t]) => `<div><b class="num">${n}<sup>e</sup></b><span>${t}</span></div>`).join('')}
     </div>
   </section>`;
 
-  // ── Goals, chronologisch ───────────────────────────────────────────────
-  html += `
-  <section class="card">
-    <div class="card-head"><h2>Goals</h2><h2>${M.goals.length}</h2></div>
-    <div class="goals">
-      ${M.goals.map(g => {
-        const soort = g.type === 'penalty' ? '<span class="kind">pen</span>'
-                    : g.type === 'ownGoal' ? '<span class="kind">eigen goal</span>' : '';
-        return `<div class="goal">
-          <div class="minute num">${minuut(g)}</div>
-          <div>
-            <div class="scorer">${g.player}${soort}</div>
-            ${g.assist ? `<div class="assist">assist ${g.assist}</div>` : ''}
-          </div>
-          ${clublogo(g.team, true)}
-        </div>`;
-      }).join('')}
-    </div>
-  </section>`;
+  if (m.goals.length){
+    html += `
+    <section class="card">
+      <div class="card-head"><h2>Goals</h2><h2>${m.goals.length}</h2></div>
+      <div class="goals">
+        ${m.goals.map(g => {
+          const soort = g.type === 'penalty' ? '<span class="kind">pen</span>'
+                      : g.type === 'ownGoal' ? '<span class="kind">eigen goal</span>' : '';
+          const ploeg = g.team === h.name ? h : g.team === a.name ? a : {name: g.team || '?'};
+          return `<div class="goal">
+            <div class="minute num">${minuut(g)}</div>
+            <div>
+              <div class="scorer">${g.pid && SPELERS[g.pid]
+                ? `<a href="${spelerHref(g.pid)}" style="color:inherit;text-decoration:none">${esc(g.p)}</a>`
+                : esc(g.p)}${soort}</div>
+              ${g.a ? `<div class="assist">assist ${esc(g.a)}</div>` : ''}
+            </div>
+            ${logo(ploeg.crest, ploeg.name, true)}
+          </div>`;
+        }).join('')}
+      </div>
+    </section>`;
+  }
 
-  // ── Opstelling ─────────────────────────────────────────────────────────
-  const ploegen = Object.keys(M.lineup);
-  html += `
-  <section class="card">
-    <div class="card-head"><h2>Opstelling</h2></div>
-    <div class="seg" role="group" aria-label="Kies ploeg">
-      ${ploegen.map((t,i) => `<button data-team="${t}" aria-pressed="${i===0}">${t}</button>`).join('')}
-    </div>
-    <div id="lineup"></div>
-  </section>`;
+  LINEUP = opstelling(m);
+  const ploegen = [h.name, a.name].filter(n => LINEUP[n])
+    .concat(Object.keys(LINEUP).filter(n => n !== h.name && n !== a.name));
+  if (ploegen.length){
+    html += `
+    <section class="card">
+      <div class="card-head"><h2>Opstelling</h2></div>
+      <div class="seg" role="group" aria-label="Kies ploeg">
+        ${ploegen.map((t, i) => `<button type="button" data-team="${esc(t)}" aria-pressed="${i === 0}">${esc(t)}</button>`).join('')}
+      </div>
+      <div id="lineup"></div>
+    </section>`;
+  }
 
-  // ── Wedstrijdinfo ──────────────────────────────────────────────────────
   html += `
   <section class="card">
     <div class="card-head"><h2>Wedstrijd</h2></div>
     <div style="height:6px"></div>
-    <a class="row" href="stadiondetail.html">
+    ${m.venue ? `
+    <a class="row" href="${stadionHref(m.venue)}">
       <div class="row-main">
         <div class="row-label">Stadion</div>
-        <div class="row-value">${M.venue.name}, ${M.venue.city}</div>
+        <div class="row-value">${esc(v ? v.name : m.venue)}${v && v.city ? ', ' + esc(v.city) : ''}</div>
       </div>
       <div class="chev" aria-hidden="true">›</div>
-    </a>
+    </a>` : ''}
+    ${m.ref ? `
     <div class="row">
       <div class="row-main">
         <div class="row-label">Scheidsrechter</div>
-        <div class="row-value">${M.referee.name}${M.referee.country ? ' · ' + land(M.referee.country) : ''}</div>
+        <div class="row-value">${esc(m.ref)}${m.refc ? ' · ' + land(m.refc) : ''}</div>
       </div>
-    </div>
+    </div>` : ''}
+    ${m.att ? `
     <div class="row">
       <div class="row-main">
         <div class="row-label">Toeschouwers</div>
-        <div class="row-value">${getal(M.attendance)}</div>
+        <div class="row-value">${getal(m.att)}</div>
       </div>
-    </div>
+    </div>` : ''}
     <div class="note">
-      Je ${c.match_nr}<sup>e</sup> wedstrijd van ${c.total_matches}.
-      ${M.venue.name} bezocht je voor het eerst op ${datum(c.venue_first, true)}.
+      Je ${ctx.nr}<sup>e</sup> wedstrijd van ${APP.totals.matches}.
+      ${v && v.first ? `${esc(v.name)} bezocht je voor het eerst op ${datum(v.first, true)}.` : ''}
     </div>
   </section>`;
 
-  app.innerHTML = html;
+  // Vorige en volgende in je eigen reeks, zodat je door je duels kunt bladeren.
+  const i = APP.matches.indexOf(m);
+  const eerder = APP.matches[i + 1], later = APP.matches[i - 1];
+  const buur = (x, label) => x ? `
+    <a href="${wedstrijdHref(x.id)}">
+      <div class="row-label">${label}</div>
+      <div class="row-value">${esc(club(x.hid).name)} – ${esc(club(x.aid).name)}</div>
+      <div class="row-label">${datum(x.date)}</div>
+    </a>` : '<span></span>';
+  if (eerder || later){
+    html += `<section class="card buren">${buur(eerder, '‹ Eerder')}${buur(later, 'Later ›')}</section>`;
+  }
 
-  document.querySelectorAll('.seg button').forEach(b => {
-    b.addEventListener('click', () => {
-      document.querySelectorAll('.seg button')
-        .forEach(x => x.setAttribute('aria-pressed', String(x === b)));
-      toonPloeg(b.dataset.team);
-    });
-  });
-  toonPloeg(ploegen[0]);
+  app.innerHTML = html;
+  app.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
+    app.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+    toonPloeg(b.dataset.team);
+  }));
+  if (ploegen.length) toonPloeg(ploegen[0]);
 }
 
 function toonPloeg(team){
-  const spelers = M.lineup[team];
+  const spelers = LINEUP[team] || [];
   // Transfermarkt kent geen cijfers per speler. Een kolom met alleen streepjes
   // is erger dan geen kolom, dus hij verschijnt alleen als er iets in staat.
   const metRating = spelers.some(p => p.rating != null);
-  document.getElementById('lineup').classList.toggle('zonder-rating', !metRating);
-  const basis = spelers.filter(p => p.starter);
-  const rest  = spelers.filter(p => !p.starter);
+  const doel = document.getElementById('lineup');
+  doel.classList.toggle('zonder-rating', !metRating);
   const blok = (label, lijst) => !lijst.length ? '' :
     `<div class="group-label">${label}</div>` + lijst.map(p => `
-      <div class="player">
+      <a class="player" href="${spelerHref(p.id)}">
         <div class="pos">${p.position || '·'}</div>
         ${portret(p.photo, p.name)}
         <div>
-          <div class="pname">${p.name}</div>
+          <div class="pname">${esc(p.name)}</div>
           <div class="pmeta"><span class="vlag">${vlag(p.country)}</span> ${
             p.minutes != null ? p.minutes + ' min' : '—'}${
             p.goals ? ` · ${p.goals} goal${p.goals > 1 ? 's' : ''}` : ''}${
@@ -269,17 +297,16 @@ function toonPloeg(team){
         ${!metRating ? '' : p.rating
           ? `<div class="rating num">${p.rating.toFixed(1)}</div>`
           : `<div class="rating num leeg">—</div>`}
-      </div>`).join('');
-  document.getElementById('lineup').innerHTML =
-    blok('Basis', basis) + blok('Ingevallen en bank', rest);
+      </a>`).join('');
+  doel.innerHTML = blok('Basis', spelers.filter(p => p.starter))
+                 + blok('Ingevallen en bank', spelers.filter(p => !p.starter));
 }
 
-if (M) {
+if (window.APP && window.SPELERS){
   render();
+  window.addEventListener('hashchange', () => { render(); app.scrollTop = 0; });
 } else {
-  app.innerHTML = '<div class="card"><div class="note">Geen wedstrijddata gevonden. '
-    + 'Draai <code>python3 demo/build_demo_data.py</code> en open deze pagina via '
-    + '<code>python3 server.py</code> op localhost:4000/demo/wedstrijddetail.html</div></div>';
+  app.innerHTML = zonderData('wedstrijddetail.html');
 }
 </script>
 </body>

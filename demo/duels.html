@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Duels — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Alle duels, nieuwste eerst, per seizoen in een eigen kaart. Het zoekveld
+   blijft in de bovenbalk staan en zoekt terwijl je typt, op club, stadion en
+   competitie tegelijk. De seizoensrij springt naar een seizoen in plaats van
+   de rest te verbergen: zo blijft de lijst één doorlopende reeks. */
+.leeg{padding:16px; font-size:13px; color:var(--content-2);}
+.kop-tel{font-size:12px; color:var(--content-2);}
+.chips-kaart{padding:2px 0;}
+</style>
+</head>
+<body>
+
+<div class="bar met-zoek">
+  <div class="bar-titel">
+    <h1 style="padding-left:8px">Duels</h1>
+    <a class="back bar-actie" href="toevoegen.html" aria-label="Wedstrijd toevoegen">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
+  </a>
+  </div>
+  <div class="zoekveld">
+    <svg class="loep" viewBox="0 0 18 18" aria-hidden="true">
+      <circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2 16 16"/></svg>
+    <input id="zoek" type="search" inputmode="search" autocomplete="off"
+           enterkeyhint="search" placeholder="Club, stadion of competitie" aria-label="Club, stadion of competitie">
+    <button class="wis" id="wis" type="button" aria-label="Zoekveld wissen" hidden>✕</button>
+  </div>
+</div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('duels');
+
+function past(m, q){
+  if (!q) return true;
+  const v = m.venue ? stadion(m.venue) : null;
+  return [club(m.hid).name, club(m.aid).name, m.t, v?.name, v?.city, m.venue]
+    .some(t => plat(t).includes(q));
+}
+
+function render(vraag){
+  const q = plat(vraag);
+  const lijst = APP.matches.filter(m => past(m, q));
+  const perSeizoen = {};
+  lijst.forEach(m => (perSeizoen[m.season] ||= []).push(m));
+  const jaren = Object.keys(perSeizoen).map(Number).sort((a, b) => b - a);
+
+  if (!lijst.length){
+    app.innerHTML = `<section class="card"><div class="leeg">Geen duel gevonden voor
+      “${esc(vraag)}”. Zoeken gaat op club, stadion en competitie.</div></section>`;
+    return;
+  }
+
+  app.innerHTML = `
+    ${jaren.length > 1 ? `
+    <section class="card chips-kaart">
+      <div class="chips" role="group" aria-label="Spring naar seizoen">
+        ${jaren.map(j => `<button type="button" data-spring="${j}">${seizoenLabel(j)}</button>`).join('')}
+      </div>
+    </section>` : ''}
+    ${vraag ? `<div class="kop-tel" style="padding:0 4px">${lijst.length}
+      ${lijst.length === 1 ? 'duel' : 'duels'} voor “${esc(vraag)}”</div>` : ''}
+    ${jaren.map(j => `
+    <section class="card" id="s${j}">
+      <div class="card-head"><h2>${seizoenLabel(j)}</h2>
+        <span class="kop-tel">${perSeizoen[j].length} ${perSeizoen[j].length === 1 ? 'duel' : 'duels'}</span></div>
+      <div style="height:8px"></div>
+      ${perSeizoen[j].map(duelLink).join('')}
+    </section>`).join('')}`;
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-spring]');
+  if (!b) return;
+  const doel = document.getElementById('s' + b.dataset.spring);
+  // Onder de bovenbalk uitkomen, niet erachter.
+  const balk = document.querySelector('.bar').offsetHeight;
+  app.scrollTo({top: doel.offsetTop - balk - 12, behavior: 'smooth'});
+});
+
+if (window.APP){
+  render('');
+  koppelZoekveld(v => { render(v); app.scrollTop = 0; });
+} else {
+  app.innerHTML = zonderData('duels.html');
+}
+</script>
+</body>
+</html>

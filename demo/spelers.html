@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Spelers — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Van de 3016 spelers die je zag zijn er een paar honderd die je echt kent.
+   De lijst begint daarom bij wie je het vaakst zag en toont er vijftig; het
+   zoekveld vindt de rest. */
+.speler .avatar,.speler .avatar-fallback{width:40px; height:40px;}
+.leeg{padding:16px; font-size:13px; color:var(--content-2);}
+</style>
+</head>
+<body>
+
+<div class="bar met-zoek">
+  <div class="bar-titel"><h1 style="padding-left:8px">Spelers</h1></div>
+  <div class="zoekveld">
+    <svg class="loep" viewBox="0 0 18 18" aria-hidden="true">
+      <circle cx="8" cy="8" r="5.5"/><path d="M12.2 12.2 16 16"/></svg>
+    <input id="zoek" type="search" inputmode="search" autocomplete="off"
+           enterkeyhint="search" placeholder="Zoek een speler" aria-label="Zoek een speler">
+    <button class="wis" id="wis" type="button" aria-label="Zoekveld wissen" hidden>✕</button>
+  </div>
+</div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('spelers');
+
+const TOON = 50;
+const S = {vraag: '', sorteer: 'seen'};
+const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => ({id, ...p, zoek: plat(p.n)})) : [];
+
+/* De club waarvoor je hem het vaakst zag, niet de eerste in de lijst. */
+function hoofdclub(p){
+  const t = {};
+  p.m.forEach(r => t[r[1]] = (t[r[1]] || 0) + 1);
+  return Object.entries(t).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+}
+
+function rij(p){
+  const waarde = S.sorteer === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}` : `${p.seen}×`;
+  return `
+    <a class="lijst-rij speler" href="${spelerHref(p.id)}">
+      ${portret(p.img, p.n)}
+      <span class="lijst-main">
+        <span class="lijst-naam">${esc(p.n)}</span>
+        <span class="lijst-sub"><span class="vlag">${vlag(p.c)}</span>
+          ${[POSITIE[p.pos], esc(hoofdclub(p))].filter(Boolean).join(' · ')}</span>
+      </span>
+      <span class="badge">${waarde}</span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`;
+}
+
+function render(){
+  const q = plat(S.vraag);
+  const lijst = ALLE.filter(p => !q || p.zoek.includes(q))
+    .sort((a, b) => (b[S.sorteer] - a[S.sorteer]) || (b.seen - a.seen));
+  const toon = lijst.slice(0, TOON);
+
+  app.innerHTML = `
+  <section class="card">
+    <div class="seg" role="group" aria-label="Sorteer op" style="margin-bottom:8px">
+      <button type="button" data-sorteer="seen" aria-pressed="${S.sorteer === 'seen'}">Vaakst gezien</button>
+      <button type="button" data-sorteer="g" aria-pressed="${S.sorteer === 'g'}">Meeste goals</button>
+    </div>
+    ${toon.length ? toon.map(rij).join('') : `<div class="leeg">Geen speler gevonden voor
+      “${esc(S.vraag)}”.</div>`}
+    <div class="note">${lijst.length > TOON
+      ? `${TOON} van ${getal(lijst.length)} getoond. Zoek om de rest te vinden.`
+      : `${getal(lijst.length)} ${lijst.length === 1 ? 'speler' : 'spelers'}.`}
+      ${S.sorteer === 'g' ? 'Goals die jij zag, niet zijn carrièretotaal.' : ''}</div>
+  </section>`;
+}
+
+app.addEventListener('click', e => {
+  const b = e.target.closest('[data-sorteer]');
+  if (b){ S.sorteer = b.dataset.sorteer; render(); }
+});
+
+if (window.APP && window.SPELERS){
+  render();
+  koppelZoekveld(v => { S.vraag = v; render(); app.scrollTop = 0; });
+} else {
+  app.innerHTML = zonderData('spelers.html');
+}
+</script>
+</body>
+</html>

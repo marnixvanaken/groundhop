@@ -26,6 +26,10 @@ FONTS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">'''
 
 
+SCHERMEN = ["duels.html", "grounds.html", "spelers.html", "meer.html",
+            "wedstrijddetail.html", "stadiondetail.html", "speler.html", "toevoegen.html"]
+
+
 def themas(css):
     """Donkere tokens ook onder data-theme, zodat de keuze op het platform wint."""
     m = re.search(r'@media \(prefers-color-scheme: dark\)\{\n  :root\{\n(.*?)\n  \}\n\}', css, re.S)
@@ -66,6 +70,9 @@ def controleer(doel):
         verwijzingen |= set(re.findall(r'"((?:crests|players|tournaments)/[^"]+)"',
                                        js.read_text(encoding="utf-8")))
 
+    # Een verwijzing die in de pagina wordt samengesteld (${...}) is geen
+    # bestandsnaam; die komt pas bij het klikken tot stand.
+    verwijzingen = {v for v in verwijzingen if "${" not in v}
     ontbreekt = sorted(v for v in verwijzingen if not (doel / v).exists())
     if ontbreekt:
         raise SystemExit("ontbrekende bestanden in de bouw:\n  " + "\n  ".join(ontbreekt))
@@ -77,22 +84,18 @@ def main():
     doel.mkdir(parents=True, exist_ok=True)
     gedeeld = themas((DEMO / "groundhop.css").read_text(encoding="utf-8"))
 
-    # Hoofdpagina: zonder documentskelet, met een naam in plaats van een omschrijving.
-    # Die heet hier index.html, dus ook de verwijzingen naar zichzelf om.
-    eigen, body, _ = onderdelen(DEMO / "wedstrijddetail.html")
-    body = body.replace('href="wedstrijddetail.html"', 'href="index.html"')
+    # Hoofdpagina: Home, zonder documentskelet en met een naam in plaats van
+    # een omschrijving.
+    eigen, body, _ = onderdelen(DEMO / "index.html")
     (doel / "index.html").write_text(
-        f"<title>GroundHop Wedstrijddetail</title>\n{FONTS}\n"
+        f"<title>GroundHop</title>\n{FONTS}\n"
         f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n\n{body}\n",
         encoding="utf-8")
 
     # De andere schermen worden als los bestand geserveerd, dus complete
-    # documenten, met hun verwijzing naar de hoofdpagina omgezet.
-    for bestand, titel in [("stadiondetail.html", "Stadiondetail"),
-                           ("grounds.html", "Grounds"),
-                           ("toevoegen.html", "Toevoegen")]:
-        eigen, body, _ = onderdelen(DEMO / bestand)
-        body = body.replace('href="wedstrijddetail.html"', 'href="index.html"')
+    # documenten.
+    for bestand in SCHERMEN:
+        eigen, body, titel = onderdelen(DEMO / bestand)
         (doel / bestand).write_text(
             '<!DOCTYPE html>\n<html lang="nl">\n<head>\n<meta charset="UTF-8">\n'
             '<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">\n'
@@ -100,7 +103,7 @@ def main():
             f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
             encoding="utf-8")
 
-    for naam in ["groundhop.js", "match-data.js", "venue-data.js", "add-data.js"]:
+    for naam in ["groundhop.js", "app-data.js", "speler-data.js"]:
         shutil.copyfile(DEMO / naam, doel / naam)
 
     # Alle beeldmappen mee, niet alleen de clublogo's: zonder de portretten

@@ -23,31 +23,7 @@
 :root{--on-accent:#ffffff;}
 @media (prefers-color-scheme: dark){:root{--on-accent:#0e1013;}}
 
-/* ── Bovenbalk met twee regels: titel en zoekveld ──────────────────────── */
-:root{--bar-h:calc(102px + env(safe-area-inset-top,0px));}
-.bar{flex-direction:column; align-items:stretch; gap:0; padding:0;
-     padding-top:env(safe-area-inset-top,0px);}
-.bar-titel{display:flex; align-items:center; gap:4px; height:52px; padding:0 8px;}
-.zoekveld{position:relative; margin:0 16px 10px;}
-.zoekveld input{
-  width:100%; height:40px; border:0; border-radius:11px;
-  padding:0 38px;
-  background:var(--card-sunken); color:var(--content);
-  font:inherit; font-size:16px;   /* onder 16px zoomt iOS bij focus in */
-  -webkit-appearance:none; appearance:none;
-}
-.zoekveld input::-webkit-search-decoration,
-.zoekveld input::-webkit-search-cancel-button{-webkit-appearance:none;}
-.zoekveld input::placeholder{color:var(--content-2);}
-.zoekveld .loep{
-  position:absolute; left:12px; top:11px; width:18px; height:18px; pointer-events:none;
-  fill:none; stroke:var(--content-2); stroke-width:2; stroke-linecap:round;
-}
-.wis{
-  position:absolute; right:4px; top:50%; transform:translateY(-50%);
-  width:32px; height:32px; border:0; border-radius:50%; cursor:pointer;
-  background:none; color:var(--content-2); font:inherit; font-size:17px; line-height:1;
-}
+/* De bovenbalk met zoekveld (.bar.met-zoek) staat in groundhop.css. */
 
 /* ── Club in een lijst ─────────────────────────────────────────────────── */
 .club{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
@@ -70,18 +46,8 @@
 .clubkop-sub{font-size:13px; color:var(--content-2); margin-top:3px;}
 .kop-tel{font-size:12px; color:var(--content-2); text-align:right;}
 
-/* Seizoenen als één rij in plaats van 25 kaarten onder elkaar. Ze passen niet
-   allemaal in beeld, en dat hoeft ook niet: de rij schuift. */
-.seizoenen{display:flex; gap:2px; margin:10px 16px 12px; padding:2px;
-           background:var(--card-sunken); border-radius:9px;
-           overflow-x:auto; scrollbar-width:none;}
-.seizoenen::-webkit-scrollbar{display:none;}
-.seizoenen button{
-  flex:none; min-height:32px; padding:0 12px; border:0; border-radius:7px; cursor:pointer;
-  background:none; color:var(--content); font:inherit; font-size:13px; font-weight:600;
-  font-variant-numeric:tabular-nums; white-space:nowrap;
-}
-.seizoenen button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+/* Seizoenen als één schuivende rij (.chips in groundhop.css) in plaats van
+   25 kaarten onder elkaar. */
 
 /* De duelrij zelf staat in groundhop.css, gelijk aan die op Stadiondetail. */
 /* Het bolletje rechts. Groen is al van jou; neutraal is wat je nu aanwijst.
@@ -129,7 +95,7 @@ body.met-cta main{padding-bottom:calc(var(--tab-h) + 80px);}
 </head>
 <body>
 
-<div class="bar">
+<div class="bar met-zoek">
   <div class="bar-titel">
     <button class="back" id="terug" type="button">
       <svg width="11" height="18" viewBox="0 0 11 18" fill="none" stroke="currentColor"
@@ -153,18 +119,21 @@ body.met-cta main{padding-bottom:calc(var(--tab-h) + 80px);}
 <button class="cta" id="cta" type="button" hidden></button>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<nav class="tabbar" aria-label="Hoofdnavigatie">
-  <a href="#"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</a>
-  <a href="wedstrijddetail.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>Duels</a>
-  <a href="grounds.html"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Grounds</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Spelers</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
-</nav>
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
 
+<script src="app-data.js"></script>
 <script src="groundhop.js"></script>
-<script src="add-data.js"></script>
 <script>
-const DATA = window.ADD;
+/* Het echte paneel praat met Transfermarkt. De demo draait op je export: je
+   eigen clubs als zoekresultaat, en per club de seizoenen waarin je hem zag. */
+const DATA = window.APP && {
+  clubs: APP.clubs.map(c => ({...c, seasons: [...new Set(APP.matches
+    .filter(m => m.hid === c.id || m.aid === c.id).map(m => m.season))].sort((a, b) => b - a)})),
+  fixtures: APP.matches.map(m => ({...alsDuel(m), id: m.id, season: m.season,
+                                   home_id: m.hid, away_id: m.aid})),
+  totals: APP.totals,
+};
+tabbalk('');
 const app   = document.getElementById('app');
 const veld  = document.getElementById('zoek');
 const wis   = document.getElementById('wis');
@@ -183,14 +152,6 @@ const S = {
   gekozen: new Set(),
 };
 
-/* Diakrieten weg, zodat 'goahead' ook Go Ahead Eagles vindt en 'munchen'
-   München. */
-const plat = t => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
-                   .replace(/[^a-z0-9]/g, '');
-
-const esc = t => t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-
-const seizoenLabel = j => `${j}/${String(j + 1).slice(2)}`;
 
 function zoekClubs(vraag){
   const q = plat(vraag);
@@ -267,13 +228,12 @@ const duelsVan = (club, jaar) => DATA.fixtures.filter(
 function duelRij(f){
   const mijn = S.demo === 'mijn';
   const aan  = S.gekozen.has(f.id);
-  const m = {...f, home_score: null, away_score: null};   // f.score is al een tekst
-  if (mijn) return duel(m, {
+  if (mijn) return duel(f, {
     tag: 'div',
     attrs: ` aria-label="${f.home} tegen ${f.away}, staat in je verzameling"`,
     eind: '<span class="bol mijn" aria-hidden="true">✓</span>',
   });
-  return duel(m, {
+  return duel(f, {
     tag: 'button',
     attrs: ` type="button" aria-pressed="${aan}" data-duel="${f.id}"`,
     eind: `<span class="bol ${aan ? 'aan' : 'leeg'}" aria-hidden="true">${aan ? '✓' : ''}</span>`,
@@ -310,7 +270,7 @@ function clubscherm(){
         <h2>Speelschema</h2>
         <span class="kop-tel">${kop}</span>
       </div>
-      <div class="seizoenen" role="group" aria-label="Seizoen">
+      <div class="chips" role="group" aria-label="Seizoen">
         ${c.seasons.map(j => `
           <button type="button" data-seizoen="${j}" aria-pressed="${j === jaar}">
             ${seizoenLabel(j)}</button>`).join('')}
@@ -329,7 +289,7 @@ function clubscherm(){
 function render(){
   app.innerHTML = S.club ? clubscherm() : zoekscherm();
   wis.hidden = !S.vraag;
-  terugLabel.textContent = S.club ? 'Zoeken' : 'Grounds';
+  terugLabel.textContent = S.club ? 'Zoeken' : (TITELS[vorigeScherm()] || 'Duels');
   document.getElementById('titel').textContent = S.club ? 'Speelschema' : 'Toevoegen';
 
   bijwerken();
@@ -364,13 +324,14 @@ wis.addEventListener('click', leeg);
 
 terug.addEventListener('click', () => {
   if (S.club){ S.club = null; S.gekozen.clear(); render(); }
-  else { location.href = 'grounds.html'; }
+  else if (vorigeScherm() && history.length > 1) history.back();
+  else location.href = 'duels.html';
 });
 
 app.addEventListener('click', e => {
-  const club = e.target.closest('[data-club]');
-  if (club){
-    S.club = DATA.clubs.find(c => c.id === Number(club.dataset.club));
+  const knop = e.target.closest('[data-club]');
+  if (knop){
+    S.club = DATA.clubs.find(c => c.id === Number(knop.dataset.club));
     S.seizoen = S.club.seasons[0];
     S.gekozen.clear();
     veld.value = ''; S.vraag = '';
@@ -420,8 +381,7 @@ cta.addEventListener('click', () => {
 if (DATA && DATA.clubs && DATA.clubs.length){
   render();
 } else {
-  app.innerHTML = '<div class="card"><div class="note">Geen data gevonden. '
-    + 'Draai <code>python3 demo/build_add_data.py</code>.</div></div>';
+  app.innerHTML = zonderData('toevoegen.html');
 }
 </script>
 </body>

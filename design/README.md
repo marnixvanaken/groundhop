@@ -126,6 +126,35 @@ Toestanden die bij elk scherm horen:
 - [ ] Leeg, laden, fout
 - [ ] Ontbrekende velden: geen publiek, geen scheidsrechter, geen stadionnaam
 
+## De demo
+
+Een werkende demo van alle schermen in `demo/`, gebouwd uit je eigen export.
+Elke wedstrijd, elk stadion en elke speler is aan te klikken.
+
+```bash
+python3 demo/build_app_data.py     # data uit data/dashboard_data.json
+python3 server.py                  # daarna localhost:4000/demo/
+```
+
+| Tab | Scherm | Wat |
+|---|---|---|
+| Home | `index.html` | Je verzameling in tellers, het laatste duel, duels per seizoen, vaakst gezien, records |
+| Duels | `duels.html` | Alle duels per seizoen, zoeken op club, stadion of competitie |
+| | `wedstrijddetail.html#id=…` | Uitslag, jouw tellers, goals, opstelling, vorige en volgende |
+| Grounds | `grounds.html` | Kaart en lijst per land |
+| | `stadiondetail.html#v=…` | Eén scherm voor 94 bezoeken en voor één avond |
+| Spelers | `spelers.html` | Vaakst gezien of meeste goals, zoeken in alle spelers |
+| | `speler.html#id=…` | Hoe vaak, voor wie, mijlpalen, zijn duels |
+| Meer | `meer.html` | Toevoegen, competities, clubs, scheidsrechters, over de data |
+| | `toevoegen.html` | Club zoeken, seizoen kiezen, duels aanvinken |
+
+Gedeeld in `groundhop.css` en `groundhop.js`: tokens, de tabbalk, de terugknop
+(die het vorige scherm noemt), de duelrij, de seizoensreeks en de ranglijst.
+Parameters staan achter de `#`, omdat een statische host een querystring kan
+weggooien.
+
+Clubs hebben nog geen eigen scherm; ze staan als lijst op Home en Meer.
+
 ## Wedstrijd toevoegen
 
 Het oude paneel (`TabZoeken` in `dashboard.html`) liep in drie stappen: eerst
@@ -167,7 +196,7 @@ definitie allemaal bijgewoond, dus de schakelaar onderaan de kaart zet de lijst
 in de andere toestand. Er wordt niets verzonnen en niets opgeslagen.
 
 ```bash
-python3 demo/build_add_data.py     # schrijft demo/add-data.js
+python3 demo/build_app_data.py     # schrijft demo/app-data.js en demo/speler-data.js
 ```
 
 ## Figma-opzet

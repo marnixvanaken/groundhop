@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Speler — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Een speler zoals jij hem zag: hoe vaak, voor wie, en welke goals. Zijn
+   carrière staat op elke voetbalsite; dit scherm gaat over jouw deel ervan. */
+.kop{padding:20px 16px 6px; text-align:center;}
+.kop .avatar,.kop .avatar-fallback{width:88px; height:88px; margin:0 auto 10px; font-size:26px;}
+.kop img.avatar{display:block;}
+.kop h2{font-family:var(--display); font-size:24px; font-weight:700; letter-spacing:-0.02em;
+  line-height:1.15;}
+.kop p{font-size:13px; color:var(--content-2); margin-top:4px;}
+.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
+.drie{display:grid; grid-template-columns:repeat(3,1fr);}
+.drie > div{padding:12px 16px; min-width:0;}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('spelers');
+document.getElementById('bar').innerHTML = terugknop('Spelers', 'spelers.html') + '<h1>Speler</h1>';
+
+function render(){
+  const id = param('id') && SPELERS[param('id')] ? param('id')
+           : Object.keys(SPELERS).sort((a, b) => SPELERS[b].seen - SPELERS[a].seen)[0];
+  const p = SPELERS[id];
+  document.title = `${p.n} — GroundHop`;
+
+  // Zijn wedstrijden, nieuwste eerst, met wat hij erin deed.
+  const rijen = p.m.map(r => ({m: wedstrijd(r[0]), team: r[1], min: r[2], g: r[3], a: r[4],
+                               basis: !!r[5], rating: r[6]}))
+    .filter(x => x.m).sort((a, b) => b.m.date.localeCompare(a.m.date));
+  const eerste = rijen[rijen.length - 1], laatste = rijen[0];
+  const perClub = {};
+  rijen.forEach(x => perClub[x.team] = (perClub[x.team] || 0) + 1);
+  const basis = rijen.filter(x => x.basis).length;
+  const minuten = rijen.reduce((s, x) => s + (x.min || 0), 0);
+  const eersteGoal = [...rijen].reverse().find(x => x.g > 0);
+  const jaar = leeftijd(p.dob);
+  const toon = rijen.slice(0, 8);
+
+  const mijlpaal = (x, label, extra) => x ? `
+    <a class="row" href="${wedstrijdHref(x.m.id)}">
+      <div class="row-main">
+        <div class="row-label">${label}</div>
+        <div class="row-value">${esc(club(x.m.hid).name)} – ${esc(club(x.m.aid).name)}</div>
+        <div class="row-label">${datum(x.m.date)}${extra ? ' · ' + extra : ''}</div>
+      </div>
+      <div class="chev" aria-hidden="true">›</div>
+    </a>` : '';
+
+  app.innerHTML = `
+  <section class="card">
+    <div class="kop">
+      ${portret(p.img, p.n)}
+      <h2>${esc(p.n)}</h2>
+      <p><span class="vlag">${vlag(p.c)}</span>
+        ${[POSITIE[p.pos], jaar ? jaar + ' jaar' : null].filter(Boolean).join(' · ')}</p>
+    </div>
+    <div class="tally" style="margin-top:12px">
+      <div><b class="num">${p.seen}×</b><span>gezien</span></div>
+      <div><b class="num">${p.g}</b><span>goals gezien</span></div>
+      <div><b class="num">${p.as}</b><span>assists gezien</span></div>
+    </div>
+    <div class="span">${rijen.length > 1
+      ? `${datum(eerste.m.date)} &nbsp;—&nbsp; ${datum(laatste.m.date)}`
+      : datum(laatste.m.date, true)}</div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Voor wie je hem zag</h2></div>
+    ${ranglijst(Object.entries(perClub).sort((a, b) => b[1] - a[1]).map(([naam, n]) => {
+      const c = clubOpNaam(naam);
+      return {name: esc(naam), count: n, beeld: logo(c?.crest, naam, true)};
+    }))}
+    <div class="drie" style="border-top:0.5px solid var(--separator)">
+      <div><div class="row-label">In de basis</div><div class="row-value">${basis}×</div></div>
+      <div><div class="row-label">Ingevallen</div><div class="row-value">${rijen.length - basis}×</div></div>
+      <div><div class="row-label">Minuten</div><div class="row-value">${getal(minuten)}</div></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Mijlpalen</h2></div>
+    <div style="height:6px"></div>
+    ${mijlpaal(eerste, 'Eerste keer gezien', esc(eerste.team))}
+    ${mijlpaal(eersteGoal, 'Eerste goal die je zag')}
+    ${rijen.length > 1 ? mijlpaal(laatste, 'Laatste keer gezien', esc(laatste.team)) : ''}
+  </section>
+
+  <section class="card" id="duels">
+    <div class="card-head"><h2>Duels</h2><h2>${rijen.length}</h2></div>
+    <div style="height:8px"></div>
+    ${toon.map(x => duelLink(x.m)).join('')}
+    ${rijen.length > toon.length
+      ? `<button class="meer-knop" type="button" id="alle">Alle ${rijen.length} duels</button>` : ''}
+  </section>`;
+
+  const alle = document.getElementById('alle');
+  if (alle) alle.addEventListener('click', () => {
+    alle.insertAdjacentHTML('beforebegin', rijen.slice(toon.length).map(x => duelLink(x.m)).join(''));
+    alle.remove();
+  });
+}
+
+if (window.APP && window.SPELERS){
+  render();
+  window.addEventListener('hashchange', () => { render(); app.scrollTop = 0; });
+} else {
+  app.innerHTML = zonderData('speler.html');
+}
+</script>
+</body>
+</html>

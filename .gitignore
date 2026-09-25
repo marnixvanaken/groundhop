@@ -27,9 +27,8 @@ package-lock.json
 # Afgeleid uit data/dashboard_data.json en img/ door de scripts in demo/.
 # Deze horen niet in git: wie een andere bron draait genereert andere inhoud,
 # en dan botst elke pull op een bestand dat niemand met de hand schrijft.
-demo/match-data.js
-demo/venue-data.js
+demo/app-data.js
+demo/speler-data.js
 demo/crests/
 demo/players/
 demo/tournaments/
-demo/add-data.js

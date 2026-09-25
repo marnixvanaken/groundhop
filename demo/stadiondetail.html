@@ -5,71 +5,27 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
-<title>Stadiondetail — GroundHop</title>
+<title>Stadion — GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
 <style>
-/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css. */
-.demo{
-  display:flex; align-items:center; gap:8px;
-  font-size:11px; color:var(--content-2); letter-spacing:0.04em; text-transform:uppercase;
-}
-.demo .seg{margin:0; flex:1;}
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
-/* ── Kop ───────────────────────────────────────────────────────────────── */
+   Eén scherm voor twee soorten stadions: waar je 94 keer kwam en waar je één
+   avond was. De tellerband houdt dezelfde vorm maar verandert van betekenis,
+   en onderdelen die bij één bezoek niets zeggen (de seizoensreeks) vallen weg. */
+
 .venue-head{padding:18px 16px 4px; text-align:center;}
-.venue-head h2{font-size:24px; font-weight:700; letter-spacing:-0.02em; line-height:1.15;}
+.venue-head h2{font-family:var(--display); font-size:24px; font-weight:700;
+  letter-spacing:-0.02em; line-height:1.15;}
 .venue-head p{font-size:13px; color:var(--content-2); margin-top:3px;}
-.span{
-  text-align:center; padding:0 16px 14px;
-  font-size:12px; color:var(--content-2);
-}
+.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
 
-/* ── Seizoensreeks. Eén reeks, dus één kleur en geen legenda: de titel
-      noemt hem al. Alleen het hoogste seizoen krijgt een eigen label,
-      de rest staat in de aria-tekst per staaf. ───────────────────────── */
-.chart{padding:14px 16px 4px;}
-.bars{
-  display:grid; grid-auto-flow:column; grid-auto-columns:1fr;
-  gap:2px;                       /* 2px tussenruimte tussen aangrenzende staven */
-  align-items:end; height:84px;
-}
-.bars > div{display:flex; flex-direction:column; justify-content:flex-end; height:100%; gap:4px;}
-.bar-fill{
-  background:var(--accent);
-  border-radius:4px 4px 0 0;     /* alleen het dataeinde is afgerond */
-  min-height:2px;
-}
-.bar-fill.leeg{background:var(--separator);}
-.bar-top{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:11px; font-weight:700; color:var(--content); text-align:center;
-  height:14px;
-}
-.bar-axis{
-  display:grid; grid-auto-flow:column; grid-auto-columns:1fr; gap:2px;
-  border-top:0.5px solid var(--separator); padding-top:5px; margin-top:4px;
-}
-.bar-axis span{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:10px; color:var(--content-2); text-align:center;
-}
+.drie{display:grid; grid-template-columns:repeat(3,1fr);}
+.drie > div{padding:12px 16px; min-width:0;}
 
-/* ── Gerangschikte lijst met verhoudingsbalkje ─────────────────────────── */
-.rank{padding:8px 16px 4px;}
-.rank-row{display:flex; align-items:center; gap:8px; padding:6px 0;}
-.rank-row .naam{flex:1; font-size:14px; min-width:0; overflow-wrap:break-word;}
-.aantal{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:14px; font-weight:600; color:var(--content-2);
-}
-.rank-bar{height:4px; border-radius:2px; background:var(--accent-soft);
-  margin:2px 0 10px;}
-.rank-bar i{display:block; height:100%; border-radius:2px; background:var(--accent);}
-
-/* De duelrij staat in groundhop.css: hij is op elk scherm dezelfde. */
 .solo{padding:16px; display:block; color:inherit; text-decoration:none;}
 .solo-crests{display:flex; gap:10px; margin-bottom:10px;}
 .solo .teams{font-size:19px; font-weight:600; line-height:1.25;}
@@ -81,218 +37,161 @@
 </head>
 <body>
 
-<div class="bar">
-  <a class="back" href="grounds.html" aria-label="Terug naar Grounds">
-    <svg width="11" height="18" viewBox="0 0 11 18" fill="none" aria-hidden="true">
-      <path d="M9.5 1.5 2 9l7.5 7.5" stroke="currentColor" stroke-width="2.2"
-            stroke-linecap="round" stroke-linejoin="round"/>
-    </svg>
-    Grounds
-  </a>
-  <h1>Stadion</h1>
-</div>
+<div class="bar" id="bar"></div>
 
 <main id="app"></main>
 
-<nav class="tabbar" aria-label="Hoofdnavigatie">
-  <a href="#"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</a>
-  <a href="wedstrijddetail.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>Duels</a>
-  <a href="grounds.html"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Grounds</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Spelers</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
-</nav>
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
 
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
 <script src="groundhop.js"></script>
-<script src="venue-data.js"></script>
 <script>
-const DATA = window.VENUES;
 const app = document.getElementById('app');
+tabbalk('grounds');
+document.getElementById('bar').innerHTML = terugknop('Grounds', 'grounds.html') + '<h1>Stadion</h1>';
 
-
-// ── De tellerband. Bij veel bezoeken telt hij op, bij één bezoek beschrijft
-//    hij die ene avond. Zelfde vorm, andere betekenis.
-function tellers(v){
-  const cellen = v.visits === 1
-    ? [[getal(v.visits) + '×', 'bezoek'],
-       [getal(v.goals), 'goals gezien'],
-       [getal(v.attendance_max), 'toeschouwers']]
-    : [[getal(v.visits) + '×', 'bezoeken'],
-       [getal(v.goals), 'goals gezien'],
-       [getal(v.goals_per_match), 'per duel']];
-  return `<div class="tally">${cellen.map(([waarde, label]) => `
-    <div><b class="num">${waarde}</b><span>${label}</span></div>`).join('')}</div>`;
+/* Bijna alles wordt hier afgeleid: de bron geeft per stadion maar zeven
+   velden. Goals, clubs, spelers, toernooien en scheidsrechters komen uit de
+   wedstrijden op dat adres, de posities uit de vergelijking met de rest. */
+function bereken(v){
+  const ms = APP.matches.filter(m => m.venue === v.key);
+  const ids = new Set(ms.map(m => m.id));
+  const tel = lijst => {
+    const t = {};
+    lijst.forEach(k => t[k] = (t[k] || 0) + 1);
+    return Object.entries(t).sort((a, b) => b[1] - a[1]);
+  };
+  const goals = ms.reduce((s, m) => s + m.goals.length, 0);
+  const publiek = ms.map(m => m.att).filter(Boolean);
+  const spelers = Object.values(SPELERS).filter(p => p.m.some(r => ids.has(r[0]))).length;
+  const metPubliek = APP.venues.filter(x => x.max_att).sort((a, b) => b.max_att - a.max_att);
+  return {
+    ms, goals, spelers,
+    eerst: v.first || ms[ms.length - 1]?.date,
+    laatst: v.last || ms[0]?.date,
+    perDuel: ms.length ? (goals / ms.length).toFixed(1).replace('.', ',') : '—',
+    clubs: tel(ms.flatMap(m => [m.hid, m.aid])),
+    comps: tel(ms.map(m => m.t)),
+    refs: new Set(ms.map(m => m.ref).filter(Boolean)).size,
+    publiekBekend: publiek.length,
+    publiekMax: publiek.length ? Math.max(...publiek) : v.max_att,
+    rangBezoek: APP.venues.indexOf(v) + 1,
+    rangPubliek: v.max_att ? metPubliek.indexOf(v) + 1 : null,
+    reeks: seizoensreeks(ms.map(m => m.date)),
+  };
 }
 
-// ── Seizoensreeks: één reeks, één kleur, geen legenda. Alleen het hoogste
-//    seizoen krijgt een zichtbaar getal; elke staaf draagt zijn waarde in
-//    de aria-tekst, zodat de reeks ook zonder kleur of muis leesbaar is.
-function seizoenen(v){
-  if (v.season_bars.length < 2) return '';
-  const max = Math.max(...v.season_bars.map(b => b.value));
-  return `
-  <section class="card">
-    <div class="card-head"><h2>Duels per seizoen</h2><h2>${v.season_bars.length} seizoenen</h2></div>
-    <div class="chart">
-      <div class="bars" role="img"
-           aria-label="Duels per seizoen: ${v.season_bars.map(b => `${b.name} ${b.value}`).join(', ')}">
-        ${v.season_bars.map(b => `
-          <div title="${b.name}: ${b.value} duels">
-            <div class="bar-top num">${b.value === max ? b.value : ''}</div>
-            <div class="bar-fill${b.value ? '' : ' leeg'}"
-                 style="height:${b.value ? Math.max(4, b.value / max * 100) : 2}%"></div>
-          </div>`).join('')}
-      </div>
-      <div class="bar-axis">
-        ${v.season_bars.map(b => `<span>${b.name}</span>`).join('')}
-      </div>
-    </div>
-    <div class="note">${v.season_bars.length - v.seasons} seizoen zonder bezoek, als nul in de reeks.</div>
-  </section>`;
+// De tellerband. Bij veel bezoeken telt hij op, bij één bezoek beschrijft hij
+// die ene avond. Zelfde vorm, andere betekenis.
+function tellers(v, b){
+  const cellen = b.ms.length === 1
+    ? [['1×', 'bezoek'], [getal(b.goals), 'goals gezien'], [getal(b.publiekMax), 'toeschouwers']]
+    : [[getal(b.ms.length) + '×', 'bezoeken'], [getal(b.goals), 'goals gezien'], [b.perDuel, 'per duel']];
+  return `<div class="tally">${cellen.map(([w, l]) => `
+    <div><b class="num">${w}</b><span>${l}</span></div>`).join('')}</div>`;
 }
 
-function ranglijst(titel, rijen, rechts){
-  if (!rijen.length) return '';
-  const max = Math.max(...rijen.map(r => r.count));
-  return `
-  <section class="card">
-    <div class="card-head"><h2>${titel}</h2>${rechts ? `<h2>${rechts}</h2>` : ''}</div>
-    <div class="rank">
-      ${rijen.map(r => `
-        <div>
-          <div class="rank-row">
-            ${compLogo(r.logo)}
-            <span class="naam">${comp(r.name)}</span>
-            <span class="aantal num">${r.count}×</span>
-          </div>
-          <div class="rank-bar"><i style="width:${r.count / max * 100}%"></i></div>
-        </div>`).join('')}
-    </div>
-  </section>`;
-}
-
-function duels(v){
-  if (v.visits === 1){
-    const m = v.matches[0];
+function duels(b){
+  if (b.ms.length === 1){
+    const m = b.ms[0], h = club(m.hid), a = club(m.aid);
     return `
     <section class="card">
       <div class="card-head"><h2>Dat ene duel</h2></div>
-      <a class="solo" href="wedstrijddetail.html">
-        <div class="solo-crests">${logo(m.home_crest, m.home)}${logo(m.away_crest, m.away)}</div>
-        <div class="teams">${m.home}<br>${m.away}</div>
-        <div class="uitslag num">${m.home_score} – ${m.away_score}</div>
-        <div class="duel-meta">${comp(m.tournament)} · ${datum(m.date, true)}</div>
+      <a class="solo" href="${wedstrijdHref(m.id)}">
+        <div class="solo-crests">${logo(h.crest, h.name)}${logo(a.crest, a.name)}</div>
+        <div class="teams">${esc(h.name)}<br>${esc(a.name)}</div>
+        <div class="uitslag num">${m.hs} – ${m.as}</div>
+        <div class="duel-meta">${esc(comp(m.t))} · ${datum(m.date, true)}</div>
       </a>
-      <div class="row" style="border-top:0.5px solid var(--separator)">
-        <div class="row-main">
-          <div class="row-label">Scheidsrechter</div>
-          <div class="row-value">${m.referee || '—'}</div>
-        </div>
-      </div>
+      ${m.ref ? `<div class="row" style="border-top:0.5px solid var(--separator)">
+        <div class="row-main"><div class="row-label">Scheidsrechter</div>
+        <div class="row-value">${esc(m.ref)}</div></div></div>` : ''}
     </section>`;
   }
+  const toon = b.ms.slice(0, 6);
   return `
-  <section class="card">
-    <div class="card-head"><h2>Laatste duels</h2><h2>${v.visits} totaal</h2></div>
+  <section class="card" id="duels">
+    <div class="card-head"><h2>Laatste duels</h2><h2>${b.ms.length} totaal</h2></div>
     <div style="height:8px"></div>
-    ${v.matches.map(m => duel(m, {attrs: ' href="wedstrijddetail.html"'})).join('')}
+    ${toon.map(duelLink).join('')}
+    ${b.ms.length > toon.length
+      ? `<button class="meer-knop" type="button" id="alle">Alle ${b.ms.length} duels</button>` : ''}
   </section>`;
 }
 
-function render(naam){
-  const v = DATA.venues.find(x => x.name === naam);
-  const t = DATA.totals;
+function render(){
+  const v = stadion(param('v')) || APP.venues[0];
+  const b = bereken(v);
+  document.title = `${v.name} — GroundHop`;
 
   app.innerHTML = `
-  <div class="demo">
-    <span>demo</span>
-    <div class="seg" role="group" aria-label="Kies een ground">
-      ${DATA.venues.map(x => `<button data-venue="${x.name}"
-        aria-pressed="${x.name === naam}">${x.name}</button>`).join('')}
-    </div>
-  </div>
-
   <section class="card">
     <div class="venue-head">
-      <h2>${v.name}</h2>
-      <p>${v.city} · ${v.country}</p>
+      <h2>${esc(v.name)}</h2>
+      <p>${[v.city, v.country].filter(Boolean).map(esc).join(' · ')}</p>
     </div>
-    ${tellers(v)}
-    <div class="span" style="padding-top:14px">
-      ${v.visits === 1
-        ? datum(v.first, true)
-        : `${datum(v.first)} &nbsp;—&nbsp; ${datum(v.last)}`}
+    ${tellers(v, b)}
+    <div class="span">
+      ${b.ms.length === 1 ? datum(b.eerst, true) : `${datum(b.eerst)} &nbsp;—&nbsp; ${datum(b.laatst)}`}
     </div>
   </section>
 
-  ${seizoenen(v)}
-  ${duels(v)}
+  ${b.reeks ? `
+  <section class="card">
+    <div class="card-head"><h2>Duels per seizoen</h2><h2>${b.reeks.rijen.length} seizoenen</h2></div>
+    ${b.reeks.html}
+    ${b.reeks.leeg ? `<div class="note">${b.reeks.leeg === 1 ? '1 seizoen' : b.reeks.leeg + ' seizoenen'}
+      zonder bezoek, als nul in de reeks.</div>` : '<div style="height:10px"></div>'}
+  </section>` : ''}
+
+  ${duels(b)}
 
   <section class="card">
     <div class="card-head"><h2>Wie je er zag</h2></div>
-    <div class="row">
-      <div class="row-main">
-        <div class="row-label">Clubs</div>
-        <div class="row-value">${v.clubs}</div>
-      </div>
-      <div class="row-main">
-        <div class="row-label">Spelers</div>
-        <div class="row-value">${getal(v.players)}</div>
-      </div>
-      <div class="row-main">
-        <div class="row-label">Scheidsrechters</div>
-        <div class="row-value">${v.referees}</div>
-      </div>
+    <div class="drie">
+      <div><div class="row-label">Clubs</div><div class="row-value">${b.clubs.length}</div></div>
+      <div><div class="row-label">Spelers</div><div class="row-value">${getal(b.spelers)}</div></div>
+      <div><div class="row-label">Scheidsrechters</div><div class="row-value">${b.refs}</div></div>
     </div>
-    ${v.clubs_top.slice(0, 3).map(c => `
-      <div class="row">
-        ${logo(c.crest, c.name, true)}
-        <div class="row-main"><div class="row-value">${c.name}</div></div>
-        <div class="aantal num">${c.count}×</div>
-      </div>`).join('')}
+    ${ranglijst(b.clubs.slice(0, 4).map(([id, n]) => {
+      const c = club(Number(id));
+      return {name: esc(c.name), count: n, beeld: logo(c.crest, c.name, true)};
+    }))}
   </section>
 
-  ${ranglijst('Toernooien', v.tournaments)}
+  <section class="card">
+    <div class="card-head"><h2>Competities</h2></div>
+    ${ranglijst(b.comps.slice(0, 4).map(([n, k]) => ({name: esc(comp(n)), count: k})))}
+  </section>
 
   <section class="card">
     <div class="card-head"><h2>In je verzameling</h2></div>
     <div style="height:6px"></div>
-    <div class="row">
-      <div class="row-main">
-        <div class="row-label">Vaakst bezocht</div>
-        <div class="row-value">nr. ${v.rank_visits} van je ${v.venues_total} grounds</div>
-      </div>
-    </div>
-    ${v.rank_attendance ? `
-    <div class="row">
-      <div class="row-main">
-        <div class="row-label">Grootste publiek</div>
-        <div class="row-value">nr. ${v.rank_attendance} · ${getal(v.attendance_max)}</div>
-      </div>
-    </div>` : ''}
-    ${(() => {
-      // Transfermarkt levert het publiek vrijwel altijd; dan valt er niets meer
-      // voor te behouden en hoort die regel er ook niet te staan.
-      const regels = [];
-      if (v.attendance_known < v.visits){
-        regels.push(`Publiekscijfer bekend bij ${v.attendance_known} van de ${v.visits} duels hier.`);
-      }
-      if (t.matches_without_venue){
-        regels.push(`In totaal hebben ${t.matches_without_venue} van je duels geen stadion in de data.`);
-      }
-      return regels.length ? `<div class="note">${regels.join(' ')}</div>` : '';
-    })()}
+    <div class="row"><div class="row-main">
+      <div class="row-label">Vaakst bezocht</div>
+      <div class="row-value">nr. ${b.rangBezoek} van je ${APP.venues.length} grounds</div>
+    </div></div>
+    ${b.rangPubliek ? `<div class="row"><div class="row-main">
+      <div class="row-label">Grootste publiek</div>
+      <div class="row-value">nr. ${b.rangPubliek} · ${getal(v.max_att)}</div>
+    </div></div>` : ''}
+    ${b.publiekBekend < b.ms.length ? `<div class="note">Publiekscijfer bekend bij
+      ${b.publiekBekend} van de ${b.ms.length} duels hier.</div>` : ''}
   </section>`;
 
-  app.querySelectorAll('.seg button').forEach(b => {
-    b.addEventListener('click', () => { render(b.dataset.venue); app.scrollTop = 0; });
+  const alle = document.getElementById('alle');
+  if (alle) alle.addEventListener('click', () => {
+    alle.insertAdjacentHTML('beforebegin', b.ms.slice(6).map(duelLink).join(''));
+    alle.remove();
   });
 }
 
-if (DATA) {
-  render(DATA.venues[0].name);
+if (window.APP && window.SPELERS){
+  render();
+  window.addEventListener('hashchange', () => { render(); app.scrollTop = 0; });
 } else {
-  app.innerHTML = '<div class="card"><div class="note">Geen stadiondata gevonden. '
-    + 'Draai <code>python3 demo/build_venue_data.py</code>.</div></div>';
+  app.innerHTML = zonderData('stadiondetail.html');
 }
 </script>
 </body>

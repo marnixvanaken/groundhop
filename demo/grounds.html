@@ -51,7 +51,8 @@
 .ground + .ground{border-top:0.5px solid var(--separator);}
 .ground-naam{font-size:15px; font-weight:500; min-width:0; overflow-wrap:break-word;}
 .ground-stad{font-size:12px; color:var(--content-2); margin-top:1px;}
-.ground-aantal{
+.ground-aantal{white-space:nowrap;
+  
   font-family:var(--display); font-variant-numeric:tabular-nums;
   font-size:13px; font-weight:600; color:var(--accent);
   background:var(--accent-soft); border-radius:7px; padding:3px 7px;
@@ -62,28 +63,20 @@
 
 <div class="bar">
   <h1 style="padding-left:8px">Grounds</h1>
-  <a class="back" href="toevoegen.html" style="margin-left:auto" aria-label="Wedstrijd toevoegen">
-    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor"
-         stroke-width="2.2" stroke-linecap="round" aria-hidden="true">
-      <path d="M10 4v12M4 10h12"/></svg>
+  <a class="back bar-actie" href="toevoegen.html" aria-label="Wedstrijd toevoegen">
+    <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 4v12M4 10h12"/></svg>
   </a>
 </div>
 
 <main id="app"></main>
 
-<nav class="tabbar" aria-label="Hoofdnavigatie">
-  <a href="#"><svg viewBox="0 0 24 24"><path d="M3 10.5 12 3l9 7.5V21H3z"/></svg>Home</a>
-  <a href="wedstrijddetail.html"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 3v18M3 12h18"/></svg>Duels</a>
-  <a href="grounds.html" aria-current="page"><svg viewBox="0 0 24 24"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Grounds</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.5"/><path d="M5 20c0-3.5 3-6 7-6s7 2.5 7 6"/></svg>Spelers</a>
-  <a href="#"><svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/></svg>Meer</a>
-</nav>
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
 
+<script src="app-data.js"></script>
 <script src="groundhop.js"></script>
-<script src="venue-data.js"></script>
 <script>
-const DATA = window.VENUES;
 const app = document.getElementById('app');
+tabbalk('grounds');
 
 const BREED = 396, HOOG = 300, RAND = 26;
 
@@ -118,8 +111,9 @@ function projectie(punten){
 }
 
 function kaart(){
-  const o = DATA.outline;
-  const binnen = DATA.map.filter(k =>
+  const o = APP.outline;
+  const punten = APP.venues.filter(k => k.lat != null);
+  const binnen = punten.filter(k =>
     k.lon >= o.bbox[0] && k.lon <= o.bbox[2] && k.lat >= o.bbox[1] && k.lat <= o.bbox[3]);
   const p = projectie(binnen);
 
@@ -136,52 +130,54 @@ function kaart(){
     .map(k => {
       const [x, y] = p(k.lon, k.lat);
       const r = 2.5 + 6 * Math.sqrt(k.visits / meest);
-      return `<circle class="stip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${k.name} — ${k.visits}×</title></circle>`;
+      return `<a href="${stadionHref(k.key)}"><circle class="stip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(k.name)} — ${k.visits}×</title></circle></a>`;
     }).join('');
 
-  const buiten = DATA.offmap.length ? `
+  const buiten = APP.offmap.length ? `
     <div class="buiten">
-      <b>${DATA.offmap.length}</b>
-      <span>buiten deze uitsnede: ${DATA.offmap.join(', ')}</span>
+      <b>${APP.offmap.length}</b>
+      <span>buiten deze uitsnede: ${APP.offmap.map(k => esc(stadion(k).name)).join(', ')}</span>
     </div>` : '';
+  const steden = new Set(APP.venues.map(v => v.city).filter(Boolean)).size;
 
   return `
   <section class="card">
     <svg class="kaart" viewBox="0 0 ${BREED} ${HOOG}" role="img"
-         aria-label="Kaart van Europa met ${DATA.map.length} bezochte stadions">
+         aria-label="Kaart van Europa met ${punten.length} bezochte stadions">
       <path class="land" d="${landen}"/>
       ${stippen}
     </svg>
     ${buiten}
     <div class="tally">
-      <div><b class="num">${DATA.totals.venues}</b><span>grounds</span></div>
-      <div><b class="num">${DATA.totals.countries}</b><span>landen</span></div>
-      <div><b class="num">${DATA.totals.cities || '—'}</b><span>steden</span></div>
+      <div><b class="num">${APP.totals.venues}</b><span>grounds</span></div>
+      <div><b class="num">${APP.totals.countries}</b><span>landen</span></div>
+      <div><b class="num">${steden || '—'}</b><span>steden</span></div>
     </div>
   </section>`;
 }
 
 function lijst(){
   // Gegroepeerd op land, het land waar je het vaakst kwam bovenaan, en
-  // daarbinnen het stadion met de meeste bezoeken eerst.
+  // daarbinnen het stadion met de meeste bezoeken eerst. Een stadion zonder
+  // coordinaat heeft geen land; dat komt onderaan onder 'Onbekend'.
   const perLand = {};
-  for (const k of DATA.map) (perLand[k.country] ||= []).push(k);
+  for (const k of APP.venues) (perLand[k.country || 'Onbekend'] ||= []).push(k);
   const landen = Object.entries(perLand)
     .map(([land, rij]) => [land, rij.sort((a, b) => b.visits - a.visits)])
-    .sort((a, b) => b[1].reduce((s, k) => s + k.visits, 0)
-                  - a[1].reduce((s, k) => s + k.visits, 0));
+    .sort((a, b) => (a[0] === 'Onbekend') - (b[0] === 'Onbekend')
+      || b[1].reduce((s, k) => s + k.visits, 0) - a[1].reduce((s, k) => s + k.visits, 0));
 
   return landen.map(([land, rij]) => `
     <section class="card">
       <div class="landkop">
-        <h2>${land}</h2>
+        <h2>${esc(land)}</h2>
         <span>${rij.length} ${rij.length === 1 ? 'ground' : 'grounds'}</span>
       </div>
       ${rij.map(k => `
-        <a class="ground" href="stadiondetail.html">
+        <a class="ground" href="${stadionHref(k.key)}">
           <div>
-            <div class="ground-naam">${k.name}</div>
-            ${k.city ? `<div class="ground-stad">${k.city}</div>` : ''}
+            <div class="ground-naam">${esc(k.name)}</div>
+            ${k.city ? `<div class="ground-stad">${esc(k.city)}</div>` : ''}
           </div>
           <div class="ground-aantal num">${k.visits}×</div>
           <div class="chev" aria-hidden="true">›</div>
@@ -189,11 +185,10 @@ function lijst(){
     </section>`).join('');
 }
 
-if (DATA && DATA.outline) {
+if (window.APP) {
   app.innerHTML = kaart() + lijst();
 } else {
-  app.innerHTML = '<div class="card"><div class="note">Geen kaartdata gevonden. '
-    + 'Draai <code>python3 demo/build_venue_data.py</code>.</div></div>';
+  app.innerHTML = zonderData('grounds.html');
 }
 </script>
 </body>
