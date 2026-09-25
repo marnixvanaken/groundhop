@@ -28,6 +28,7 @@ import argparse
 import json
 import random
 import time
+from datetime import date
 from pathlib import Path
 
 from transfermarkt_poc import BASE, fetch, parse_match
@@ -100,8 +101,32 @@ def haal_wedstrijd(tm_id: int, force: bool = False) -> dict | None:
         return None
     gemist = [r[0] for r in diag.rows if r[1] == "GEMIST"]
     record["_gemist"] = gemist
+
+    # De cache wordt nooit ververst, dus alleen een afgelopen wedstrijd mag
+    # erin. Wie een duel toevoegt op de dag zelf, krijgt anders voorgoed de
+    # voorbeschouwing: geen uitslag, geen opstelling. Nu blijft hij in de
+    # selectie staan en pakt de nachtelijke sync hem op zodra hij gespeeld is.
+    reden = nog_niet_definitief(record)
+    if reden:
+        print(f"    … {reden} — de volgende sync probeert het opnieuw")
+        return None
     pad.write_text(json.dumps(record, ensure_ascii=False, indent=2), "utf-8")
     return record
+
+
+def nog_niet_definitief(record: dict, vandaag: str | None = None) -> str | None:
+    """Een reden als dit record nog niet in de cache mag, anders None.
+
+    Zonder eindstand is de wedstrijd niet gespeeld. Met een eindstand op de dag
+    zelf kan het een tussenstand zijn, en vult Transfermarkt de opstelling en
+    wissels vaak pas later aan. Pas de dag erna is het rapport af.
+    """
+    vandaag = vandaag or date.today().isoformat()
+    if record.get("home_score") is None or record.get("away_score") is None:
+        return "nog geen eindstand"
+    if (record.get("date") or "") >= vandaag:
+        return "gespeeld op de dag zelf"
+    return None
 
 
 def rapporteer(records: list[dict], mapping: dict, origineel: list[dict]):

@@ -66,3 +66,24 @@ const portret = (src, naam) =>
 const compLogo = src => src
   ? `<img class="comp-logo" src="${src}" alt="" loading="lazy" onerror="this.remove()">`
   : '';
+
+/* Eén duel als rij in een lijst, voor elk scherm hetzelfde. Alleen het
+   element en wat er rechts staat mogen verschillen: een link met een pijl,
+   of een knop met een keuzebolletje.
+
+   Een wedstrijd die nog gespeeld moet worden heeft geen uitslag; dan blijft
+   die kolom leeg in plaats van een verzonnen 0–0 te tonen. */
+function duel(m, {tag = 'a', attrs = '', eind = '<span class="chev" aria-hidden="true">›</span>'} = {}){
+  const uitslag = m.home_score != null && m.away_score != null
+    ? `${m.home_score}–${m.away_score}` : (m.score || '');
+  return `
+    <${tag} class="duel"${attrs}>
+      <span class="duel-crests">${logo(m.home_crest, m.home, true)}${logo(m.away_crest, m.away, true)}</span>
+      <span class="duel-main">
+        <span class="duel-teams">${m.home} – ${m.away}</span>
+        <span class="duel-meta">${datum(m.date)} · ${comp(m.tournament)}</span>
+      </span>
+      <span class="duel-score num">${uitslag}</span>
+      ${eind}
+    </${tag}>`;
+}

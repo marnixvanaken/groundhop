@@ -150,6 +150,14 @@ Daarnaast een uitweg die er niet was: **Zelf invullen**. Italië–Albanië op h
 EK 2024 hangt aan geen enkele club, dus het clubzoekveld vond het nooit — die
 wedstrijd moest met de hand in de data.
 
+Zoekresultaten staan in twee groepen: **In je verzameling** (lokaal, meteen) en
+**Alle clubs** (Transfermarkt, via `/tm/zoek`). Zo vind je ook een club die je
+nog nooit zag. De demo kan Transfermarkt niet bereiken en zegt dat.
+
+Een duel ziet er in elke lijst hetzelfde uit: `duel()` in `demo/groundhop.js`,
+met de stijl in `groundhop.css`. Alleen wat helemaal rechts staat verschilt —
+een pijl op Stadiondetail, een keuzebolletje hier.
+
 Groen blijft één ding betekenen. Een duel dat al in je verzameling zit heeft een
 groen vinkje; een duel dat je nu aanwijst krijgt een neutraal bolletje. Pas de
 knop die ze toevoegt is weer groen, want die maakt er geschiedenis van.

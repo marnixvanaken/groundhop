@@ -83,18 +83,7 @@
 }
 .seizoenen button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
 
-/* ── Een duel in het speelschema ───────────────────────────────────────── */
-.duel{display:grid; grid-template-columns:auto 1fr auto; gap:12px; align-items:center;
-      width:100%; padding:10px 16px; min-height:56px; border:0; background:none;
-      color:inherit; font:inherit; text-align:left;}
-.duel + .duel{border-top:0.5px solid var(--separator);}
-button.duel{cursor:pointer;}
-.duel-logos{display:flex; flex-direction:column; gap:3px;}
-.duel-main{min-width:0;}
-.duel-teams{display:block; font-size:15px; font-weight:500; overflow-wrap:break-word;}
-.duel-meta{display:block; font-size:12px; color:var(--content-2); margin-top:2px;
-           overflow-wrap:break-word;}
-
+/* De duelrij zelf staat in groundhop.css, gelijk aan die op Stadiondetail. */
 /* Het bolletje rechts. Groen is al van jou; neutraal is wat je nu aanwijst.
    Daarmee blijft groen één ding betekenen, ook op dit scherm. */
 .bol{width:26px; height:26px; border-radius:50%; flex-shrink:0;
@@ -199,6 +188,8 @@ const S = {
 const plat = t => t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
                    .replace(/[^a-z0-9]/g, '');
 
+const esc = t => t.replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
 const seizoenLabel = j => `${j}/${String(j + 1).slice(2)}`;
 
 function zoekClubs(vraag){
@@ -247,18 +238,27 @@ function zoekscherm(){
       </section>` + handmatig();
   }
   const treffers = zoekClubs(S.vraag);
-  if (!treffers.length){
-    return `
-      <section class="card">
-        <div class="note" style="border-top:0">Geen club gevonden voor
-          “${S.vraag}”.</div>
-      </section>` + handmatig();
-  }
+  const eigen = treffers.length ? `
+    <section class="card">
+      <div class="card-head"><h2>In je verzameling</h2>
+        <span class="kop-tel">${treffers.length === 1 ? '1 club' : treffers.length + ' clubs'}</span></div>
+      ${treffers.map(clubRij).join('')}
+    </section>` : '';
+  return eigen + transfermarkt() + handmatig();
+}
+
+/* Je eigen clubs staan er meteen; alle andere komen van Transfermarkt. Zo
+   vind je ook een club die je nog nooit zag. In de app doet /tm/zoek dat
+   werk. Deze demo kan Transfermarkt niet bereiken, en dat staat er gewoon —
+   een verzonnen zoekresultaat zou meer beloven dan het scherm kan. */
+function transfermarkt(){
   return `
     <section class="card">
-      <div class="card-head"><h2>${treffers.length === 1 ? '1 club' : treffers.length + ' clubs'}</h2></div>
-      ${treffers.map(clubRij).join('')}
-    </section>` + handmatig();
+      <div class="card-head"><h2>Alle clubs</h2><span class="kop-tel">Transfermarkt</span></div>
+      <div class="note" style="border-top:0">In de app verschijnt hier elke club die
+        bij “${esc(S.vraag)}” past, ook als je die nog nooit zag. Deze demo kan
+        Transfermarkt niet bereiken.</div>
+    </section>`;
 }
 
 const duelsVan = (club, jaar) => DATA.fixtures.filter(
@@ -267,24 +267,17 @@ const duelsVan = (club, jaar) => DATA.fixtures.filter(
 function duelRij(f){
   const mijn = S.demo === 'mijn';
   const aan  = S.gekozen.has(f.id);
-  const bol  = mijn ? `<span class="bol mijn" aria-hidden="true">✓</span>`
-                    : `<span class="bol ${aan ? 'aan' : 'leeg'}" aria-hidden="true">${aan ? '✓' : ''}</span>`;
-  const tag  = mijn ? 'div' : 'button';
-  const extra = mijn
-    ? ' aria-label="' + `${f.home} tegen ${f.away}, staat in je verzameling` + '"'
-    : ` type="button" aria-pressed="${aan}" data-duel="${f.id}"`;
-  return `
-    <${tag} class="duel"${extra}>
-      <span class="duel-logos">
-        ${logo(f.home_crest, f.home, true)}
-        ${logo(f.away_crest, f.away, true)}
-      </span>
-      <span class="duel-main">
-        <span class="duel-teams">${f.home} – ${f.away}</span>
-        <span class="duel-meta">${datum(f.date)} · ${comp(f.tournament)} · ${f.score}</span>
-      </span>
-      ${bol}
-    </${tag}>`;
+  const m = {...f, home_score: null, away_score: null};   // f.score is al een tekst
+  if (mijn) return duel(m, {
+    tag: 'div',
+    attrs: ` aria-label="${f.home} tegen ${f.away}, staat in je verzameling"`,
+    eind: '<span class="bol mijn" aria-hidden="true">✓</span>',
+  });
+  return duel(m, {
+    tag: 'button',
+    attrs: ` type="button" aria-pressed="${aan}" data-duel="${f.id}"`,
+    eind: `<span class="bol ${aan ? 'aan' : 'leeg'}" aria-hidden="true">${aan ? '✓' : ''}</span>`,
+  });
 }
 
 function kopTekst(){
@@ -389,13 +382,13 @@ app.addEventListener('click', e => {
   const jaar = e.target.closest('[data-seizoen]');
   if (jaar){ S.seizoen = Number(jaar.dataset.seizoen); S.gekozen.clear(); render(); return; }
 
-  const duel = e.target.closest('[data-duel]');
-  if (duel){
-    const id = Number(duel.dataset.duel);
+  const rij = e.target.closest('[data-duel]');
+  if (rij){
+    const id = Number(rij.dataset.duel);
     const aan = !S.gekozen.has(id);
     aan ? S.gekozen.add(id) : S.gekozen.delete(id);
-    duel.setAttribute('aria-pressed', String(aan));
-    const bol = duel.querySelector('.bol');
+    rij.setAttribute('aria-pressed', String(aan));
+    const bol = rij.querySelector('.bol');
     bol.className = 'bol ' + (aan ? 'aan' : 'leeg');
     bol.textContent = aan ? '✓' : '';
     bijwerken();

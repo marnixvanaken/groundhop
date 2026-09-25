@@ -159,6 +159,28 @@ main > *{width:100%; max-width:428px; flex:none;}
 .vlag{font-size:13px; line-height:1;}
 .comp-logo{width:20px; height:20px; object-fit:contain; flex-shrink:0;}
 
+/* ── Een duel in een lijst ───────────────────────────────────────────────
+   Overal dezelfde rij: twee logo's naast elkaar, de ploegen, datum en
+   competitie eronder, de uitslag rechts. Wat er helemaal rechts staat
+   verschilt per scherm — een pijl naar de wedstrijd, of een bolletje om hem
+   te kiezen — maar de wedstrijd zelf leest overal hetzelfde. */
+.duel{
+  display:grid; grid-template-columns:auto 1fr auto auto; gap:10px; align-items:center;
+  width:100%; padding:10px 16px; min-height:44px;
+  border:0; background:none; color:inherit; font:inherit; text-align:left;
+  text-decoration:none;
+}
+button.duel{cursor:pointer;}
+.duel + .duel{border-top:0.5px solid var(--separator);}
+.duel-crests{display:flex; gap:2px;}
+.duel-main{min-width:0;}
+.duel-teams{display:block; font-size:15px; font-weight:500; overflow-wrap:break-word;}
+.duel-meta{display:block; font-size:12px; color:var(--content-2); margin-top:1px;}
+.duel-score{
+  font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:15px; font-weight:700; white-space:nowrap;
+}
+
 /* ── De tellerband. Groen, want dit gaat over jou. ──────────────────────── */
 .tally{
   display:grid; grid-template-columns:repeat(3,1fr);
