@@ -230,6 +230,17 @@ in de andere toestand. Er wordt niets verzonnen en niets opgeslagen.
 python3 app/build_app_data.py     # schrijft app/app-data.js en app/speler-data.js
 ```
 
+## Nog te ontwikkelen
+
+- **Toevoegen vanaf je telefoon, onderweg.** Nu kan toevoegen alleen als
+  GroundHop op de laptop draait (thuis ook vanaf de telefoon, via
+  `<ip-van-laptop>:4000`). Idee: een verlanglijst op de live site. Je zoekt en
+  tikt *Toevoegen*; de wedstrijd komt op een lijstje op GitHub, en de laptop
+  verwerkt dat lijstje zodra GroundHop draait of 's nachts. Heeft een
+  wachtwoord nodig op de live site. Alternatief: het ophalen helemaal in
+  GitHub Actions, maar het is onzeker of Transfermarkt die servers toelaat.
+- **Zelf invullen** van een wedstrijd die onder geen club valt.
+
 ## Figma-opzet
 
 Pages: `00 · Cover`, `01 · Foundations`, `02 · Components`, `03 · Wireframes`,
