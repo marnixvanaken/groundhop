@@ -25,7 +25,7 @@
   gap:8px; padding:14px 16px 4px;
 }
 .side{display:flex; flex-direction:column; align-items:center; gap:8px;}
-.side{color:inherit; text-decoration:none;}
+.side,.comp-regel{color:inherit; text-decoration:none;}
 .side-name{font-size:13px; font-weight:600; text-align:center; line-height:1.25;}
 .result{
   font-family:var(--display); font-variant-numeric:tabular-nums;
@@ -170,7 +170,7 @@ function render(){
   let html = `
   <section class="card">
     <div class="score-meta">
-      <div class="comp-regel"><span class="comp">${esc(naamComp)}${m.round ? ` · Ronde ${m.round}` : ''}</span></div>
+      <a class="comp-regel" href="${compHref(m.t)}"><span class="comp">${esc(naamComp)}${m.round ? ` · Ronde ${m.round}` : ''}</span></a>
       <div class="date">${datum(m.date, true)}</div>
     </div>
     <div class="score">

@@ -147,12 +147,16 @@ python3 server.py                  # daarna localhost:4000/demo/
 | | `speler.html#id=…` | Hoe vaak, voor wie, mijlpalen, zijn duels |
 | Meer | `meer.html` | Toevoegen, competities, clubs, scheidsrechters, over de data |
 | | `club.html#id=…` | Hoe vaak, winst/gelijk/verlies als jij er was, spelers, topscorers, grounds, tegenstanders |
+| | `competitie.html#t=…` | Jouw duels in een competitie: seizoenen, clubs, topscorers, grounds, records, scheidsrechters |
 | | `toevoegen.html` | Club zoeken, seizoen kiezen, duels aanvinken; `#club=…` opent meteen het speelschema |
 
 Gedeeld in `groundhop.css` en `groundhop.js`: tokens, de tabbalk, de terugknop
 (die het vorige scherm noemt), de duelrij, de seizoensreeks en de ranglijst.
 Parameters staan achter de `#`, omdat een statische host een querystring kan
 weggooien.
+
+Een competitie wisselt van naam met de sponsor ('Eredivisie', 'VriendenLoterij
+Eredivisie'); de databouwer voegt ze samen op competitie-id.
 
 Een club is overal aan te klikken: op Home, Meer, het scorebord van een wedstrijd, een
 speler en een stadion. Het clubscherm houdt de tab actief waar je vandaan kwam.

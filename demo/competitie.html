@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Competitie — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Een competitie zoals jij hem zag: niet de stand of de uitslagen van
+   iedereen, maar jouw duels erin, de clubs en grounds die daarbij hoorden en
+   de goals die je zag vallen. */
+.kop{padding:20px 16px 6px; text-align:center;}
+.kop .comp-logo{width:64px; height:64px; margin:0 auto 10px; display:block;}
+.kop .embleem{width:64px; height:64px; margin:0 auto 10px; border-radius:16px;
+  display:flex; align-items:center; justify-content:center;
+  background:var(--card-sunken); color:var(--content-2);
+}
+.kop h2{font-family:var(--display); font-size:24px; font-weight:700; letter-spacing:-0.02em;
+  line-height:1.15;}
+.kop p{font-size:13px; color:var(--content-2); margin-top:4px;}
+.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
+.record{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
+  color:inherit; text-decoration:none;}
+.record + .record{border-top:0.5px solid var(--separator);}
+.record-waarde{font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:20px; font-weight:700; min-width:56px;}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('meer', true);
+document.getElementById('bar').innerHTML = terugknop('Meer', 'meer.html') + '<h1>Competitie</h1>';
+
+// Zonder logo een neutrale beker: initialen van een competitienaam ('E',
+// 'BB') lezen als een fout, niet als een embleem.
+const BEKER = `<svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor"
+  stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+  <path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3"/>
+  <path d="M12 14v4M8 20h8"/></svg>`;
+
+const tel = lijst => {
+  const t = new Map();
+  lijst.forEach(k => t.set(k, (t.get(k) || 0) + 1));
+  return [...t].sort((a, b) => b[1] - a[1]);
+};
+
+function render(){
+  const c = APP.comps.find(x => x.name === param('t')) || APP.comps[0];
+  const ms = APP.matches.filter(m => m.t === c.name);
+  const naam = comp(c.name);
+  document.title = `${naam} — GroundHop`;
+
+  const goals = ms.reduce((s, m) => s + m.goals.length, 0);
+  const clubs = tel(ms.flatMap(m => [m.hid, m.aid]));
+  const venues = tel(ms.map(m => m.venue).filter(Boolean));
+  const scorers = tel(ms.flatMap(m => m.goals.filter(g => g.type !== 'ownGoal').map(g => g.pid || g.p)));
+  const refs = tel(ms.map(m => m.ref).filter(Boolean));
+  const reeks = seizoensreeks(ms.map(m => m.date));
+  const seizoenen = new Set(ms.map(m => m.season)).size;
+  const eerste = ms[ms.length - 1], laatste = ms[0];
+  const rang = APP.comps.indexOf(c) + 1;
+  const toon = ms.slice(0, 6);
+
+  // Records binnen deze competitie, zodat ook een kleine competitie iets
+  // eigens laat zien.
+  const metStand = ms.filter(m => m.hs != null && m.as != null);
+  const meeste = metStand.length ? metStand.reduce((b, m) => m.hs + m.as > b.hs + b.as ? m : b) : null;
+  const publiek = ms.filter(m => m.att).reduce((b, m) => !b || m.att > b.att ? m : b, null);
+  const record = (m, waarde, label) => `
+    <a class="record" href="${wedstrijdHref(m.id)}">
+      <span class="record-waarde">${waarde}</span>
+      <span class="lijst-main">
+        <span class="lijst-naam">${label}</span>
+        <span class="lijst-sub">${esc(club(m.hid).name)} – ${esc(club(m.aid).name)} · ${datum(m.date)}</span>
+      </span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>`;
+
+  app.innerHTML = `
+  <section class="card">
+    <div class="kop">
+      ${c.logo ? compLogo(c.logo) : `<div class="embleem" aria-hidden="true">${BEKER}</div>`}
+      <h2>${esc(naam)}</h2>
+      <p>${seizoenen} ${seizoenen === 1 ? 'seizoen' : 'seizoenen'} · nr. ${rang} van je ${APP.comps.length} competities</p>
+    </div>
+    <div class="tally" style="margin-top:12px">
+      <div><b class="num">${ms.length}×</b><span>${ms.length === 1 ? 'duel' : 'duels'}</span></div>
+      <div><b class="num">${getal(goals)}</b><span>goals gezien</span></div>
+      <div><b class="num">${venues.length}</b><span>${venues.length === 1 ? 'ground' : 'grounds'}</span></div>
+    </div>
+    <div class="span">${ms.length > 1
+      ? `${datum(eerste.date)} &nbsp;—&nbsp; ${datum(laatste.date)}` : datum(laatste.date, true)}</div>
+  </section>
+
+  ${reeks ? `
+  <section class="card">
+    <div class="card-head"><h2>Duels per seizoen</h2><h2>${reeks.rijen.length} seizoenen</h2></div>
+    ${reeks.html}
+    ${reeks.leeg ? `<div class="note">${reeks.leeg === 1 ? '1 seizoen' : reeks.leeg + ' seizoenen'}
+      zonder duel, als nul in de reeks.</div>` : '<div style="height:10px"></div>'}
+  </section>` : ''}
+
+  <section class="card">
+    <div class="card-head"><h2>Duels</h2><h2>${ms.length}</h2></div>
+    <div style="height:8px"></div>
+    ${toon.map(duelLink).join('')}
+    ${ms.length > toon.length
+      ? `<button class="meer-knop" type="button" id="alle">Alle ${ms.length} duels</button>` : ''}
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Clubs die je zag</h2><h2>${clubs.length}</h2></div>
+    ${ranglijst(clubs.slice(0, 6).map(([id, n]) => {
+      const k = club(id);
+      return {name: esc(k.name), count: n, beeld: logo(k.crest, k.name, true), href: clubHref(id)};
+    }))}
+  </section>
+
+  ${scorers.length ? `
+  <section class="card">
+    <div class="card-head"><h2>Topscorers die je zag</h2></div>
+    ${ranglijst(scorers.slice(0, 5).map(([k, n]) => {
+      const p = SPELERS[k];
+      return {name: esc(p ? p.n : k), count: n, href: p ? spelerHref(k) : null,
+              beeld: p ? portret(p.img, p.n) : ''};
+    }))}
+  </section>` : ''}
+
+  ${venues.length ? `
+  <section class="card">
+    <div class="card-head"><h2>Waar je ze zag</h2></div>
+    ${ranglijst(venues.slice(0, 5).map(([k, n]) => ({
+      name: esc(stadion(k)?.name || k), count: n, href: stadionHref(k)})))}
+  </section>` : ''}
+
+  ${meeste || publiek ? `
+  <section class="card">
+    <div class="card-head"><h2>Records</h2></div>
+    <div style="height:6px"></div>
+    ${meeste ? record(meeste, meeste.hs + meeste.as, 'Meeste goals in één duel') : ''}
+    ${publiek ? record(publiek, getal(publiek.att), 'Meeste publiek') : ''}
+  </section>` : ''}
+
+  ${refs.length ? `
+  <section class="card">
+    <div class="card-head"><h2>Scheidsrechters</h2><h2>${refs.length}</h2></div>
+    ${ranglijst(refs.slice(0, 3).map(([n, k]) => ({name: esc(n), count: k})))}
+  </section>` : ''}`;
+
+  const alle = document.getElementById('alle');
+  if (alle) alle.addEventListener('click', () => {
+    alle.insertAdjacentHTML('beforebegin', ms.slice(toon.length).map(duelLink).join(''));
+    alle.remove();
+  });
+}
+
+if (window.APP && window.SPELERS){
+  render();
+  window.addEventListener('hashchange', () => { render(); app.scrollTop = 0; });
+} else {
+  app.innerHTML = zonderData('competitie.html');
+}
+</script>
+</body>
+</html>

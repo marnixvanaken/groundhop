@@ -59,7 +59,7 @@ function render(alleClubs){
 
   <section class="card">
     <div class="card-head"><h2>Competities</h2><h2>${APP.comps.length}</h2></div>
-    ${ranglijst(APP.comps.map(c => ({name: esc(comp(c.name)), count: c.count})))}
+    ${ranglijst(APP.comps.map(c => ({name: esc(comp(c.name)), count: c.count, href: compHref(c.name)})))}
   </section>
 
   <section class="card" id="clubs">

@@ -113,13 +113,26 @@ def main():
     for c in clubs.values():
         c["crest"] = crest(c["id"])
 
+    # Een competitie wisselt van naam met de sponsor: 'Eredivisie' en
+    # 'VriendenLoterij Eredivisie' zijn dezelfde, met hetzelfde id. Samenvoegen
+    # op id, en alleen zonder id op de naam. Elke wedstrijd krijgt de naam die
+    # in die groep het vaakst voorkomt, zodat de schermen op één naam groeperen.
+    def sleutel(m):
+        return m.get("tournament_id") or m["tournament"]
+
+    namen = collections.defaultdict(collections.Counter)
+    for m in matches:
+        namen[sleutel(m)][m["tournament"]] += 1
+    naam_van = {k: c.most_common(1)[0][0] for k, c in namen.items()}
+
     comps = {}
     for m in matches:
-        c = comps.setdefault(m["tournament"], {"name": m["tournament"], "id": m.get("tournament_id"),
-                                               "count": 0})
+        naam = naam_van[sleutel(m)]
+        c = comps.setdefault(naam, {"name": naam, "id": m.get("tournament_id"), "count": 0})
         c["count"] += 1
     for c in comps.values():
         c["logo"] = kopieer("tournaments", c["id"], "tournament")
+    samengevoegd = {k: sorted(c) for k, c in namen.items() if len(c) > 1}
 
     def wedstrijd(m):
         v = (m.get("venue") or {}).get("name")
@@ -136,7 +149,7 @@ def main():
             # Transfermarkt laat de ruststand weg na verlenging; dan niets tonen.
             "ht": [ht["home"], ht["away"]] if ht.get("home") is not None
                   and ht.get("away") is not None else None,
-            "t": m["tournament"],
+            "t": naam_van[sleutel(m)],
             "round": m.get("round"),
             "venue": v,
             "att": m.get("attendance"),
@@ -243,6 +256,8 @@ def main():
     foto_lokaal = sum(1 for p in spelers.values() if (p["img"] or "").startswith("players/"))
     print(f"  clublogo's lokaal: {lokaal} van {len(clubs)}; spelersfoto's lokaal: "
           f"{foto_lokaal} van {len(spelers)}")
+    for namen_ in samengevoegd.values():
+        print(f"  één competitie: {' + '.join(namen_)}")
     if zonder_coord:
         print(f"  zonder coordinaat ({len(zonder_coord)}): {', '.join(sorted(zonder_coord))}")
 

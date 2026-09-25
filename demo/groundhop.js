@@ -111,6 +111,7 @@ const wedstrijdHref = id  => `wedstrijddetail.html#id=${id}`;
 const stadionHref   = key => `stadiondetail.html#v=${encodeURIComponent(key)}`;
 const spelerHref    = id  => `speler.html#id=${id}`;
 const clubHref      = id  => `club.html#id=${id}`;
+const compHref      = naam => `competitie.html#t=${encodeURIComponent(naam)}`;
 
 /* Een wedstrijd uit APP in de vorm die duel() leest. */
 function alsDuel(m){
@@ -153,7 +154,7 @@ const TITELS = {
   'index.html': 'Home', 'duels.html': 'Duels', 'grounds.html': 'Grounds',
   'spelers.html': 'Spelers', 'meer.html': 'Meer', 'wedstrijddetail.html': 'Wedstrijd',
   'stadiondetail.html': 'Stadion', 'speler.html': 'Speler', 'toevoegen.html': 'Toevoegen',
-  'club.html': 'Club',
+  'club.html': 'Club', 'competitie.html': 'Competitie',
 };
 
 function vorigeScherm(){
