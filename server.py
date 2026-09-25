@@ -135,24 +135,48 @@ def draai_keten(soort):
     return None
 
 
+_sync_slot = threading.Lock()
+
+
 def run_sync():
-    """Draai de keten van de actieve bron op de achtergrond."""
-    if _sync_status["running"]:
+    """Draai de keten van de actieve bron op de achtergrond.
+
+    Wie toevoegt terwijl er al een ronde loopt, valt buiten die ronde: de sync
+    las de selectie bij zijn start. Zonder vervolg bleef zo'n wedstrijd in de
+    selectie staan (groen vinkje) tot de nachtelijke sync. Daarom zet toevoegen
+    tijdens een ronde de vlag 'opnieuw', en draait hier dan meteen nog een
+    ronde achteraan.
+    """
+    if not _sync_slot.acquire(blocking=False):
+        _sync_status["opnieuw"] = True
         return
-    _sync_status["running"] = True
-    _sync_status["error"] = None
-    _sync_status["bron"] = huidige_bron()
     try:
-        _sync_status["error"] = draai_keten("sync")
-        _sync_status["last"] = time.strftime("%d-%m %H:%M:%S")
+        while True:
+            _sync_status.update(running=True, error=None, opnieuw=False, bron=huidige_bron())
+            try:
+                _sync_status["error"] = draai_keten("sync")
+                _sync_status["last"] = time.strftime("%d-%m %H:%M:%S")
+            except Exception as e:
+                _sync_status["error"] = str(e)
+            if not _sync_status.get("opnieuw"):
+                break
+            print("  ↻ tijdens het ophalen is er iets toegevoegd — nog een ronde")
         # Gelukt en gekoppeld met GitHub: meteen live zetten. Dan hoeft er na
         # het toevoegen niets meer met de hand naar GitHub.
         if not _sync_status["error"]:
             zet_live()
-    except Exception as e:
-        _sync_status["error"] = str(e)
     finally:
         _sync_status["running"] = False
+        _sync_slot.release()
+
+
+def nog_op_te_halen() -> int:
+    """Hoeveel wedstrijden in de selectie nog niet zijn opgehaald."""
+    if huidige_bron() != "transfermarkt":
+        return 0
+    selectie = tm_selectie() or []
+    cache = {p.stem for p in Path("data/tm_match_cache").glob("*.json")}
+    return sum(1 for s in selectie if str(s["match_id"]) not in cache)
 
 
 def zet_live():
@@ -350,7 +374,8 @@ class Handler(SimpleHTTPRequestHandler):
             # pas voor het dashboard als zijn rapport binnen is. Dat duurt
             # seconden per wedstrijd, dus het gaat naar de achtergrond en de
             # knop meldt zich via /api/sync-status.
-            if toegevoegd and not _sync_status["running"]:
+            # Loopt er al een ronde, dan zet run_sync de vlag voor een vervolg.
+            if toegevoegd:
                 threading.Thread(target=run_sync, daemon=True).start()
             self.send_json({"added": len(toegevoegd),
                             "already": len(stond_er_al),
@@ -561,6 +586,15 @@ if __name__ == "__main__":
     print(f"  ─────────────────────────────────")
     print(f"  Open: http://localhost:{PORT}")
     print(f"  Ctrl+C om te stoppen\n")
+    # Staat er nog iets in de selectie dat nooit is opgehaald (toegevoegd vlak
+    # voor afsluiten, of tijdens een lopende ronde), dan nu alsnog.
+    try:
+        wachtend = nog_op_te_halen()
+    except Exception:
+        wachtend = 0
+    if wachtend:
+        print(f"  … {wachtend} wedstrijd(en) in je selectie nog niet opgehaald — nu ophalen\n")
+        threading.Thread(target=run_sync, daemon=True).start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
