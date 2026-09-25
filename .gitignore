@@ -24,11 +24,11 @@ data/tm_selectie.json
 node_modules/
 package-lock.json
 
-# Afgeleid uit data/dashboard_data.json en img/ door de scripts in demo/.
+# Afgeleid uit data/dashboard_data.json en img/ door de scripts in app/.
 # Deze horen niet in git: wie een andere bron draait genereert andere inhoud,
 # en dan botst elke pull op een bestand dat niemand met de hand schrijft.
-demo/app-data.js
-demo/speler-data.js
-demo/crests/
-demo/players/
-demo/tournaments/
+app/app-data.js
+app/speler-data.js
+app/crests/
+app/players/
+app/tournaments/

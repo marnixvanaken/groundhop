@@ -58,6 +58,14 @@ function render(alleClubs){
   </section>
 
   <section class="card">
+    <a class="lijst-rij" href="/dashboard.html">
+      <span class="lijst-main"><span class="lijst-naam">Oud dashboard</span>
+        <span class="lijst-sub">De vorige versie, met zoeken en opslaan via server.py</span></span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>
+  </section>
+
+  <section class="card">
     <div class="card-head"><h2>Competities</h2><h2>${APP.comps.length}</h2></div>
     ${ranglijst(APP.comps.map(c => ({name: esc(comp(c.name)), count: c.count, href: compHref(c.name)})))}
   </section>
@@ -83,8 +91,8 @@ function render(alleClubs){
       <div class="row-value">${datum(APP.generated.slice(0, 10), true)}</div></div></div>` : ''}
     <div class="row"><div class="row-main"><div class="row-label">Periode</div>
       <div class="row-value">${datum(APP.totals.first)} — ${datum(APP.totals.last)}</div></div></div>
-    <div class="note">Ontwerpdemo, gebouwd uit je eigen export met
-      <code>demo/build_app_data.py</code>. Er wordt niets opgeslagen.</div>
+    <div class="note">Gebouwd uit je eigen export met <code>app/build_app_data.py</code>.
+      Wedstrijden toevoegen gaat nog via het dashboard op je computer.</div>
   </section>`;
   const alle = document.getElementById('alle');
   if (alle) alle.addEventListener('click', () => {

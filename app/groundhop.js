@@ -94,7 +94,7 @@ const esc = t => String(t ?? '').replace(/[&<>"]/g,
 
 /* ── Data ────────────────────────────────────────────────────────────────
    Alles komt uit window.APP (app-data.js) en window.SPELERS (speler-data.js),
-   gebouwd door demo/build_app_data.py. Opzoeken gebeurt lui, zodat de
+   gebouwd door app/build_app_data.py. Opzoeken gebeurt lui, zodat de
    volgorde van de scripttags er niet toe doet. */
 let _clubs, _wedstrijden;
 function club(id){
@@ -240,8 +240,8 @@ function ranglijst(rijen){
 
 function zonderData(bestand){
   return `<div class="card"><div class="note" style="border-top:0">Geen data gevonden.
-    Draai <code>python3 demo/build_app_data.py</code> en open deze pagina via
-    <code>python3 server.py</code> op localhost:4000/demo/${bestand}.</div></div>`;
+    Draai <code>python3 app/build_app_data.py</code> en open deze pagina via
+    <code>python3 server.py</code> op localhost:4000/app/${bestand}.</div></div>`;
 }
 
 /* Diakrieten weg en alleen letters en cijfers, zodat 'munchen' München vindt

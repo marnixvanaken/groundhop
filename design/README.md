@@ -126,14 +126,18 @@ Toestanden die bij elk scherm horen:
 - [ ] Leeg, laden, fout
 - [ ] Ontbrekende velden: geen publiek, geen scheidsrechter, geen stadionnaam
 
-## De demo
+## De app
 
-Een werkende demo van alle schermen in `demo/`, gebouwd uit je eigen export.
+Het nieuwe ontwerp staat in `app/` en is de live versie: Vercel serveert het op
+het hoofdadres (`/`, `/duels.html`, …) via de rewrites in `vercel.json`, en bouwt
+bij elke deploy de data met `app/build_app_data.py`. Het oude dashboard blijft
+bereikbaar op `/dashboard.html`; oude `/app/`-links sturen door.
+
 Elke wedstrijd, elk stadion en elke speler is aan te klikken.
 
 ```bash
-python3 demo/build_app_data.py     # data uit data/dashboard_data.json
-python3 server.py                  # daarna localhost:4000/demo/
+python3 app/build_app_data.py     # data uit data/dashboard_data.json
+python3 server.py                  # daarna localhost:4000/app/
 ```
 
 | Tab | Scherm | Wat |
@@ -171,7 +175,7 @@ een clubnaam typen en op **Zoeken** drukken, dan uit 25 seizoenskaarten kiezen,
 dan de wedstrijdenlijst. Elke stap verving de vorige, en de eerste stap begon
 altijd leeg.
 
-`demo/toevoegen.html` draait dat om. Vier wijzigingen, elk met een reden:
+`app/toevoegen.html` draait dat om. Vier wijzigingen, elk met een reden:
 
 - **Geen zoekknop.** Typen zoekt. (`apple-design/searching.md` en
   `search-fields.md`: *"If possible, start search immediately when a person
@@ -190,9 +194,9 @@ wedstrijd moest met de hand in de data.
 
 Zoekresultaten staan in twee groepen: **In je verzameling** (lokaal, meteen) en
 **Alle clubs** (Transfermarkt, via `/tm/zoek`). Zo vind je ook een club die je
-nog nooit zag. De demo kan Transfermarkt niet bereiken en zegt dat.
+nog nooit zag. Deze versie zoekt nog niet bij Transfermarkt en zegt dat.
 
-Een duel ziet er in elke lijst hetzelfde uit: `duel()` in `demo/groundhop.js`,
+Een duel ziet er in elke lijst hetzelfde uit: `duel()` in `app/groundhop.js`,
 met de stijl in `groundhop.css`. Alleen wat helemaal rechts staat verschilt —
 een pijl op Stadiondetail, een keuzebolletje hier.
 
@@ -200,12 +204,12 @@ Groen blijft één ding betekenen. Een duel dat al in je verzameling zit heeft e
 groen vinkje; een duel dat je nu aanwijst krijgt een neutraal bolletje. Pas de
 knop die ze toevoegt is weer groen, want die maakt er geschiedenis van.
 
-De demo draait op je eigen export: 109 clubs, 180 duels. Die heb je per
+Het scherm draait op je eigen export. Die duels heb je per
 definitie allemaal bijgewoond, dus de schakelaar onderaan de kaart zet de lijst
 in de andere toestand. Er wordt niets verzonnen en niets opgeslagen.
 
 ```bash
-python3 demo/build_app_data.py     # schrijft demo/app-data.js en demo/speler-data.js
+python3 app/build_app_data.py     # schrijft app/app-data.js en app/speler-data.js
 ```
 
 ## Figma-opzet

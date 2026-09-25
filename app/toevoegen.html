@@ -217,8 +217,8 @@ function transfermarkt(){
     <section class="card">
       <div class="card-head"><h2>Alle clubs</h2><span class="kop-tel">Transfermarkt</span></div>
       <div class="note" style="border-top:0">In de app verschijnt hier elke club die
-        bij “${esc(S.vraag)}” past, ook als je die nog nooit zag. Deze demo kan
-        Transfermarkt niet bereiken.</div>
+        bij “${esc(S.vraag)}” past, ook als je die nog nooit zag. Deze versie zoekt
+        nog niet bij Transfermarkt; dat doet het dashboard op je computer.</div>
     </section>`;
 }
 
@@ -277,8 +277,8 @@ function clubscherm(){
       </div>
       ${duels.map(duelRij).join('')}
       <div class="demo">
-        <span>Demo — je export bevat alleen duels die je zag</span>
-        <div class="seg" role="group" aria-label="Demotoestand">
+        <span>Voorbeeld: zo ziet een duel eruit dat er nog niet in staat</span>
+        <div class="seg" role="group" aria-label="Voorbeeldtoestand">
           <button type="button" data-demo="mijn" aria-pressed="${mijn}">bijgewoond</button>
           <button type="button" data-demo="nieuw" aria-pressed="${!mijn}">nieuw</button>
         </div>
@@ -360,11 +360,12 @@ app.addEventListener('click', e => {
   if (demo){ S.demo = demo.dataset.demo; S.gekozen.clear(); render(); return; }
 
   if (e.target.closest('[data-handmatig]')){
-    melding('Zelf invullen — in deze ontwerpdemo nog niet uitgewerkt.');
+    melding('Zelf invullen kan nog niet in deze versie.');
   }
 });
 
-/* De demo slaat niets op; dat zeggen we hardop in plaats van te doen alsof. */
+/* Deze versie slaat nog niets op; dat zeggen we hardop in plaats van te doen alsof.
+   Opslaan gaat via het dashboard met server.py (POST /api/tm/toevoegen). */
 const toast = document.getElementById('toast');
 let toastTijd;
 function melding(tekst){
@@ -376,7 +377,7 @@ function melding(tekst){
 
 cta.addEventListener('click', () => {
   const n = S.gekozen.size;
-  melding(`${n} ${n === 1 ? 'duel' : 'duels'} — deze ontwerpdemo slaat niets op.`);
+  melding('Opslaan kan nog niet in deze versie. Voeg toe via het dashboard op je computer.');
 });
 
 if (DATA && DATA.clubs && DATA.clubs.length){

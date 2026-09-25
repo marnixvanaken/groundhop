@@ -179,10 +179,10 @@ class Handler(SimpleHTTPRequestHandler):
             print(f"  {args[1] if len(args)>1 else ''} {path}")
 
     def end_headers(self):
-        # De bestanden in demo/ worden bij elke bouw opnieuw geschreven. Laat je
+        # De bestanden in app/ worden bij elke bouw opnieuw geschreven. Laat je
         # de browser ze cachen, dan toont de pagina oude data terwijl de bron al
         # klopt — en dat kost meer zoekwerk dan het verkeer bespaart.
-        if self.path.startswith("/demo/"):
+        if self.path.startswith("/app/"):
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 

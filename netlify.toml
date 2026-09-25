@@ -1,12 +1,109 @@
 [build]
-  # De demodata staat niet in git (zie .gitignore); die wordt hier gebouwd.
-  command = "python3 demo/build_app_data.py"
+  # De appdata staat niet in git (zie .gitignore); die wordt hier gebouwd.
+  command = "python3 app/build_app_data.py"
   publish = "."
   functions = "netlify/functions"
 
+# Het nieuwe ontwerp staat in app/ en wordt op het hoofdadres geserveerd;
+# het oude dashboard blijft op /dashboard.html.
+[[redirects]]
+  from = "/demo/*"
+  to = "/:splat"
+  status = 302
+
 [[redirects]]
   from = "/"
-  to = "/dashboard.html"
+  to = "/app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/index.html"
+  to = "/app/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/duels.html"
+  to = "/app/duels.html"
+  status = 200
+
+[[redirects]]
+  from = "/grounds.html"
+  to = "/app/grounds.html"
+  status = 200
+
+[[redirects]]
+  from = "/spelers.html"
+  to = "/app/spelers.html"
+  status = 200
+
+[[redirects]]
+  from = "/meer.html"
+  to = "/app/meer.html"
+  status = 200
+
+[[redirects]]
+  from = "/wedstrijddetail.html"
+  to = "/app/wedstrijddetail.html"
+  status = 200
+
+[[redirects]]
+  from = "/stadiondetail.html"
+  to = "/app/stadiondetail.html"
+  status = 200
+
+[[redirects]]
+  from = "/speler.html"
+  to = "/app/speler.html"
+  status = 200
+
+[[redirects]]
+  from = "/club.html"
+  to = "/app/club.html"
+  status = 200
+
+[[redirects]]
+  from = "/competitie.html"
+  to = "/app/competitie.html"
+  status = 200
+
+[[redirects]]
+  from = "/toevoegen.html"
+  to = "/app/toevoegen.html"
+  status = 200
+
+[[redirects]]
+  from = "/groundhop.js"
+  to = "/app/groundhop.js"
+  status = 200
+
+[[redirects]]
+  from = "/groundhop.css"
+  to = "/app/groundhop.css"
+  status = 200
+
+[[redirects]]
+  from = "/app-data.js"
+  to = "/app/app-data.js"
+  status = 200
+
+[[redirects]]
+  from = "/speler-data.js"
+  to = "/app/speler-data.js"
+  status = 200
+
+[[redirects]]
+  from = "/crests/*"
+  to = "/app/crests/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/players/*"
+  to = "/app/players/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/tournaments/*"
+  to = "/app/tournaments/:splat"
   status = 200
 
 [[headers]]

@@ -12,7 +12,7 @@ Twee verschillen met de gewone pagina's:
 Externe stijlbladen zijn geblokkeerd op één lettertypehost na, dus de
 gedeelde css gaat inline mee in beide pagina's.
 
-Gebruik:  python3 demo/build_artifact.py <doelmap>
+Gebruik:  python3 app/build_artifact.py <doelmap>
 """
 
 import re
@@ -73,6 +73,8 @@ def controleer(doel):
     # Een verwijzing die in de pagina wordt samengesteld (${...}) is geen
     # bestandsnaam; die komt pas bij het klikken tot stand.
     verwijzingen = {v for v in verwijzingen if "${" not in v}
+    # Een absoluut pad (/dashboard.html) hoort bij de site, niet bij de app.
+    verwijzingen = {v for v in verwijzingen if not v.startswith("/")}
     ontbreekt = sorted(v for v in verwijzingen if not (doel / v).exists())
     if ontbreekt:
         raise SystemExit("ontbrekende bestanden in de bouw:\n  " + "\n  ".join(ontbreekt))

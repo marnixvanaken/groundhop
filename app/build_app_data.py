@@ -3,8 +3,8 @@
 Bouwt de data voor de hele demo uit data/dashboard_data.json.
 
 Twee bestanden:
-- demo/app-data.js     alle wedstrijden, stadions, clubs, competities en de kaart
-- demo/speler-data.js  alle spelers met per wedstrijd hun minuten en goals
+- app/app-data.js     alle wedstrijden, stadions, clubs, competities en de kaart
+- app/speler-data.js  alle spelers met per wedstrijd hun minuten en goals
 
 Elk scherm leest hieruit en rekent zelf uit wat het nodig heeft: de tellers op
 een wedstrijd, de ranglijst van een stadion, de duels van een speler. Daarmee
@@ -17,7 +17,7 @@ een opstelling of een speler ze nodig hebben.
 Werkt op beide bronnen. Sofascore levert ratings, Transfermarkt niet; de
 schermen tonen een kolom alleen als er iets in staat.
 
-Gebruik:  python3 demo/build_app_data.py
+Gebruik:  python3 app/build_app_data.py
 """
 
 import collections

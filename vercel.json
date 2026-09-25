@@ -1,14 +1,93 @@
 {
-  "buildCommand": "python3 demo/build_app_data.py",
+  "buildCommand": "python3 app/build_app_data.py",
   "outputDirectory": ".",
   "rewrites": [
     {
-      "source": "/img/:type/:id",
-      "destination": "/api/img?type=:type&id=:id"
+      "source": "/",
+      "destination": "/app/index.html"
     },
     {
-      "source": "/",
-      "destination": "/dashboard.html"
+      "source": "/index.html",
+      "destination": "/app/index.html"
+    },
+    {
+      "source": "/duels.html",
+      "destination": "/app/duels.html"
+    },
+    {
+      "source": "/grounds.html",
+      "destination": "/app/grounds.html"
+    },
+    {
+      "source": "/spelers.html",
+      "destination": "/app/spelers.html"
+    },
+    {
+      "source": "/meer.html",
+      "destination": "/app/meer.html"
+    },
+    {
+      "source": "/wedstrijddetail.html",
+      "destination": "/app/wedstrijddetail.html"
+    },
+    {
+      "source": "/stadiondetail.html",
+      "destination": "/app/stadiondetail.html"
+    },
+    {
+      "source": "/speler.html",
+      "destination": "/app/speler.html"
+    },
+    {
+      "source": "/club.html",
+      "destination": "/app/club.html"
+    },
+    {
+      "source": "/competitie.html",
+      "destination": "/app/competitie.html"
+    },
+    {
+      "source": "/toevoegen.html",
+      "destination": "/app/toevoegen.html"
+    },
+    {
+      "source": "/groundhop.js",
+      "destination": "/app/groundhop.js"
+    },
+    {
+      "source": "/groundhop.css",
+      "destination": "/app/groundhop.css"
+    },
+    {
+      "source": "/app-data.js",
+      "destination": "/app/app-data.js"
+    },
+    {
+      "source": "/speler-data.js",
+      "destination": "/app/speler-data.js"
+    },
+    {
+      "source": "/crests/:bestand",
+      "destination": "/app/crests/:bestand"
+    },
+    {
+      "source": "/players/:bestand",
+      "destination": "/app/players/:bestand"
+    },
+    {
+      "source": "/tournaments/:bestand",
+      "destination": "/app/tournaments/:bestand"
+    },
+    {
+      "source": "/img/:type/:id",
+      "destination": "/api/img?type=:type&id=:id"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/demo/:pad*",
+      "destination": "/:pad*",
+      "permanent": false
     }
   ]
 }
