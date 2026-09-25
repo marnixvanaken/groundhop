@@ -116,6 +116,11 @@
   to = "/app/tournaments/:splat"
   status = 200
 
+[[redirects]]
+  from = "/vlaggen/*"
+  to = "/app/vlaggen/:splat"
+  status = 200
+
 [[headers]]
   for = "/*"
   [headers.values]

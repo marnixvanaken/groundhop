@@ -32,7 +32,8 @@
   border-radius:12px; color:inherit; text-decoration:none; text-align:center; min-width:0;}
 a.tegel:active{background:var(--card-sunken);}
 .tegel .crest,.tegel .crest-fallback{width:44px; height:44px; font-size:13px;}
-.tegel .vlag-groot{font-size:34px; line-height:1; height:40px; display:flex; align-items:center;}
+.vlag-tegel{width:48px; height:36px; object-fit:cover; border-radius:6px; margin:2px 0;
+  box-shadow:0 0 0 0.5px var(--separator);}
 .tegel .code{font-family:var(--display); font-weight:700; font-size:14px; color:var(--content-2);
   width:40px; height:40px; border-radius:50%; background:var(--card-sunken);
   display:flex; align-items:center; justify-content:center;}
@@ -40,14 +41,22 @@ a.tegel:active{background:var(--card-sunken);}
 .tegel-tal{font-family:var(--display); font-variant-numeric:tabular-nums; font-size:12px;
   font-weight:600; color:var(--accent);}
 
-/* Wat nog mist: grijs en stil, zonder kleur. */
+/* Wat nog mist: hetzelfde beeld, maar grijs en stil. Zonder logo een
+   gestippelde cirkel met de initialen. */
+.tegel.mist .crest,.tegel.mist .vlag-tegel{filter:grayscale(1); opacity:.35;}
 .tegel.mist .crest-fallback,.tegel.mist .code{background:transparent;
   border:1.5px dashed var(--separator); color:var(--content-2);}
-.tegel.mist .vlag-groot{filter:grayscale(1); opacity:.35;}
 .tegel.mist .tegel-naam{color:var(--content-2);}
 .tegel.mist .tegel-tal{visibility:hidden;}
 
 .rij-mist .lijst-naam{color:var(--content-2);}
+
+/* Clublogo's bij een stadion; twee kleinere als het stadion gedeeld wordt. */
+.wapens{display:flex; align-items:center; justify-content:center; width:36px; flex-shrink:0;}
+.wapens .crest-mini,.wapens .crest-fallback.mini{width:30px; height:30px; font-size:11px;}
+.wapens.twee .crest-mini,.wapens.twee .crest-fallback.mini{width:21px; height:21px; font-size:8px;}
+.wapens.twee > :last-child{margin-left:-4px;}
+.rij-mist .wapens{filter:grayscale(1); opacity:.4;}
 .nog{font-size:12px; color:var(--content-2); white-space:nowrap;}
 </style>
 </head>
@@ -74,16 +83,14 @@ function tegel(a, i){
   const naam = naamVan(a, i);
   const klasse = `tegel${i.gezien ? '' : ' mist'}`;
   if (a.soort === 'landen'){
-    const v = vlag(i.code);
-    const beeld = v ? `<span class="vlag-groot" aria-hidden="true">${v}</span>`
-                    : `<span class="code" aria-hidden="true">${esc(i.code.toUpperCase())}</span>`;
+    const beeld = vlag(i.code, 'vlag-tegel');
     const inhoud = `${beeld}<span class="tegel-naam">${esc(naam)}</span>
       <span class="tegel-tal">${i.n} ${i.n === 1 ? 'speler' : 'spelers'}</span>`;
     return i.gezien ? `<a class="${klasse}" href="spelers.html#land=${i.code}">${inhoud}</a>`
                     : `<div class="${klasse}" aria-label="${esc(naam)}, nog niet gezien">${inhoud}</div>`;
   }
   // clubs
-  const beeld = i.gezien ? logo(i.crest, naam) : `<span class="crest-fallback" aria-hidden="true">${initialen(naam, 3)}</span>`;
+  const beeld = logo(i.crest, naam);
   const inhoud = `${beeld}<span class="tegel-naam">${esc(naam)}</span>
     <span class="tegel-tal">${i.n}×</span>`;
   return i.gezien ? `<a class="${klasse}" href="${clubHref(i.club)}">${inhoud}</a>`
@@ -91,7 +98,10 @@ function tegel(a, i){
 }
 
 function stadionRij(i){
+  const clubs = i.clubs || [];
   const inhoud = `
+    <span class="wapens${clubs.length > 1 ? ' twee' : ''}" aria-hidden="true">
+      ${clubs.map(k => logo(k.crest, k.naam, true)).join('')}</span>
     <span class="lijst-main">
       <span class="lijst-naam">${esc(i.naam)}</span>
       <span class="lijst-sub">${esc(i.sub)}</span>

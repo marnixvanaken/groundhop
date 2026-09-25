@@ -87,6 +87,10 @@
       "destination": "/app/tournaments/:bestand"
     },
     {
+      "source": "/vlaggen/:bestand",
+      "destination": "/app/vlaggen/:bestand"
+    },
+    {
       "source": "/img/:type/:id",
       "destination": "/api/img?type=:type&id=:id"
     }

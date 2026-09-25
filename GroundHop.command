@@ -32,6 +32,11 @@ if ! python3 -c "import curl_cffi, bs4, lxml, rich" 2>/dev/null; then
   python3 -m pip install --user -q -r requirements.txt
 fi
 
+# Clubnummers voor de albums opzoeken (alleen als er een ontbreekt), en wat
+# daardoor veranderde meteen live zetten.
+python3 collecties_vul.py
+python3 publiceer.py --als-gekoppeld
+
 python3 app/build_app_data.py >/dev/null 2>&1 && echo "  ✓ App-data bijgewerkt"
 
 ( sleep 2; open http://localhost:4000 ) &

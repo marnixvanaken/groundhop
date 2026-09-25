@@ -29,9 +29,7 @@ const comp  = n => n.replace('VriendenLoterij ', '').replace('Eurojackpot ', '')
    heeft er geen; daar blijft de landcode staan. */
 const LANDSDEEL = {en:'gbeng', sx:'gbsct', wl:'gbwls', wa:'gbwls'};
 
-function vlag(a2){
-  if (!a2) return '';
-  const code = a2.toLowerCase();
+function vlagEmoji(code){
   const deel = LANDSDEEL[code];
   if (deel){
     return '\u{1F3F4}' + [...deel].map(c => String.fromCodePoint(0xE0000 + c.charCodeAt(0))).join('')
@@ -40,6 +38,17 @@ function vlag(a2){
   // Noord-Ierland heeft geen eigen vlag-emoji; letters zouden als fout lezen.
   if (code.length !== 2 || code === 'nx') return '';
   return [...code].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 97)).join('');
+}
+
+/* Vlaggen als afbeelding, uit app/vlaggen/ (flag-icons, MIT). Een emoji
+   tekent elk systeem anders, en Windows toont er alleen letters. Laadt de
+   afbeelding niet, dan valt hij terug op de emoji. */
+const VLAGBESTAND = {en: 'gb-eng', sx: 'gb-sct', wa: 'gb-wls', wl: 'gb-wls', nx: 'gb-nir'};
+function vlag(a2, klasse = 'vlag-img'){
+  if (!a2) return '';
+  const code = a2.toLowerCase();
+  return `<img class="${klasse}" src="vlaggen/${VLAGBESTAND[code] || code}.svg" alt="${esc(landNaam(code))}"`
+       + ` loading="lazy" onerror="this.outerHTML='${vlagEmoji(code)}'">`;
 }
 
 function initialen(naam, letters){
@@ -113,6 +122,8 @@ const stadionHref   = key => `stadiondetail.html#v=${encodeURIComponent(key)}`;
 const spelerHref    = id  => `speler.html#id=${id}`;
 const clubHref      = id  => `club.html#id=${id}`;
 const compHref      = naam => `competitie.html#t=${encodeURIComponent(naam)}`;
+// Het clublogo op Transfermarkt, voor een club die je nog nooit zag.
+const tmWapen       = id  => `https://img.a.transfermarkt.technology/wappen/normquad/${id}.png`;
 const albumHref     = id  => `album.html#id=${encodeURIComponent(id)}`;
 
 /* Een wedstrijd uit APP in de vorm die duel() leest. */

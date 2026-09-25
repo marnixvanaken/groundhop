@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Zet data/dashboard_data.json live: rechtstreeks op GitHub, zonder git.
+Zet data/dashboard_data.json (en de clubnummers van de albums) live: rechtstreeks op GitHub, zonder git.
 
 Vercel bouwt de site opnieuw bij elke commit op main. Pushen vanaf de laptop
 liep vast op inloggen, en uploaden via de website is een handeling die je
@@ -18,6 +18,7 @@ Staat hetzelfde bestand er al, dan gebeurt er niets.
 Gebruik
 -------
     python3 publiceer.py            # zet het nu live
+    python3 publiceer.py --als-gekoppeld   # idem, stil als er geen sleutel is
     python3 publiceer.py --status   # gekoppeld? welke repo?
 """
 
@@ -37,7 +38,9 @@ from pathlib import Path
 
 MAP = Path.home() / ".groundhop"
 SLEUTEL = MAP / "github_token"
-BESTAND = "data/dashboard_data.json"
+# Wat de laptop maakt en de live site nodig heeft. Alleen wat veranderd is gaat
+# mee, en alles samen in één commit.
+BESTANDEN = ["data/dashboard_data.json", "data/collecties_ids.json"]
 TAK = "main"
 API = "https://api.github.com"
 
@@ -119,36 +122,44 @@ def blob_sha(inhoud: bytes) -> str:
     return hashlib.sha1(b"blob %d\0" % len(inhoud) + inhoud).hexdigest()
 
 
-def publiceer(pad: str = BESTAND) -> dict:
-    """Zet het bestand op main. Geeft {'status': 'live'|'al live', 'commit': ...}."""
+def publiceer(paden: list[str] | None = None) -> dict:
+    """Zet de bestanden op main. Geeft {'status': 'live'|'al live', 'commit', 'bestanden'}."""
     token = sleutel()
     if not token:
         raise Fout("Nog niet gekoppeld met GitHub.")
-    inhoud = Path(pad).read_bytes()
     r = repo()
 
-    try:
-        op_github = _vraag("GET", f"/repos/{r}/contents/{pad}?ref={TAK}", token).get("sha")
-    except Fout:
-        op_github = None
-    if op_github == blob_sha(inhoud):
-        return {"status": "al live", "commit": None}
+    nieuw = []
+    for pad in paden or BESTANDEN:
+        if not Path(pad).exists():
+            continue
+        inhoud = Path(pad).read_bytes()
+        try:
+            op_github = _vraag("GET", f"/repos/{r}/contents/{pad}?ref={TAK}", token).get("sha")
+        except Fout:
+            op_github = None
+        if op_github != blob_sha(inhoud):
+            nieuw.append((pad, inhoud))
+    if not nieuw:
+        return {"status": "al live", "commit": None, "bestanden": []}
 
-    blob = _vraag("POST", f"/repos/{r}/git/blobs", token,
-                  {"content": base64.b64encode(inhoud).decode(), "encoding": "base64"})["sha"]
+    boomdelen = []
+    for pad, inhoud in nieuw:
+        blob = _vraag("POST", f"/repos/{r}/git/blobs", token,
+                      {"content": base64.b64encode(inhoud).decode(), "encoding": "base64"})["sha"]
+        boomdelen.append({"path": pad, "mode": "100644", "type": "blob", "sha": blob})
     # Twee pogingen: schuift main ertussen door, dan opnieuw vanaf de nieuwe kop.
     for poging in range(2):
         kop = _vraag("GET", f"/repos/{r}/git/ref/heads/{TAK}", token)["object"]["sha"]
         basis = _vraag("GET", f"/repos/{r}/git/commits/{kop}", token)["tree"]["sha"]
-        boom = _vraag("POST", f"/repos/{r}/git/trees", token, {
-            "base_tree": basis,
-            "tree": [{"path": pad, "mode": "100644", "type": "blob", "sha": blob}]})["sha"]
+        boom = _vraag("POST", f"/repos/{r}/git/trees", token,
+                      {"base_tree": basis, "tree": boomdelen})["sha"]
         commit = _vraag("POST", f"/repos/{r}/git/commits", token, {
             "message": f"Data bijgewerkt vanaf laptop ({datetime.now():%d-%m-%Y %H:%M})",
             "tree": boom, "parents": [kop]})["sha"]
         try:
             _vraag("PATCH", f"/repos/{r}/git/refs/heads/{TAK}", token, {"sha": commit})
-            return {"status": "live", "commit": commit}
+            return {"status": "live", "commit": commit, "bestanden": [p for p, _ in nieuw]}
         except Fout:
             if poging:
                 raise
@@ -156,6 +167,9 @@ def publiceer(pad: str = BESTAND) -> dict:
 
 
 def main():
+    # Bij het starten: stil overslaan als er (nog) geen koppeling is.
+    if "--als-gekoppeld" in sys.argv and not gekoppeld():
+        return
     if "--status" in sys.argv:
         print(f"  repo: {repo()} — {'gekoppeld' if gekoppeld() else 'niet gekoppeld'}")
         return

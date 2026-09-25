@@ -137,6 +137,23 @@ def albums(d, clubs, coords, venues):
     if not pad.exists():
         return []
     ref = json.loads(pad.read_text(encoding="utf-8"))
+    # Transfermarkt-nummers die je laptop heeft opgezocht voor clubs die je nog
+    # nooit zag (collecties_vul.py); daarmee krijgen ook die een logo.
+    ids_pad = ROOT / "data" / "collecties_ids.json"
+    opgezocht = json.loads(ids_pad.read_text(encoding="utf-8")) if ids_pad.exists() else {}
+
+    def wapen(tm_id):
+        return f"https://img.a.transfermarkt.technology/wappen/normquad/{tm_id}.png" if tm_id else None
+
+    def club_uit(c):
+        """De club zoals het album hem toont: uit je data als je hem zag,
+        anders met het logo van Transfermarkt (grijs in het album)."""
+        tm = c.get("tm") or opgezocht.get(c["naam"])
+        gezien = clubs.get(tm) or club_op_naam.get(plat(c["naam"]))
+        if gezien:
+            return {"naam": gezien["name"], "gezien": True, "n": gezien["count"],
+                    "crest": gezien["crest"], "club": gezien["id"]}
+        return {"naam": c["naam"], "gezien": False, "n": 0, "crest": wapen(tm), "club": None}
 
     club_op_naam = {plat(c["name"]): c for c in clubs.values()}
     bezocht = {}
@@ -158,24 +175,20 @@ def albums(d, clubs, coords, venues):
     uit = []
     for comp in ref["competities"]:
         groep = f"{comp['naam']} {comp['seizoen']}"
-        items = []
-        for c in comp["clubs"]:
-            gezien = clubs.get(c.get("tm")) or club_op_naam.get(plat(c["naam"]))
-            items.append({"naam": gezien["name"] if gezien else c["naam"],
-                          "gezien": bool(gezien), "n": gezien["count"] if gezien else 0,
-                          "crest": gezien["crest"] if gezien else None,
-                          "club": gezien["id"] if gezien else None})
+        items = [club_uit(c) for c in comp["clubs"]]
         uit.append({"id": f"{comp['id']}-clubs", "soort": "clubs", "groep": groep,
                     "titel": "Clubs", "items": items})
 
         stadions = {}
         for c in comp["clubs"]:
             s_ = stadions.setdefault(c["stadion"], {"naam": c["stadion"], "clubs": []})
-            s_["clubs"].append(c["naam"])
+            k = club_uit(c)
+            s_["clubs"].append({"naam": k["naam"], "crest": k["crest"]})
         items = []
         for s_ in stadions.values():
             v = stadion_van(s_["naam"])
-            items.append({"naam": s_["naam"], "sub": " / ".join(s_["clubs"]),
+            items.append({"naam": s_["naam"], "sub": " / ".join(k["naam"] for k in s_["clubs"]),
+                          "clubs": s_["clubs"],
                           "gezien": bool(v), "n": v["visits"] if v else 0,
                           "key": v["key"] if v else None})
         uit.append({"id": f"{comp['id']}-stadions", "soort": "stadions", "groep": groep,
