@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Club — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Een club zoals jij hem zag: hoe vaak, waar, tegen wie, en welke spelers en
+   goals daarbij hoorden. De uitslagen staan er ook, maar neutraal: winst of
+   verlies is geen geschiedenis van jou, dus geen groen. */
+.kop{padding:20px 16px 6px; text-align:center;}
+.kop .crest,.kop .crest-fallback{width:80px; height:80px; margin:0 auto 10px; font-size:22px;}
+.kop img.crest{display:block;}
+.kop h2{font-family:var(--display); font-size:24px; font-weight:700; letter-spacing:-0.02em;
+  line-height:1.15;}
+.kop p{font-size:13px; color:var(--content-2); margin-top:4px;}
+.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
+
+/* Winst, gelijk, verlies: drie getallen in de gewone tekstkleur. */
+.wgv{display:grid; grid-template-columns:repeat(3,1fr); padding:12px 0 4px;}
+.wgv > div{text-align:center; padding:4px 8px; border-right:0.5px solid var(--separator);}
+.wgv > div:last-child{border-right:0;}
+.wgv b{display:block; font-family:var(--display); font-variant-numeric:tabular-nums;
+  font-size:26px; font-weight:700; line-height:1;}
+.wgv span{display:block; margin-top:5px; font-size:12px; color:var(--content-2);}
+
+.speler-rij .avatar,.speler-rij .avatar-fallback{width:34px; height:34px;}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('meer', true);
+document.getElementById('bar').innerHTML = terugknop('Meer', 'meer.html') + '<h1>Club</h1>';
+
+const tel = lijst => {
+  const t = new Map();
+  lijst.forEach(k => t.set(k, (t.get(k) || 0) + 1));
+  return [...t].sort((a, b) => b[1] - a[1]);
+};
+
+function bereken(c){
+  const ms = APP.matches.filter(m => m.hid === c.id || m.aid === c.id);
+  const w = {w: 0, g: 0, v: 0, voor: 0, tegen: 0, bekend: 0};
+  ms.forEach(m => {
+    if (m.hs == null || m.as == null) return;
+    const thuis = m.hid === c.id;
+    const eigen = thuis ? m.hs : m.as, ander = thuis ? m.as : m.hs;
+    w.bekend++; w.voor += eigen; w.tegen += ander;
+    w[eigen > ander ? 'w' : eigen < ander ? 'v' : 'g']++;
+  });
+
+  // Spelers die je vóór deze club zag, en de goals die ze voor hem maakten.
+  const spelers = [];
+  for (const [id, p] of Object.entries(SPELERS)){
+    const n = p.m.filter(r => r[1] === c.name).length;
+    if (n) spelers.push({id, p, n});
+  }
+  spelers.sort((a, b) => b.n - a.n);
+  const scorers = tel(ms.flatMap(m => m.goals
+    .filter(g => g.team === c.name && g.type !== 'ownGoal').map(g => g.pid || g.p)));
+
+  return {
+    ms, w, spelers, scorers,
+    thuis: ms.filter(m => m.hid === c.id).length,
+    goals: ms.reduce((s, m) => s + m.goals.length, 0),
+    venues: tel(ms.map(m => m.venue).filter(Boolean)),
+    tegenstanders: tel(ms.map(m => m.hid === c.id ? m.aid : m.hid)),
+    comps: tel(ms.map(m => m.t)),
+    reeks: seizoensreeks(ms.map(m => m.date)),
+  };
+}
+
+function render(){
+  const c = APP.clubs.find(x => x.id === Number(param('id'))) || APP.clubs[0];
+  const b = bereken(c);
+  document.title = `${c.name} — GroundHop`;
+  const toon = b.ms.slice(0, 6);
+  const eerste = b.ms[b.ms.length - 1], laatste = b.ms[0];
+
+  app.innerHTML = `
+  <section class="card">
+    <div class="kop">
+      ${logo(c.crest, c.name)}
+      <h2>${esc(c.name)}</h2>
+      <p>${b.thuis}× thuis · ${b.ms.length - b.thuis}× uit</p>
+    </div>
+    <div class="tally" style="margin-top:12px">
+      <div><b class="num">${b.ms.length}×</b><span>gezien</span></div>
+      <div><b class="num">${getal(b.goals)}</b><span>goals gezien</span></div>
+      <div><b class="num">${b.venues.length}</b><span>${b.venues.length === 1 ? 'ground' : 'grounds'}</span></div>
+    </div>
+    <div class="span">${b.ms.length > 1
+      ? `${datum(eerste.date)} &nbsp;—&nbsp; ${datum(laatste.date)}` : datum(laatste.date, true)}</div>
+  </section>
+
+  ${b.w.bekend ? `
+  <section class="card">
+    <div class="card-head"><h2>Als jij erbij was</h2></div>
+    <div class="wgv">
+      <div><b class="num">${b.w.w}</b><span>gewonnen</span></div>
+      <div><b class="num">${b.w.g}</b><span>gelijk</span></div>
+      <div><b class="num">${b.w.v}</b><span>verloren</span></div>
+    </div>
+    <div class="note">${b.w.voor} goals voor, ${b.w.tegen} tegen, in de ${b.w.bekend}
+      ${b.w.bekend === 1 ? 'duel' : 'duels'} die je zag.</div>
+  </section>` : ''}
+
+  ${b.reeks ? `
+  <section class="card">
+    <div class="card-head"><h2>Duels per seizoen</h2><h2>${b.reeks.rijen.length} seizoenen</h2></div>
+    ${b.reeks.html}
+    ${b.reeks.leeg ? `<div class="note">${b.reeks.leeg === 1 ? '1 seizoen' : b.reeks.leeg + ' seizoenen'}
+      zonder duel, als nul in de reeks.</div>` : '<div style="height:10px"></div>'}
+  </section>` : ''}
+
+  <section class="card" id="duels">
+    <div class="card-head"><h2>Duels</h2><h2>${b.ms.length}</h2></div>
+    <div style="height:8px"></div>
+    ${toon.map(duelLink).join('')}
+    ${b.ms.length > toon.length
+      ? `<button class="meer-knop" type="button" id="alle">Alle ${b.ms.length} duels</button>` : ''}
+  </section>
+
+  ${b.spelers.length ? `
+  <section class="card">
+    <div class="card-head"><h2>Spelers die je zag</h2><h2>${getal(b.spelers.length)}</h2></div>
+    <div style="height:6px"></div>
+    ${b.spelers.slice(0, 6).map(({id, p, n}) => `
+      <a class="lijst-rij speler-rij" href="${spelerHref(id)}">
+        ${portret(p.img, p.n)}
+        <span class="lijst-main">
+          <span class="lijst-naam">${esc(p.n)}</span>
+          <span class="lijst-sub"><span class="vlag">${vlag(p.c)}</span> ${POSITIE[p.pos] || ''}</span>
+        </span>
+        <span class="badge">${n}×</span>
+        <span class="chev" aria-hidden="true">›</span>
+      </a>`).join('')}
+  </section>` : ''}
+
+  ${b.scorers.length ? `
+  <section class="card">
+    <div class="card-head"><h2>Topscorers die je zag</h2></div>
+    ${ranglijst(b.scorers.slice(0, 5).map(([k, n]) => {
+      const p = SPELERS[k];
+      const naam = p ? p.n : k;
+      return {name: esc(naam), count: n, href: p ? spelerHref(k) : null,
+              beeld: p ? portret(p.img, p.n) : ''};
+    }))}
+  </section>` : ''}
+
+  <section class="card">
+    <div class="card-head"><h2>Waar je ze zag</h2></div>
+    ${ranglijst(b.venues.slice(0, 5).map(([k, n]) => ({
+      name: esc(stadion(k)?.name || k), count: n, href: stadionHref(k)})))}
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Tegenstanders</h2><h2>${b.tegenstanders.length}</h2></div>
+    ${ranglijst(b.tegenstanders.slice(0, 5).map(([id, n]) => {
+      const t = club(id);
+      return {name: esc(t.name), count: n, beeld: logo(t.crest, t.name, true), href: clubHref(id)};
+    }))}
+  </section>
+
+  <section class="card">
+    <div class="card-head"><h2>Competities</h2></div>
+    ${ranglijst(b.comps.slice(0, 5).map(([n, k]) => ({name: esc(comp(n)), count: k})))}
+  </section>
+
+  <section class="card">
+    <a class="lijst-rij" href="toevoegen.html#club=${c.id}">
+      <span class="lijst-main"><span class="lijst-naam">Duel toevoegen</span>
+        <span class="lijst-sub">Speelschema van ${esc(c.name)} per seizoen</span></span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>
+  </section>`;
+
+  const alle = document.getElementById('alle');
+  if (alle) alle.addEventListener('click', () => {
+    alle.insertAdjacentHTML('beforebegin', b.ms.slice(toon.length).map(duelLink).join(''));
+    alle.remove();
+  });
+}
+
+if (window.APP && window.SPELERS){
+  render();
+  window.addEventListener('hashchange', () => { render(); app.scrollTop = 0; });
+} else {
+  app.innerHTML = zonderData('club.html');
+}
+</script>
+</body>
+</html>

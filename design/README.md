@@ -146,14 +146,19 @@ python3 server.py                  # daarna localhost:4000/demo/
 | Spelers | `spelers.html` | Vaakst gezien of meeste goals, zoeken in alle spelers |
 | | `speler.html#id=…` | Hoe vaak, voor wie, mijlpalen, zijn duels |
 | Meer | `meer.html` | Toevoegen, competities, clubs, scheidsrechters, over de data |
-| | `toevoegen.html` | Club zoeken, seizoen kiezen, duels aanvinken |
+| | `club.html#id=…` | Hoe vaak, winst/gelijk/verlies als jij er was, spelers, topscorers, grounds, tegenstanders |
+| | `toevoegen.html` | Club zoeken, seizoen kiezen, duels aanvinken; `#club=…` opent meteen het speelschema |
 
 Gedeeld in `groundhop.css` en `groundhop.js`: tokens, de tabbalk, de terugknop
 (die het vorige scherm noemt), de duelrij, de seizoensreeks en de ranglijst.
 Parameters staan achter de `#`, omdat een statische host een querystring kan
 weggooien.
 
-Clubs hebben nog geen eigen scherm; ze staan als lijst op Home en Meer.
+Een club is overal aan te klikken: op Home, Meer, het scorebord van een wedstrijd, een
+speler en een stadion. Het clubscherm houdt de tab actief waar je vandaan kwam.
+
+Winst, gelijk en verlies staan in de gewone tekstkleur: een uitslag is geen
+geschiedenis van jou, dus geen groen.
 
 ## Wedstrijd toevoegen
 

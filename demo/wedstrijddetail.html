@@ -25,6 +25,7 @@
   gap:8px; padding:14px 16px 4px;
 }
 .side{display:flex; flex-direction:column; align-items:center; gap:8px;}
+.side{color:inherit; text-decoration:none;}
 .side-name{font-size:13px; font-weight:600; text-align:center; line-height:1.25;}
 .result{
   font-family:var(--display); font-variant-numeric:tabular-nums;
@@ -173,9 +174,9 @@ function render(){
       <div class="date">${datum(m.date, true)}</div>
     </div>
     <div class="score">
-      <div class="side">${logo(h.crest, h.name)}<div class="side-name">${esc(h.name)}</div></div>
+      <a class="side" href="${clubHref(h.id)}">${logo(h.crest, h.name)}<div class="side-name">${esc(h.name)}</div></a>
       <div class="result">${m.hs ?? '–'} – ${m.as ?? '–'}</div>
-      <div class="side">${logo(a.crest, a.name)}<div class="side-name">${esc(a.name)}</div></div>
+      <a class="side" href="${clubHref(a.id)}">${logo(a.crest, a.name)}<div class="side-name">${esc(a.name)}</div></a>
     </div>
     ${m.ht ? `<div class="half">rust ${m.ht[0]}–${m.ht[1]}</div>` : '<div style="height:14px"></div>'}
     <div class="tally" style="grid-template-columns:repeat(${tellers.length},1fr)">

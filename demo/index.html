@@ -113,11 +113,10 @@ function reeks(){
 }
 
 /* Vaakst gezien: drie ranglijsten achter één keuzeschakelaar, zodat Home kort
-   blijft. Elke rij leidt naar zijn eigen scherm, behalve clubs: die hebben
-   (nog) geen detailscherm. */
+   blijft. Elke rij leidt naar zijn eigen scherm. */
 const TOP = {
   clubs: () => APP.clubs.slice(0, 5).map(c => ({
-    name: esc(c.name), count: c.count, beeld: logo(c.crest, c.name, true)})),
+    name: esc(c.name), count: c.count, beeld: logo(c.crest, c.name, true), href: clubHref(c.id)})),
   grounds: () => APP.venues.slice(0, 5).map(v => ({
     name: esc(v.name), count: v.visits, href: stadionHref(v.key)})),
   spelers: () => Object.entries(SPELERS).sort((a, b) => b[1].seen - a[1].seen).slice(0, 5)

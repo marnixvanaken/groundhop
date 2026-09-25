@@ -93,7 +93,7 @@ function render(){
     <div class="card-head"><h2>Voor wie je hem zag</h2></div>
     ${ranglijst(Object.entries(perClub).sort((a, b) => b[1] - a[1]).map(([naam, n]) => {
       const c = clubOpNaam(naam);
-      return {name: esc(naam), count: n, beeld: logo(c?.crest, naam, true)};
+      return {name: esc(naam), count: n, beeld: logo(c?.crest, naam, true), href: c ? clubHref(c.id) : null};
     }))}
     <div class="drie" style="border-top:0.5px solid var(--separator)">
       <div><div class="row-label">In de basis</div><div class="row-value">${basis}×</div></div>

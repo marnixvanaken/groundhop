@@ -289,7 +289,7 @@ function clubscherm(){
 function render(){
   app.innerHTML = S.club ? clubscherm() : zoekscherm();
   wis.hidden = !S.vraag;
-  terugLabel.textContent = S.club ? 'Zoeken' : (TITELS[vorigeScherm()] || 'Duels');
+  terugLabel.textContent = S.club && !param('club') ? 'Zoeken' : (TITELS[vorigeScherm()] || 'Duels');
   document.getElementById('titel').textContent = S.club ? 'Speelschema' : 'Toevoegen';
 
   bijwerken();
@@ -323,7 +323,8 @@ function leeg(){
 wis.addEventListener('click', leeg);
 
 terug.addEventListener('click', () => {
-  if (S.club){ S.club = null; S.gekozen.clear(); render(); }
+  // Kwam je vanaf een clubpagina, dan gaat terug daarheen en niet naar zoeken.
+  if (S.club && !param('club')){ S.club = null; S.gekozen.clear(); render(); }
   else if (vorigeScherm() && history.length > 1) history.back();
   else location.href = 'duels.html';
 });
@@ -379,6 +380,9 @@ cta.addEventListener('click', () => {
 });
 
 if (DATA && DATA.clubs && DATA.clubs.length){
+  // Vanaf een clubpagina opent het speelschema van die club meteen.
+  const vooraf = DATA.clubs.find(c => c.id === Number(param('club')));
+  if (vooraf){ S.club = vooraf; S.seizoen = vooraf.seasons[0]; }
   render();
 } else {
   app.innerHTML = zonderData('toevoegen.html');

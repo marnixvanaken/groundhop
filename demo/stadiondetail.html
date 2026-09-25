@@ -156,7 +156,7 @@ function render(){
     </div>
     ${ranglijst(b.clubs.slice(0, 4).map(([id, n]) => {
       const c = club(Number(id));
-      return {name: esc(c.name), count: n, beeld: logo(c.crest, c.name, true)};
+      return {name: esc(c.name), count: n, beeld: logo(c.crest, c.name, true), href: clubHref(c.id)};
     }))}
   </section>
 

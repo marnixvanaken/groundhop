@@ -110,6 +110,7 @@ const stadion = key => (window.APP?.venues || []).find(v => v.key === key);
 const wedstrijdHref = id  => `wedstrijddetail.html#id=${id}`;
 const stadionHref   = key => `stadiondetail.html#v=${encodeURIComponent(key)}`;
 const spelerHref    = id  => `speler.html#id=${id}`;
+const clubHref      = id  => `club.html#id=${id}`;
 
 /* Een wedstrijd uit APP in de vorm die duel() leest. */
 function alsDuel(m){
@@ -132,7 +133,14 @@ const TABS = [
   ['meer',    'meer.html',    'Meer',    '<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>'],
 ];
 
-function tabbalk(actief){
+/* Een detailscherm dat onder meer dan één tab hangt (een club zie je vanaf
+   Home, Meer en elke wedstrijd) houdt de tab actief waar je vandaan kwam,
+   zoals op iOS. Zonder geheugen valt het terug op de tab die je meegeeft. */
+function tabbalk(actief, vanHerkomst){
+  try {
+    if (vanHerkomst) actief = sessionStorage.getItem('gh-tab') || actief;
+    else sessionStorage.setItem('gh-tab', actief);
+  } catch {}
   document.querySelector('.tabbar').innerHTML = TABS.map(([k, href, label, svg]) =>
     `<a href="${href}"${k === actief ? ' aria-current="page"' : ''}>
        <svg viewBox="0 0 24 24" aria-hidden="true">${svg}</svg>${label}</a>`).join('');
@@ -145,6 +153,7 @@ const TITELS = {
   'index.html': 'Home', 'duels.html': 'Duels', 'grounds.html': 'Grounds',
   'spelers.html': 'Spelers', 'meer.html': 'Meer', 'wedstrijddetail.html': 'Wedstrijd',
   'stadiondetail.html': 'Stadion', 'speler.html': 'Speler', 'toevoegen.html': 'Toevoegen',
+  'club.html': 'Club',
 };
 
 function vorigeScherm(){

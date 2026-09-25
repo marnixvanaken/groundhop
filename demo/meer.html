@@ -64,7 +64,7 @@ function render(alleClubs){
 
   <section class="card" id="clubs">
     <div class="card-head"><h2>Clubs</h2><h2>${APP.clubs.length}</h2></div>
-    ${ranglijst(clubs.map(c => ({name: esc(c.name), count: c.count, beeld: logo(c.crest, c.name, true)})))}
+    ${ranglijst(clubs.map(c => ({name: esc(c.name), count: c.count, beeld: logo(c.crest, c.name, true), href: clubHref(c.id)})))}
     ${alleClubs ? '' : `<button class="meer-knop" type="button" id="alle">Alle ${APP.clubs.length} clubs</button>`}
   </section>
 
