@@ -50,6 +50,25 @@ def daily_scheduler():
 
 threading.Thread(target=daily_scheduler, daemon=True).start()
 
+def tm_selectie():
+    """De Transfermarkt-selectie, of None als die niet veilig te bepalen is.
+
+    Bestaat data/tm_selectie.json nog niet, dan komt de verzameling uit de
+    oude koppeling (tm_match_map.json). Een eerste toevoeging zou anders een
+    selectie van één wedstrijd schrijven, en de sync exporteert daarna alleen
+    die ene: je verzameling krimpt stilletjes tot één duel. Daarom wordt de
+    selectie dan eerst uit de koppeling opgebouwd, zoals --seed doet.
+    """
+    import transfermarkt_selectie as tsel
+    selectie = tsel.lees()
+    if selectie:
+        return selectie
+    if tsel.MATCH_MAP.exists():
+        mapping = json.loads(tsel.MATCH_MAP.read_text("utf-8"))
+        return tsel.uit_koppeling(mapping, tsel.gecachete_records())
+    return None
+
+
 def huidige_bron():
     """Welke bron voedt het dashboard op dit moment: 'transfermarkt' of 'sofascore'?
 
@@ -69,12 +88,16 @@ def huidige_bron():
 
 # Per bron: wat er moet draaien om de wedstrijden op te halen, en wat er moet
 # draaien om alleen opnieuw te exporteren. De eerste kan uren duren, de tweede
-# seconden — vandaar dat opslaan alleen de tweede start.
+# seconden — vandaar dat opslaan alleen de tweede start. De laatste stap bouwt
+# de data van de app (app/), anders ziet die een nieuwe wedstrijd pas na een
+# handmatige bouw.
 KETENS = {
     "sofascore": {
         "sync": [["sofascore_tracker.py", "--download"],
-                 ["sofascore_tracker.py", "--export"]],
-        "export": [["sofascore_tracker.py", "--export"]],
+                 ["sofascore_tracker.py", "--export"],
+                 ["app/build_app_data.py"]],
+        "export": [["sofascore_tracker.py", "--export"],
+                   ["app/build_app_data.py"]],
     },
     # transfermarkt_profiles.py hoort er wél tussen. players.py leidt af wie
     # speelde en hoe lang; geboortedatum, positie en nationaliteit staan alleen
@@ -87,10 +110,12 @@ KETENS = {
         "sync": [["transfermarkt_sync.py"],
                  ["transfermarkt_players.py"],
                  ["transfermarkt_profiles.py"],
-                 ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"]],
+                 ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"],
+                 ["app/build_app_data.py"]],
         "export": [["transfermarkt_players.py"],
                    ["transfermarkt_profiles.py"],
-                   ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"]],
+                   ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"],
+                   ["app/build_app_data.py"]],
     },
 }
 
@@ -182,7 +207,7 @@ class Handler(SimpleHTTPRequestHandler):
         # De bestanden in app/ worden bij elke bouw opnieuw geschreven. Laat je
         # de browser ze cachen, dan toont de pagina oude data terwijl de bron al
         # klopt — en dat kost meer zoekwerk dan het verkeer bespaart.
-        if self.path.startswith("/app/"):
+        if self.path.startswith("/app/") or getattr(self, "_vers", False):
             self.send_header("Cache-Control", "no-store")
         super().end_headers()
 
@@ -255,7 +280,14 @@ class Handler(SimpleHTTPRequestHandler):
                 return
 
             gevraagd = body if isinstance(body, list) else []
-            selectie = tsel.lees()
+            selectie = tm_selectie()
+            if selectie is None:
+                self.send_json({"added": 0, "already": 0, "total": 0, "fetching": False,
+                                "error": "Geen selectie en geen koppeling gevonden "
+                                         "(data/tm_selectie.json, data/tm_match_map.json). "
+                                         "Toevoegen zou je verzameling vervangen door "
+                                         "alleen de nieuwe wedstrijden."})
+                return
             toegevoegd, stond_er_al = [], []
             for m in gevraagd:
                 try:
@@ -419,7 +451,7 @@ class Handler(SimpleHTTPRequestHandler):
             # De selectie is het eerlijke antwoord op "heb ik deze al?": hij is
             # waar zodra je hem toevoegt, niet pas als het rapport binnen is.
             import transfermarkt_selectie as tsel
-            self.send_json({"ids": tsel.ids(tsel.lees())})
+            self.send_json({"ids": tsel.ids(tm_selectie() or [])})
 
         elif path == "/api/cookie-status":
             has = COOKIES_FILE.exists()
@@ -443,15 +475,22 @@ class Handler(SimpleHTTPRequestHandler):
 
         # ─── Statische bestanden ───────────────────────────────────────────
         else:
+            # Het nieuwe ontwerp staat in app/ en hoort op het hoofdadres, net als
+            # op Vercel (zie vercel.json). Het oude dashboard blijft op
+            # /dashboard.html.
             if path == "/" or path == "":
-                path = "/dashboard.html"
+                path = "/index.html"
             file_path = Path("." + unquote(path))
+            if not file_path.is_file() and (Path("app") / unquote(path).lstrip("/")).is_file():
+                file_path = Path("app") / unquote(path).lstrip("/")
+                self._vers = True
             if file_path.exists() and file_path.is_file():
                 ext = file_path.suffix.lower()
                 ct = {".html":"text/html;charset=utf-8", ".js":"text/javascript",
                       ".css":"text/css", ".json":"application/json",
                       ".png":"image/png", ".ico":"image/x-icon",
-                      ".svg":"image/svg+xml"}.get(ext, "application/octet-stream")
+                      ".svg":"image/svg+xml", ".webp":"image/webp",
+                      ".jpg":"image/jpeg"}.get(ext, "application/octet-stream")
                 body = file_path.read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", ct)

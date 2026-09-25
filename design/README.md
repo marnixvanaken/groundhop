@@ -135,6 +135,14 @@ bereikbaar op `/dashboard.html`; oude `/app/`-links sturen door.
 
 Elke wedstrijd, elk stadion en elke speler is aan te klikken.
 
+**Toevoegen** werkt op je laptop: `python3 server.py`, dan localhost:4000 (daar
+staat dezelfde app als live; het oude dashboard op /dashboard.html). Het scherm
+zoekt dan bij Transfermarkt terwijl je typt, toont het speelschema per seizoen
+en slaat op via `/api/tm/toevoegen`. De server haalt daarna de wedstrijden op
+en bouwt `app/app-data.js` opnieuw. Op de live site kan dat niet (geen server);
+daar zegt het scherm waar het wel kan. Nieuwe wedstrijden komen live door
+`data/dashboard_data.json` naar GitHub te pushen of te uploaden.
+
 ```bash
 python3 app/build_app_data.py     # data uit data/dashboard_data.json
 python3 server.py                  # daarna localhost:4000/app/

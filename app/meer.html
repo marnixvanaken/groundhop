@@ -60,7 +60,7 @@ function render(alleClubs){
   <section class="card">
     <a class="lijst-rij" href="/dashboard.html">
       <span class="lijst-main"><span class="lijst-naam">Oud dashboard</span>
-        <span class="lijst-sub">De vorige versie, met zoeken en opslaan via server.py</span></span>
+        <span class="lijst-sub">De vorige versie van GroundHop</span></span>
       <span class="chev" aria-hidden="true">›</span>
     </a>
   </section>
@@ -92,7 +92,7 @@ function render(alleClubs){
     <div class="row"><div class="row-main"><div class="row-label">Periode</div>
       <div class="row-value">${datum(APP.totals.first)} — ${datum(APP.totals.last)}</div></div></div>
     <div class="note">Gebouwd uit je eigen export met <code>app/build_app_data.py</code>.
-      Wedstrijden toevoegen gaat nog via het dashboard op je computer.</div>
+      Toevoegen werkt op je laptop, met <code>python3 server.py</code> op localhost:4000.</div>
   </section>`;
   const alle = document.getElementById('alle');
   if (alle) alle.addEventListener('click', () => {

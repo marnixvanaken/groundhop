@@ -124,57 +124,116 @@ body.met-cta main{padding-bottom:calc(var(--tab-h) + 80px);}
 <script src="app-data.js"></script>
 <script src="groundhop.js"></script>
 <script>
-/* Het echte paneel praat met Transfermarkt. De demo draait op je export: je
-   eigen clubs als zoekresultaat, en per club de seizoenen waarin je hem zag. */
-const DATA = window.APP && {
-  clubs: APP.clubs.map(c => ({...c, seasons: [...new Set(APP.matches
-    .filter(m => m.hid === c.id || m.aid === c.id).map(m => m.season))].sort((a, b) => b - a)})),
-  fixtures: APP.matches.map(m => ({...alsDuel(m), id: m.id, season: m.season,
-                                   home_id: m.hid, away_id: m.aid})),
-  totals: APP.totals,
-};
-tabbalk('');
+/* Toevoegen werkt op twee manieren.
+
+   Met server.py (je laptop) is dit het echte paneel: zoeken bij Transfermarkt
+   terwijl je typt, het speelschema per seizoen, en opslaan via
+   /api/tm/toevoegen. De server haalt daarna uitslag, opstelling en goals op en
+   bouwt de app-data opnieuw.
+
+   Zonder server (de live site) kan dat niet: ophalen en opslaan draaien in
+   Python op je laptop. Dan blader je door je eigen verzameling, en zegt het
+   scherm waar toevoegen wél kan. */
+
 const app   = document.getElementById('app');
 const veld  = document.getElementById('zoek');
 const wis   = document.getElementById('wis');
 const cta   = document.getElementById('cta');
 const terug = document.getElementById('terug');
 const terugLabel = document.getElementById('terug-label');
+const toast = document.getElementById('toast');
+tabbalk('meer', true);
 
-/* Eén toestand voor het hele scherm. 'demo' is de enige die niet over de app
-   gaat maar over deze demo: alle duels in de export heb je per definitie al
-   bijgewoond, dus zonder schakelaar zou je de andere toestand nooit zien. */
+// Transfermarkt nummert een seizoen naar het jaar waarin het begint, en het
+// seizoen kantelt in juli.
+const NU = new Date();
+const HUIDIG = NU.getMonth() >= 6 ? NU.getFullYear() : NU.getFullYear() - 1;
+const VANDAAG = `${NU.getFullYear()}-${String(NU.getMonth() + 1).padStart(2, '0')}-${String(NU.getDate()).padStart(2, '0')}`;
+
+const EIGEN = (window.APP?.clubs || []).map(c => ({...c, seasons: [...new Set(APP.matches
+  .filter(m => m.hid === c.id || m.aid === c.id).map(m => m.season))].sort((a, b) => b - a)}));
+
 const S = {
+  server: false,        // draait server.py?
+  bron: null,           // 'transfermarkt' of 'sofascore', volgens de server
   vraag: '',
-  club: null,
-  seizoen: null,
-  demo: 'mijn',        // 'mijn' = staat al in je verzameling, 'nieuw' = nog niet
+  tm: {vraag: '', clubs: [], laden: false, fout: ''},
+  club: null,           // {id, name, crest, count, seasons}
+  seizoen: HUIDIG,
+  schema: {sleutel: '', laden: false, fout: '', lijst: []},
+  selectie: new Set(),  // Transfermarkt-id's die al in je selectie staan
   gekozen: new Set(),
+  bezig: false,
+  voorbeeld: false,     // zonder server: laat zien hoe een nieuw duel eruitziet
 };
 
-
-function zoekClubs(vraag){
-  const q = plat(vraag);
-  const treffers = DATA.clubs.filter(c => plat(c.name).includes(q));
-  // Wie met de naam begint staat boven wie hem ergens in het midden heeft.
-  return treffers.sort((a, b) => {
-    const va = plat(a.name).startsWith(q), vb = plat(b.name).startsWith(q);
-    return va === vb ? b.count - a.count : (va ? -1 : 1);
-  }).slice(0, 25);
+const kanOpslaan = () => S.server && S.bron === 'transfermarkt';
+const tmLogo = id => `https://tmssl.akamaized.net/images/wappen/normquad/${id}.png`;
+const eigenClub = id => EIGEN.find(c => c.id === id);
+function crestVan(id){
+  const c = eigenClub(id);
+  if (c?.crest) return c.crest;
+  // Een club die je nog nooit zag heeft geen logo in je export. Op
+  // Transfermarkt heeft elke club er een op een vast adres.
+  return kanOpslaan() ? tmLogo(id) : null;
 }
 
-function clubRij(c){
+async function api(pad, opties){
+  try {
+    const r = await fetch(pad, opties);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch { return null; }
+}
+
+function melding(tekst, lang){
+  toast.textContent = tekst;
+  toast.classList.add('zien');
+  clearTimeout(melding.t);
+  melding.t = setTimeout(() => toast.classList.remove('zien'), lang ? 6000 : 3200);
+}
+
+async function laadSelectie(){
+  const d = await api('/api/tm/selectie');
+  if (d && Array.isArray(d.ids)) S.selectie = new Set(d.ids);
+}
+
+// ── Zoeken ─────────────────────────────────────────────────────────────────
+
+function zoekEigen(vraag){
+  const q = plat(vraag);
+  return EIGEN.filter(c => plat(c.name).includes(q)).sort((a, b) => {
+    const va = plat(a.name).startsWith(q), vb = plat(b.name).startsWith(q);
+    return va === vb ? b.count - a.count : (va ? -1 : 1);
+  }).slice(0, 8);
+}
+
+/* Bij Transfermarkt zoeken pas als je even stopt met typen, en een antwoord
+   op een oudere vraag negeren: anders springt de lijst heen en weer. */
+function zoekTransfermarkt(vraag){
+  clearTimeout(zoekTransfermarkt.t);
+  if (!kanOpslaan() || vraag.length < 2){ S.tm = {vraag, clubs: [], laden: false, fout: ''}; return; }
+  S.tm = {vraag, clubs: [], laden: true, fout: ''};
+  zoekTransfermarkt.t = setTimeout(async () => {
+    const d = await api(`/tm/zoek/${encodeURIComponent(vraag)}`);
+    if (S.tm.vraag !== vraag) return;
+    // Onbereikbaar is iets anders dan niets gevonden.
+    S.tm = {vraag, laden: false, clubs: d?.clubs || [],
+            fout: !d || d.error ? 'Transfermarkt is nu niet bereikbaar. Probeer het zo nog eens.' : ''};
+    if (!S.club) render();
+  }, 350);
+}
+
+function clubRij(c, sub){
   return `
-    <button class="club" data-club="${c.id}" type="button">
-      ${logo(c.crest, c.name, true)}
-      <span class="club-naam">${c.name}</span>
-      <span class="club-tal">${c.count}×</span>
+    <button class="club" data-club="${c.id}" data-naam="${esc(c.name)}" type="button">
+      ${logo(c.crest ?? crestVan(c.id), c.name, true)}
+      <span class="club-naam">${esc(c.name)}${sub ? `<span class="lijst-sub">${sub}</span>` : ''}</span>
+      ${c.count ? `<span class="club-tal">${c.count}×</span>` : ''}
       <span class="chev" aria-hidden="true">›</span>
     </button>`;
 }
 
-/* De uitweg. Italië–Albanië op het EK staat bij geen enkele club, en precies
-   daarop liep het oude paneel vast: je kon alleen via een clubnaam zoeken. */
 function handmatig(){
   return `
     <section class="card">
@@ -188,79 +247,137 @@ function handmatig(){
     </section>`;
 }
 
+/* Waar toevoegen wél kan, als het hier niet kan. */
+function uitleg(){
+  if (kanOpslaan()) return '';
+  const tekst = S.server
+    ? `Je dashboard leest nog uit Sofascore. Toevoegen gaat via Transfermarkt; wissel eerst om
+       met <code>python3 transfermarkt_vergelijk.py --vervang</code>.`
+    : `Toevoegen gebeurt op je laptop: start <code>python3 server.py</code> en open
+       <b>localhost:4000</b>. Daar zoekt dit scherm bij Transfermarkt en slaat het op.
+       Hier blader je door je eigen verzameling.`;
+  return `<section class="card"><div class="note" style="border-top:0">${tekst}</div></section>`;
+}
+
 function zoekscherm(){
   if (!S.vraag){
-    return `
+    return uitleg() + `
       <section class="card">
         <div class="card-head"><h2>Vaakst bezocht</h2></div>
-        ${DATA.clubs.slice(0, 8).map(clubRij).join('')}
-        <div class="note">${DATA.totals.clubs} clubs in je verzameling,
-          ${DATA.totals.matches} duels.</div>
+        ${EIGEN.slice(0, 8).map(c => clubRij(c)).join('')}
+        <div class="note">${EIGEN.length} clubs in je verzameling, ${APP.totals.matches} duels.
+          ${kanOpslaan() ? 'Typ om bij Transfermarkt te zoeken, ook naar clubs die je nog nooit zag.' : ''}</div>
       </section>` + handmatig();
   }
-  const treffers = zoekClubs(S.vraag);
-  const eigen = treffers.length ? `
+  const eigen = zoekEigen(S.vraag);
+  const eigenIds = new Set(eigen.map(c => c.id));
+  let tm = '';
+  if (kanOpslaan()){
+    const rest = S.tm.clubs.filter(c => !eigenIds.has(c.id));
+    tm = `
+      <section class="card">
+        <div class="card-head"><h2>Alle clubs</h2><span class="kop-tel">Transfermarkt</span></div>
+        ${S.tm.laden ? '<div class="note" style="border-top:0">Zoeken bij Transfermarkt…</div>'
+          : S.tm.fout ? `<div class="note" style="border-top:0">${S.tm.fout}</div>`
+          : S.vraag.length < 2 ? '<div class="note" style="border-top:0">Typ nog een letter.</div>'
+          : rest.length ? '<div style="height:6px"></div>' + rest.map(c => clubRij(c)).join('')
+          : `<div class="note" style="border-top:0">${eigen.length ? 'Geen andere clubs gevonden.'
+               : `Niets gevonden voor “${esc(S.vraag)}”.`}</div>`}
+      </section>`;
+  }
+  return uitleg() + (eigen.length ? `
     <section class="card">
       <div class="card-head"><h2>In je verzameling</h2>
-        <span class="kop-tel">${treffers.length === 1 ? '1 club' : treffers.length + ' clubs'}</span></div>
-      ${treffers.map(clubRij).join('')}
-    </section>` : '';
-  return eigen + transfermarkt() + handmatig();
+        <span class="kop-tel">${eigen.length === 1 ? '1 club' : eigen.length + ' clubs'}</span></div>
+      ${eigen.map(c => clubRij(c)).join('')}
+    </section>` : (kanOpslaan() ? '' : `<section class="card"><div class="note" style="border-top:0">
+      Geen club in je verzameling voor “${esc(S.vraag)}”.</div></section>`)) + tm + handmatig();
 }
 
-/* Je eigen clubs staan er meteen; alle andere komen van Transfermarkt. Zo
-   vind je ook een club die je nog nooit zag. In de app doet /tm/zoek dat
-   werk. Deze demo kan Transfermarkt niet bereiken, en dat staat er gewoon —
-   een verzonnen zoekresultaat zou meer beloven dan het scherm kan. */
-function transfermarkt(){
-  return `
-    <section class="card">
-      <div class="card-head"><h2>Alle clubs</h2><span class="kop-tel">Transfermarkt</span></div>
-      <div class="note" style="border-top:0">In de app verschijnt hier elke club die
-        bij “${esc(S.vraag)}” past, ook als je die nog nooit zag. Deze versie zoekt
-        nog niet bij Transfermarkt; dat doet het dashboard op je computer.</div>
-    </section>`;
+// ── Speelschema ────────────────────────────────────────────────────────────
+
+/* Op de speelschemapagina staat alleen de tegenstander; de kant zegt wie
+   thuis speelde. */
+function alsRij(w){
+  const zelf = S.club, tegen = (w.clubs || [])[0] || {id: null, name: '?'};
+  const [h, a] = w.kant === 'uit' ? [tegen, zelf] : [zelf, tegen];
+  const gespeeld = !!w.uitslag;
+  return {
+    id: w.match_id, date: w.date,
+    home: h.name, away: a.name,
+    home_crest: h.id ? crestVan(h.id) : null, away_crest: a.id ? crestVan(a.id) : null,
+    score: gespeeld ? w.uitslag.replace(':', '–') : '',
+    tournament: gespeeld ? (w.kant === 'uit' ? 'uit' : 'thuis')
+              : (w.date >= VANDAAG ? 'nog te spelen' : 'geen uitslag'),
+    label: `${h.name} - ${a.name}`,
+  };
 }
 
-const duelsVan = (club, jaar) => DATA.fixtures.filter(
-  f => (f.home_id === club.id || f.away_id === club.id) && f.season === jaar);
+async function laadSchema(){
+  const sleutel = `${S.club.id}/${S.seizoen}`;
+  S.schema = {sleutel, laden: true, fout: '', lijst: []};
+  render();
+  const d = await api(`/tm/club/${sleutel}`);
+  if (S.schema.sleutel !== sleutel) return;
+  S.schema = {sleutel, laden: false,
+    fout: !d || d.error ? 'Transfermarkt is nu niet bereikbaar. Probeer het zo nog eens.' : '',
+    lijst: (d?.matches || []).slice().sort((a, b) => (b.date || '').localeCompare(a.date || '')).map(alsRij)};
+  render();
+}
 
-function duelRij(f){
-  const mijn = S.demo === 'mijn';
-  const aan  = S.gekozen.has(f.id);
-  if (mijn) return duel(f, {
+// Zonder server: de duels uit je eigen export.
+function eigenSchema(){
+  return APP.matches.filter(m => (m.hid === S.club.id || m.aid === S.club.id) && m.season === S.seizoen)
+    .map(m => ({...alsDuel(m), id: m.id, label: ''}));
+}
+
+function seizoenen(){
+  if (kanOpslaan()) return Array.from({length: 25}, (_, i) => HUIDIG - i);
+  return S.club.seasons.length ? S.club.seasons : [HUIDIG];
+}
+
+const opgeslagen = r => kanOpslaan() ? S.selectie.has(r.id) : !S.voorbeeld;
+
+function duelRij(r){
+  if (opgeslagen(r)) return duel(r, {
     tag: 'div',
-    attrs: ` aria-label="${f.home} tegen ${f.away}, staat in je verzameling"`,
+    attrs: ` aria-label="${esc(r.home)} tegen ${esc(r.away)}, staat in je verzameling"`,
     eind: '<span class="bol mijn" aria-hidden="true">✓</span>',
   });
-  return duel(f, {
+  const aan = S.gekozen.has(r.id);
+  return duel(r, {
     tag: 'button',
-    attrs: ` type="button" aria-pressed="${aan}" data-duel="${f.id}"`,
+    attrs: ` type="button" aria-pressed="${aan}" data-duel="${r.id}"`,
     eind: `<span class="bol ${aan ? 'aan' : 'leeg'}" aria-hidden="true">${aan ? '✓' : ''}</span>`,
   });
 }
 
+function lijst(){ return kanOpslaan() ? S.schema.lijst : eigenSchema(); }
+
 function kopTekst(){
-  const n = duelsVan(S.club, S.seizoen).length;
-  if (S.demo === 'mijn') return `${n} van ${n} in je verzameling`;
-  return S.gekozen.size ? `${S.gekozen.size} gekozen` : 'Kies wat je zag';
+  const l = lijst();
+  if (S.gekozen.size) return `${S.gekozen.size} gekozen`;
+  const binnen = l.filter(opgeslagen).length;
+  return l.length ? `${binnen} van ${l.length} in je verzameling` : '';
 }
 
 function clubscherm(){
   const c = S.club;
-  const jaar = S.seizoen;
-  const duels = duelsVan(c, jaar);
-  const mijn = S.demo === 'mijn';
-  const kop = kopTekst();
+  const l = lijst();
+  let inhoud;
+  if (kanOpslaan() && S.schema.laden) inhoud = '<div class="note" style="border-top:0">Speelschema ophalen…</div>';
+  else if (kanOpslaan() && S.schema.fout) inhoud = `<div class="note" style="border-top:0">${S.schema.fout}</div>`;
+  else if (!l.length) inhoud = `<div class="note" style="border-top:0">${kanOpslaan()
+      ? 'Geen wedstrijden gevonden in dit seizoen.' : 'Geen duels van deze club in dit seizoen.'}</div>`;
+  else inhoud = l.map(duelRij).join('');
 
-  return `
+  return uitleg() + `
     <section class="card">
       <div class="clubkop">
-        ${logo(c.crest, c.name)}
+        ${logo(c.crest ?? crestVan(c.id), c.name)}
         <div style="min-width:0">
-          <div class="clubkop-naam">${c.name}</div>
-          <div class="clubkop-sub">${c.count} duels bijgewoond ·
-            ${c.seasons.length} ${c.seasons.length === 1 ? 'seizoen' : 'seizoenen'}</div>
+          <div class="clubkop-naam">${esc(c.name)}</div>
+          <div class="clubkop-sub">${c.count ? `${c.count} duels bijgewoond` : 'Nog niet in je verzameling'}</div>
         </div>
       </div>
     </section>
@@ -268,82 +385,85 @@ function clubscherm(){
     <section class="card">
       <div class="card-head">
         <h2>Speelschema</h2>
-        <span class="kop-tel">${kop}</span>
+        <span class="kop-tel">${kopTekst()}</span>
       </div>
       <div class="chips" role="group" aria-label="Seizoen">
-        ${c.seasons.map(j => `
-          <button type="button" data-seizoen="${j}" aria-pressed="${j === jaar}">
+        ${seizoenen().map(j => `
+          <button type="button" data-seizoen="${j}" aria-pressed="${j === S.seizoen}">
             ${seizoenLabel(j)}</button>`).join('')}
       </div>
-      ${duels.map(duelRij).join('')}
+      ${inhoud}
+      ${kanOpslaan() ? '' : `
       <div class="demo">
         <span>Voorbeeld: zo ziet een duel eruit dat er nog niet in staat</span>
         <div class="seg" role="group" aria-label="Voorbeeldtoestand">
-          <button type="button" data-demo="mijn" aria-pressed="${mijn}">bijgewoond</button>
-          <button type="button" data-demo="nieuw" aria-pressed="${!mijn}">nieuw</button>
+          <button type="button" data-voorbeeld="0" aria-pressed="${!S.voorbeeld}">bijgewoond</button>
+          <button type="button" data-voorbeeld="1" aria-pressed="${S.voorbeeld}">nieuw</button>
         </div>
-      </div>
+      </div>`}
     </section>`;
 }
+
+// ── Scherm ─────────────────────────────────────────────────────────────────
 
 function render(){
   app.innerHTML = S.club ? clubscherm() : zoekscherm();
   wis.hidden = !S.vraag;
-  terugLabel.textContent = S.club && !param('club') ? 'Zoeken' : (TITELS[vorigeScherm()] || 'Duels');
+  terugLabel.textContent = S.club && !param('club') ? 'Zoeken' : (TITELS[vorigeScherm()] || 'Home');
   document.getElementById('titel').textContent = S.club ? 'Speelschema' : 'Toevoegen';
-
   bijwerken();
 }
 
-/* Aanvinken hertekent de lijst niet. Bij 29 rijen kost dat onnodig werk, en
-   erger: de knop die je net indrukte bestaat daarna niet meer, dus de focus
-   springt weg. Alleen het bolletje, de teller en de knop veranderen. */
 function bijwerken(){
-  const n = S.club && S.demo === 'nieuw' ? S.gekozen.size : 0;
+  const n = S.gekozen.size;
   cta.hidden = n === 0;
-  cta.textContent = n === 1 ? '1 duel toevoegen' : `${n} duels toevoegen`;
+  cta.disabled = S.bezig;
+  cta.textContent = S.bezig ? 'Opslaan…' : n === 1 ? '1 duel toevoegen' : `${n} duels toevoegen`;
   document.body.classList.toggle('met-cta', n > 0);
   const tel = document.querySelector('.kop-tel');
   if (tel && S.club) tel.textContent = kopTekst();
 }
 
-/* Zoeken gebeurt terwijl je typt; er is geen knop. Bij een nieuwe vraag valt
-   de gekozen club weg, want je bent iets anders aan het zoeken. */
+function kiesClub(c){
+  S.club = c;
+  S.gekozen.clear();
+  S.seizoen = kanOpslaan() ? HUIDIG : (c.seasons?.[0] ?? HUIDIG);
+  veld.value = ''; S.vraag = ''; veld.blur();
+  if (kanOpslaan()) laadSchema(); else render();
+  app.scrollTop = 0;
+}
+
 veld.addEventListener('input', () => {
   S.vraag = veld.value.trim();
-  if (S.vraag) { S.club = null; S.gekozen.clear(); }
+  if (S.vraag){ S.club = null; S.gekozen.clear(); }
+  zoekTransfermarkt(S.vraag);
   render();
   app.scrollTop = 0;
 });
 veld.addEventListener('keydown', e => { if (e.key === 'Escape') leeg(); });
-
-function leeg(){
-  veld.value = ''; S.vraag = ''; veld.focus(); render();
-}
+function leeg(){ veld.value = ''; S.vraag = ''; zoekTransfermarkt(''); veld.focus(); render(); }
 wis.addEventListener('click', leeg);
 
 terug.addEventListener('click', () => {
   // Kwam je vanaf een clubpagina, dan gaat terug daarheen en niet naar zoeken.
   if (S.club && !param('club')){ S.club = null; S.gekozen.clear(); render(); }
   else if (vorigeScherm() && history.length > 1) history.back();
-  else location.href = 'duels.html';
+  else location.href = 'index.html';
 });
 
 app.addEventListener('click', e => {
   const knop = e.target.closest('[data-club]');
   if (knop){
-    S.club = DATA.clubs.find(c => c.id === Number(knop.dataset.club));
-    S.seizoen = S.club.seasons[0];
-    S.gekozen.clear();
-    veld.value = ''; S.vraag = '';
-    veld.blur();
-    render();
-    app.scrollTop = 0;
+    const id = Number(knop.dataset.club);
+    kiesClub(eigenClub(id) || {id, name: knop.dataset.naam, crest: null, count: 0, seasons: []});
     return;
   }
   const jaar = e.target.closest('[data-seizoen]');
-  if (jaar){ S.seizoen = Number(jaar.dataset.seizoen); S.gekozen.clear(); render(); return; }
-
+  if (jaar){
+    S.seizoen = Number(jaar.dataset.seizoen); S.gekozen.clear();
+    if (kanOpslaan()) laadSchema(); else render();
+    return;
+  }
   const rij = e.target.closest('[data-duel]');
   if (rij){
     const id = Number(rij.dataset.duel);
@@ -356,38 +476,61 @@ app.addEventListener('click', e => {
     bijwerken();
     return;
   }
-  const demo = e.target.closest('[data-demo]');
-  if (demo){ S.demo = demo.dataset.demo; S.gekozen.clear(); render(); return; }
+  const vb = e.target.closest('[data-voorbeeld]');
+  if (vb){ S.voorbeeld = vb.dataset.voorbeeld === '1'; S.gekozen.clear(); render(); return; }
 
   if (e.target.closest('[data-handmatig]')){
-    melding('Zelf invullen kan nog niet in deze versie.');
+    melding('Zelf invullen kan nog niet in dit scherm.');
   }
 });
 
-/* Deze versie slaat nog niets op; dat zeggen we hardop in plaats van te doen alsof.
-   Opslaan gaat via het dashboard met server.py (POST /api/tm/toevoegen). */
-const toast = document.getElementById('toast');
-let toastTijd;
-function melding(tekst){
-  toast.textContent = tekst;
-  toast.classList.add('zien');
-  clearTimeout(toastTijd);
-  toastTijd = setTimeout(() => toast.classList.remove('zien'), 2600);
-}
-
-cta.addEventListener('click', () => {
-  const n = S.gekozen.size;
-  melding('Opslaan kan nog niet in deze versie. Voeg toe via het dashboard op je computer.');
+/* Opslaan stuurt alleen het nummer, de datum en een naam om te herkennen. De
+   rest haalt de server zelf uit het wedstrijdrapport. */
+cta.addEventListener('click', async () => {
+  if (!kanOpslaan()){
+    melding('Opslaan kan alleen op je laptop, met python3 server.py.', true);
+    return;
+  }
+  if (S.bezig || !S.gekozen.size) return;
+  const keuze = S.schema.lijst.filter(r => S.gekozen.has(r.id));
+  S.bezig = true; bijwerken();
+  const res = await api('/api/tm/toevoegen', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify(keuze.map(r => ({match_id: r.id, date: r.date || '', label: r.label}))),
+  });
+  S.bezig = false;
+  if (!res){ bijwerken(); melding('Opslaan is niet gelukt. Draait server.py nog?', true); return; }
+  if (res.error){ bijwerken(); melding(res.error, true); return; }
+  await laadSelectie();
+  S.gekozen.clear();
+  render();
+  const nogTeSpelen = keuze.filter(r => !r.score).length;
+  melding(res.added
+    ? `${res.added} ${res.added === 1 ? 'duel' : 'duels'} toegevoegd. Uitslag en opstelling worden nu opgehaald.`
+      + (nogTeSpelen ? ' Een duel dat nog gespeeld moet worden, komt binnen zodra het gespeeld is.' : '')
+    : `${res.already === 1 ? 'Dat duel stond' : 'Die duels stonden'} er al in.`, true);
+  if (res.fetching) volgOphalen();
 });
 
-if (DATA && DATA.clubs && DATA.clubs.length){
-  // Vanaf een clubpagina opent het speelschema van die club meteen.
-  const vooraf = DATA.clubs.find(c => c.id === Number(param('club')));
-  if (vooraf){ S.club = vooraf; S.seizoen = vooraf.seasons[0]; }
-  render();
-} else {
-  app.innerHTML = zonderData('toevoegen.html');
+/* Na het opslaan haalt de server de wedstrijden op en bouwt de app-data
+   opnieuw. Zeg het als dat klaar is, zodat je weet wanneer je Home ververst. */
+async function volgOphalen(){
+  const s = await api('/api/sync-status');
+  if (s?.running){ setTimeout(volgOphalen, 3000); return; }
+  if (s?.error) melding(`Ophalen stopte: ${s.error}`, true);
+  else melding('Klaar: de nieuwe duels staan in je verzameling.', true);
 }
+
+async function start(){
+  if (!window.APP){ app.innerHTML = zonderData('toevoegen.html'); return; }
+  const b = await api('/api/bron');
+  S.server = !!b?.bron;
+  S.bron = b?.bron || null;
+  if (S.server) await laadSelectie();
+  const vooraf = eigenClub(Number(param('club')));
+  if (vooraf) kiesClub(vooraf); else render();
+}
+start();
 </script>
 </body>
 </html>
