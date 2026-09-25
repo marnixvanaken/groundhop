@@ -40,7 +40,7 @@ MAP = Path.home() / ".groundhop"
 SLEUTEL = MAP / "github_token"
 # Wat de laptop maakt en de live site nodig heeft. Alleen wat veranderd is gaat
 # mee, en alles samen in één commit.
-BESTANDEN = ["data/dashboard_data.json", "data/collecties_ids.json"]
+BESTANDEN = ["data/dashboard_data.json", "data/collecties_ids.json", "data/collecties_seizoen.json"]
 TAK = "main"
 API = "https://api.github.com"
 

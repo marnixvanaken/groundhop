@@ -1,10 +1,11 @@
 {
  "_over_dit_bestand": {
   "wat": "De albums: welke clubs en stadions bij een competitie horen, en welke landen bij een werelddeel. Wat je al zag, rekent app/build_app_data.py uit je eigen data uit.",
-  "seizoen": "Voor de demo seizoen 2025/26, uit het hoofd samengesteld. De echte versie haalt de lijst van het lopende seizoen bij Transfermarkt op; tot die tijd: controleren.",
+  "seizoen": "De lijst per competitie komt van het lopende seizoen: je laptop haalt clubs en stadions op bij Transfermarkt (collecties_vul.py) en bewaart ze in data/collecties_seizoen.json. De lijsten hieronder (2025/26) zijn de terugval zolang dat nog niet gelukt is.",
   "clubs": "tm = het Transfermarkt-id van de club; daarop wordt gekoppeld. Zonder id (een club die je nog nooit zag) wordt op naam gekoppeld.",
   "stadions": "Een stadion telt als je er een wedstrijd zag, van welke competitie ook. De namen worden vergeleken met je stadions en hun aliassen in venue_coords.json.",
-  "landen": "Werelddelen volgen de confederaties; en/sx/wa/nx zijn Engeland, Schotland, Wales en Noord-Ierland, zoals Transfermarkt ze codeert."
+  "landen": "Werelddelen volgen de confederaties; en/sx/wa/nx zijn Engeland, Schotland, Wales en Noord-Ierland, zoals Transfermarkt ze codeert.",
+  "tm_code": "De code van de competitie op Transfermarkt: NL1 Eredivisie, NL2 Keuken Kampioen Divisie, BE1 Jupiler Pro League."
  },
  "competities": [
   {
@@ -102,7 +103,8 @@
      "tm": 798,
      "stadion": "Stadion Woudestein"
     }
-   ]
+   ],
+   "tm_code": "NL1"
   },
   {
    "id": "kkd",
@@ -204,7 +206,8 @@
      "tm": 403,
      "stadion": "Koning Willem II Stadion"
     }
-   ]
+   ],
+   "tm_code": "NL2"
   },
   {
    "id": "pro-league",
@@ -291,7 +294,8 @@
      "tm": null,
      "stadion": "Stade du Tivoli"
     }
-   ]
+   ],
+   "tm_code": "BE1"
   }
  ],
  "werelddelen": [

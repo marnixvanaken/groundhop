@@ -183,15 +183,28 @@ def albums(d, clubs, coords, venues):
                     return v
         return None
 
+    # De lijst van het lopende seizoen, als je laptop die heeft opgehaald
+    # (collecties_vul.py); anders de terugvallijst uit collecties.json.
+    sz_pad = ROOT / "data" / "collecties_seizoen.json"
+    seizoen = json.loads(sz_pad.read_text(encoding="utf-8")) if sz_pad.exists() else {}
+
     uit = []
     for comp in ref["competities"]:
-        groep = f"{comp['naam']} {comp['seizoen']}"
-        items = [club_uit(c) for c in comp["clubs"]]
+        opgehaald = (seizoen.get("competities") or {}).get(comp["id"])
+        if opgehaald:
+            j = seizoen["seizoen"]
+            lijst, label = opgehaald, f"{j}/{(j + 1) % 100:02d}"
+        else:
+            lijst, label = comp["clubs"], comp["seizoen"]
+        groep = f"{comp['naam']} {label}"
+        items = [club_uit(c) for c in lijst]
         uit.append({"id": f"{comp['id']}-clubs", "soort": "clubs", "groep": groep,
                     "titel": "Clubs", "items": items})
 
         stadions = {}
-        for c in comp["clubs"]:
+        for c in lijst:
+            if not c.get("stadion"):
+                continue
             s_ = stadions.setdefault(c["stadion"], {"naam": c["stadion"], "clubs": []})
             k = club_uit(c)
             s_["clubs"].append({"naam": k["naam"], "crest": k["crest"]})
