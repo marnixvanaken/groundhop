@@ -72,6 +72,16 @@
   status = 200
 
 [[redirects]]
+  from = "/collecties.html"
+  to = "/app/collecties.html"
+  status = 200
+
+[[redirects]]
+  from = "/album.html"
+  to = "/app/album.html"
+  status = 200
+
+[[redirects]]
   from = "/groundhop.js"
   to = "/app/groundhop.js"
   status = 200

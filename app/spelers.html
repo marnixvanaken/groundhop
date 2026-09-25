@@ -45,7 +45,7 @@ const app = document.getElementById('app');
 tabbalk('spelers');
 
 const TOON = 50;
-const S = {vraag: '', sorteer: 'seen'};
+const S = {vraag: '', sorteer: 'seen', land: null};
 const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => ({id, ...p, zoek: plat(p.n)})) : [];
 
 /* De club waarvoor je hem het vaakst zag, niet de eerste in de lijst. */
@@ -72,11 +72,15 @@ function rij(p){
 
 function render(){
   const q = plat(S.vraag);
-  const lijst = ALLE.filter(p => !q || p.zoek.includes(q))
+  const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land))
     .sort((a, b) => (b[S.sorteer] - a[S.sorteer]) || (b.seen - a.seen));
   const toon = lijst.slice(0, TOON);
 
   app.innerHTML = `
+  ${S.land ? `<section class="card"><div class="lijst-rij">
+      <span class="vlag" style="font-size:22px">${vlag(S.land)}</span>
+      <span class="lijst-main"><span class="lijst-naam">Spelers uit ${esc(landNaam(S.land))}</span></span>
+      <a class="back" href="spelers.html" aria-label="Filter wissen">✕</a></div></section>` : ''}
   <section class="card">
     <div class="seg" role="group" aria-label="Sorteer op" style="margin-bottom:8px">
       <button type="button" data-sorteer="seen" aria-pressed="${S.sorteer === 'seen'}">Vaakst gezien</button>
@@ -97,7 +101,9 @@ app.addEventListener('click', e => {
 });
 
 if (window.APP && window.SPELERS){
+  S.land = param('land');
   render();
+  window.addEventListener('hashchange', () => { S.land = param('land'); render(); app.scrollTop = 0; });
   koppelZoekveld(v => { S.vraag = v; render(); app.scrollTop = 0; });
 } else {
   app.innerHTML = zonderData('spelers.html');

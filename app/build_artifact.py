@@ -27,7 +27,7 @@ FONTS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 
 
 SCHERMEN = ["duels.html", "grounds.html", "spelers.html", "meer.html",
-            "wedstrijddetail.html", "stadiondetail.html", "speler.html", "club.html", "competitie.html", "toevoegen.html"]
+            "wedstrijddetail.html", "stadiondetail.html", "speler.html", "club.html", "competitie.html", "collecties.html", "album.html", "toevoegen.html"]
 
 
 def themas(css):

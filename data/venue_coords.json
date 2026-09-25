@@ -56,7 +56,11 @@
    "country": "Nederland",
    "lat": 51.8939,
    "lon": 4.5231,
-   "status": "zeker"
+   "status": "zeker",
+   "aliases": [
+    "Stadion Feijenoord \"De Kuip\"",
+    "Stadion Feijenoord"
+   ]
   },
   {
    "name": "Stadion Galgenwaard",
@@ -325,7 +329,11 @@
    "lat": 51.4839,
    "lon": 5.6583,
    "status": "controleren",
-   "herkomst": "Helmond Sport - MVV, 07-03-2025"
+   "herkomst": "Helmond Sport - MVV, 07-03-2025",
+   "aliases": [
+    "GS Staalwerken Stadion",
+    "De Braak"
+   ]
   },
   {
    "name": "PSV Campus \"De Herdgang\"",

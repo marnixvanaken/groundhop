@@ -21,6 +21,7 @@ Gebruik:  python3 app/build_app_data.py
 """
 
 import collections
+from collections import defaultdict
 import json
 import shutil
 from pathlib import Path
@@ -114,6 +115,87 @@ def toonnaam(naam, coord=None):
     return naam
 
 
+def plat(tekst):
+    """Alleen letters en cijfers, zonder accenten: 'Stadion "Galgenwaard"' en
+    'Stadion Galgenwaard' zijn dan hetzelfde."""
+    import unicodedata
+    t = unicodedata.normalize("NFKD", str(tekst or "")).encode("ascii", "ignore").decode()
+    return "".join(c for c in t.lower() if c.isalnum())
+
+
+def albums(d, clubs, coords, venues):
+    """De verzamelalbums uit data/collecties.json, met wat je al zag.
+
+    Een club telt als je hem zag spelen, in welke competitie ook; gekoppeld op
+    Transfermarkt-id, anders op naam. Een stadion telt als je er een wedstrijd
+    zag. Stadionnamen verschillen per bron en per sponsor, dus elke naam die een
+    bezocht stadion draagt (ook de aliassen in venue_coords.json) doet mee, en
+    een naam van minstens zes tekens mag in de andere voorkomen ('Stayen' in
+    'Daio Wasabi Stayen Stadium').
+    """
+    pad = ROOT / "data" / "collecties.json"
+    if not pad.exists():
+        return []
+    ref = json.loads(pad.read_text(encoding="utf-8"))
+
+    club_op_naam = {plat(c["name"]): c for c in clubs.values()}
+    bezocht = {}
+    for v in venues:
+        c = coords.get(v["key"]) or {}
+        for naam in {v["key"], *v["namen"], c.get("display"), *c.get("aliases", [])}:
+            if naam:
+                bezocht[plat(naam)] = v
+    def stadion_van(naam):
+        k = plat(naam)
+        if k in bezocht:
+            return bezocht[k]
+        if len(k) >= 6:
+            for b, v in bezocht.items():
+                if k in b or (len(b) >= 6 and b in k):
+                    return v
+        return None
+
+    uit = []
+    for comp in ref["competities"]:
+        groep = f"{comp['naam']} {comp['seizoen']}"
+        items = []
+        for c in comp["clubs"]:
+            gezien = clubs.get(c.get("tm")) or club_op_naam.get(plat(c["naam"]))
+            items.append({"naam": gezien["name"] if gezien else c["naam"],
+                          "gezien": bool(gezien), "n": gezien["count"] if gezien else 0,
+                          "crest": gezien["crest"] if gezien else None,
+                          "club": gezien["id"] if gezien else None})
+        uit.append({"id": f"{comp['id']}-clubs", "soort": "clubs", "groep": groep,
+                    "titel": "Clubs", "items": items})
+
+        stadions = {}
+        for c in comp["clubs"]:
+            s_ = stadions.setdefault(c["stadion"], {"naam": c["stadion"], "clubs": []})
+            s_["clubs"].append(c["naam"])
+        items = []
+        for s_ in stadions.values():
+            v = stadion_van(s_["naam"])
+            items.append({"naam": s_["naam"], "sub": " / ".join(s_["clubs"]),
+                          "gezien": bool(v), "n": v["visits"] if v else 0,
+                          "key": v["key"] if v else None})
+        uit.append({"id": f"{comp['id']}-stadions", "soort": "stadions", "groep": groep,
+                    "titel": "Stadions", "items": items})
+
+    landen = defaultdict(int)
+    for p in d["players"]:
+        if p.get("nationality_alpha2"):
+            landen[p["nationality_alpha2"].lower()] += 1
+    for w in ref["werelddelen"]:
+        uit.append({"id": f"landen-{w['id']}", "soort": "landen", "groep": "Spelers uit elk land",
+                    "titel": w["naam"],
+                    "items": [{"code": c, "gezien": landen[c] > 0, "n": landen[c]} for c in w["codes"]]})
+
+    for a in uit:
+        a["gezien"] = sum(1 for i in a["items"] if i["gezien"])
+        a["totaal"] = len(a["items"])
+    return uit
+
+
 def main():
     d = json.loads(SOURCE.read_text(encoding="utf-8"))
     BRON["naam"] = d.get("source", "sofascore")
@@ -123,6 +205,13 @@ def main():
     for v in json.loads((ROOT / "data" / "venue_coords.json").read_text(encoding="utf-8"))["venues"]:
         for naam in [v["name"], *v.get("aliases", [])]:
             coords[naam] = v
+
+    def stadion_sleutel(naam):
+        """De naam waaronder een stadion in de app staat: de hoofdnaam uit
+        venue_coords.json als het een alias is, anders de naam zelf."""
+        if not naam:
+            return None
+        return (coords.get(naam) or {}).get("name") or naam
 
     # ── Wedstrijden ─────────────────────────────────────────────────────────
     matches = sorted(d["matches"], key=lambda m: (m["date"], m.get("startTimestamp") or 0),
@@ -158,7 +247,7 @@ def main():
     samengevoegd = {k: sorted(c) for k, c in namen.items() if len(c) > 1}
 
     def wedstrijd(m):
-        v = (m.get("venue") or {}).get("name")
+        v = stadion_sleutel((m.get("venue") or {}).get("name"))
         ref = m.get("referee") or {}
         ht = m.get("half_time") or {}
         return {
@@ -193,26 +282,43 @@ def main():
         }
 
     # ── Stadions ────────────────────────────────────────────────────────────
+    # Gegroepeerd op naam, niet op het id uit de export. Bij interlands draagt
+    # het stadion het id van het Nederlands elftal, waardoor De Kuip en de ArenA
+    # samenvielen; en één stadion heet per sponsor anders (MySteel en GS
+    # Staalwerken in Helmond). De aliassen in venue_coords.json brengen elke
+    # naam terug tot één stadion.
+    agg = {}
+    for m in matches:
+        ruw = (m.get("venue") or {}).get("name")
+        if not ruw:
+            continue
+        k = stadion_sleutel(ruw)
+        a_ = agg.setdefault(k, {"namen": set(), "data": [], "publiek": [], "stad": ""})
+        a_["namen"].add(ruw)
+        a_["data"].append(m["date"])
+        if m.get("attendance"):
+            a_["publiek"].append(m["attendance"])
+        a_["stad"] = a_["stad"] or (m.get("venue") or {}).get("city") or ""
     venues = []
     zonder_coord = []
-    for v in d["venues"]:
-        c = coords.get(v["name"])
+    for k, a_ in agg.items():
+        c = coords.get(k)
         if c is None:
-            zonder_coord.append(v["name"])
+            zonder_coord.append(k)
         venues.append({
-            "key": v["name"],
-            "name": toonnaam(v["name"], c),
-            "city": v.get("city") or (c or {}).get("city") or "",
+            "key": k,
+            "name": toonnaam(k, c),
+            "city": a_["stad"] or (c or {}).get("city") or "",
             "country": (c or {}).get("country") or "",
             "lat": (c or {}).get("lat"),
             "lon": (c or {}).get("lon"),
             "coord": (c or {}).get("status"),
-            "visits": v["matches_count"],
-            "first": v.get("first_visit"),
-            "last": v.get("last_visit"),
-            "max_att": v.get("max_attendance"),
+            "visits": len(a_["data"]),
+            "first": min(a_["data"]),
+            "last": max(a_["data"]),
+            "max_att": max(a_["publiek"]) if a_["publiek"] else None,
         })
-    venues.sort(key=lambda v: -v["visits"])
+    venues.sort(key=lambda v: (-v["visits"], v["name"]))
 
     omtrek = json.loads((ROOT / "data" / "europe_outline.json").read_text(encoding="utf-8"))
     west, zuid, oost, noord = omtrek["_uitsnede"]
@@ -229,6 +335,8 @@ def main():
         "offmap": [v["key"] for v in venues if v["lat"] is not None
                    and not (west <= v["lon"] <= oost and zuid <= v["lat"] <= noord)],
         "records": d.get("records") or {},
+        "albums": albums(d, clubs, coords,
+                         [dict(v, namen=agg[v["key"]]["namen"]) for v in venues]),
         "totals": {
             "matches": len(matches),
             "goals": d.get("total_goals_witnessed") or alle_goals,
@@ -279,6 +387,8 @@ def main():
     zonder_foto = sum(1 for p in spelers.values() if not p["img"])
     print(f"  clublogo's: {len(clubs) - zonder_logo} van {len(clubs)}; spelersfoto's: "
           f"{len(spelers) - zonder_foto} van {len(spelers)} (rest: initialen)")
+    for a in app["albums"]:
+        print(f"  album {a['groep']} · {a['titel']}: {a['gezien']} van {a['totaal']}")
     for namen_ in samengevoegd.values():
         print(f"  één competitie: {' + '.join(namen_)}")
     if zonder_coord:

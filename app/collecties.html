@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Collecties — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Alle albums op één scherm, per competitie en per werelddeel. Een meter per
+   album; wat je nog mist zie je pas in het album zelf, zodat dit overzicht
+   kort blijft. */
+.uitleg{font-size:13px; color:var(--content-2); padding:0 4px; line-height:1.45;}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('meer', true);
+document.getElementById('bar').innerHTML = terugknop('Meer', 'meer.html') + '<h1>Collecties</h1>';
+
+function render(){
+  const groepen = [];
+  for (const a of albums()){
+    let g = groepen.find(x => x.naam === a.groep);
+    if (!g) groepen.push(g = {naam: a.groep, albums: []});
+    g.albums.push(a);
+  }
+  const vol = albums().filter(a => a.gezien === a.totaal).length;
+  app.innerHTML = `
+    <p class="uitleg">Vul je albums door wedstrijden te bezoeken. ${vol
+      ? `${vol} van de ${albums().length} ${vol === 1 ? 'is' : 'zijn'} al vol.` : ''}</p>
+    ${groepen.map(g => `
+      <section class="card">
+        <div class="card-head"><h2>${esc(g.naam)}</h2></div>
+        <div style="height:6px"></div>
+        ${g.albums.map(a => `
+          <a class="album-rij" href="${albumHref(a.id)}">
+            <div class="album-kop">
+              <span class="album-titel">${esc(a.titel)}${a.gezien === a.totaal ? ' ✓' : ''}</span>
+              <span class="album-tal">${a.gezien} <span>van ${a.totaal}</span></span>
+            </div>
+            ${meter(a.gezien, a.totaal)}
+          </a>`).join('')}
+      </section>`).join('')}`;
+}
+
+if (window.APP && APP.albums) render();
+else app.innerHTML = zonderData('collecties.html');
+</script>
+</body>
+</html>

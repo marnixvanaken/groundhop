@@ -51,6 +51,14 @@
       "destination": "/app/toevoegen.html"
     },
     {
+      "source": "/collecties.html",
+      "destination": "/app/collecties.html"
+    },
+    {
+      "source": "/album.html",
+      "destination": "/app/album.html"
+    },
+    {
       "source": "/groundhop.js",
       "destination": "/app/groundhop.js"
     },

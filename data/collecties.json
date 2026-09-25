@@ -1,0 +1,546 @@
+{
+ "_over_dit_bestand": {
+  "wat": "De albums: welke clubs en stadions bij een competitie horen, en welke landen bij een werelddeel. Wat je al zag, rekent app/build_app_data.py uit je eigen data uit.",
+  "seizoen": "Voor de demo seizoen 2025/26, uit het hoofd samengesteld. De echte versie haalt de lijst van het lopende seizoen bij Transfermarkt op; tot die tijd: controleren.",
+  "clubs": "tm = het Transfermarkt-id van de club; daarop wordt gekoppeld. Zonder id (een club die je nog nooit zag) wordt op naam gekoppeld.",
+  "stadions": "Een stadion telt als je er een wedstrijd zag, van welke competitie ook. De namen worden vergeleken met je stadions en hun aliassen in venue_coords.json.",
+  "landen": "Werelddelen volgen de confederaties; en/sx/wa/nx zijn Engeland, Schotland, Wales en Noord-Ierland, zoals Transfermarkt ze codeert."
+ },
+ "competities": [
+  {
+   "id": "eredivisie",
+   "naam": "Eredivisie",
+   "seizoen": "2025/26",
+   "clubs": [
+    {
+     "naam": "AFC Ajax",
+     "tm": 610,
+     "stadion": "Johan Cruijff ArenA"
+    },
+    {
+     "naam": "PSV",
+     "tm": 383,
+     "stadion": "Philips Stadion"
+    },
+    {
+     "naam": "Feyenoord",
+     "tm": 234,
+     "stadion": "De Kuip"
+    },
+    {
+     "naam": "AZ Alkmaar",
+     "tm": 1090,
+     "stadion": "AFAS Stadion"
+    },
+    {
+     "naam": "FC Twente",
+     "tm": 317,
+     "stadion": "De Grolsch Veste"
+    },
+    {
+     "naam": "FC Utrecht",
+     "tm": 200,
+     "stadion": "Stadion Galgenwaard"
+    },
+    {
+     "naam": "NEC Nijmegen",
+     "tm": 467,
+     "stadion": "Goffertstadion"
+    },
+    {
+     "naam": "Go Ahead Eagles",
+     "tm": 1435,
+     "stadion": "De Adelaarshorst"
+    },
+    {
+     "naam": "Fortuna Sittard",
+     "tm": 385,
+     "stadion": "Fortuna Sittard Stadion"
+    },
+    {
+     "naam": "sc Heerenveen",
+     "tm": 306,
+     "stadion": "Abe Lenstra Stadion"
+    },
+    {
+     "naam": "FC Groningen",
+     "tm": 202,
+     "stadion": "Euroborg"
+    },
+    {
+     "naam": "Sparta Rotterdam",
+     "tm": 468,
+     "stadion": "Sparta-stadion Het Kasteel"
+    },
+    {
+     "naam": "PEC Zwolle",
+     "tm": 1269,
+     "stadion": "MAC³PARK stadion"
+    },
+    {
+     "naam": "Heracles Almelo",
+     "tm": 1304,
+     "stadion": "Erve Asito"
+    },
+    {
+     "naam": "NAC Breda",
+     "tm": 132,
+     "stadion": "Rat Verlegh Stadion"
+    },
+    {
+     "naam": "SC Telstar",
+     "tm": 1434,
+     "stadion": "BUKO Stadion"
+    },
+    {
+     "naam": "FC Volendam",
+     "tm": 724,
+     "stadion": "Kras Stadion"
+    },
+    {
+     "naam": "Excelsior Rotterdam",
+     "tm": 798,
+     "stadion": "Stadion Woudestein"
+    }
+   ]
+  },
+  {
+   "id": "kkd",
+   "naam": "Keuken Kampioen Divisie",
+   "seizoen": "2025/26",
+   "clubs": [
+    {
+     "naam": "ADO Den Haag",
+     "tm": 1268,
+     "stadion": "Bingoal Stadion"
+    },
+    {
+     "naam": "Almere City FC",
+     "tm": 723,
+     "stadion": "Yanmar Stadion"
+    },
+    {
+     "naam": "SC Cambuur Leeuwarden",
+     "tm": 133,
+     "stadion": "Kooi Stadion"
+    },
+    {
+     "naam": "De Graafschap",
+     "tm": 642,
+     "stadion": "De Vijverberg"
+    },
+    {
+     "naam": "FC Den Bosch",
+     "tm": 404,
+     "stadion": "Stadion De Vliert"
+    },
+    {
+     "naam": "FC Dordrecht",
+     "tm": null,
+     "stadion": "M-Scores Stadion"
+    },
+    {
+     "naam": "FC Eindhoven",
+     "tm": null,
+     "stadion": "Jan Louwers Stadion"
+    },
+    {
+     "naam": "FC Emmen",
+     "tm": 1283,
+     "stadion": "De Oude Meerdijk"
+    },
+    {
+     "naam": "Helmond Sport",
+     "tm": 500,
+     "stadion": "GS Staalwerken Stadion"
+    },
+    {
+     "naam": "Jong Ajax",
+     "tm": 8817,
+     "stadion": "Sportpark De Toekomst"
+    },
+    {
+     "naam": "Jong AZ",
+     "tm": null,
+     "stadion": "AFAS Trainingscomplex"
+    },
+    {
+     "naam": "Jong FC Utrecht",
+     "tm": 17596,
+     "stadion": "Sportpark Zoudenbalch"
+    },
+    {
+     "naam": "Jong PSV",
+     "tm": 9715,
+     "stadion": "PSV Campus De Herdgang"
+    },
+    {
+     "naam": "MVV Maastricht",
+     "tm": 384,
+     "stadion": "Stadion De Geusselt"
+    },
+    {
+     "naam": "RKC Waalwijk",
+     "tm": 235,
+     "stadion": "Mandemakers Stadion"
+    },
+    {
+     "naam": "Roda JC",
+     "tm": 192,
+     "stadion": "Parkstad Limburg Stadion"
+    },
+    {
+     "naam": "TOP Oss",
+     "tm": null,
+     "stadion": "Frans Heesen Stadion"
+    },
+    {
+     "naam": "VVV-Venlo",
+     "tm": 1426,
+     "stadion": "Covebo Stadion - De Koel"
+    },
+    {
+     "naam": "Willem II",
+     "tm": 403,
+     "stadion": "Koning Willem II Stadion"
+    }
+   ]
+  },
+  {
+   "id": "pro-league",
+   "naam": "Jupiler Pro League",
+   "seizoen": "2025/26",
+   "clubs": [
+    {
+     "naam": "Club Brugge",
+     "tm": 2282,
+     "stadion": "Jan Breydelstadion"
+    },
+    {
+     "naam": "RSC Anderlecht",
+     "tm": 58,
+     "stadion": "Lotto Park"
+    },
+    {
+     "naam": "Union Saint-Gilloise",
+     "tm": 3948,
+     "stadion": "Joseph Marienstadion"
+    },
+    {
+     "naam": "KRC Genk",
+     "tm": null,
+     "stadion": "Cegeka Arena"
+    },
+    {
+     "naam": "KAA Gent",
+     "tm": 157,
+     "stadion": "Planet Group Arena"
+    },
+    {
+     "naam": "Standard Luik",
+     "tm": 3057,
+     "stadion": "Maurice Dufrasne Stadion"
+    },
+    {
+     "naam": "R Antwerp FC",
+     "tm": 1096,
+     "stadion": "Bosuilstadion"
+    },
+    {
+     "naam": "Cercle Brugge",
+     "tm": 520,
+     "stadion": "Jan Breydelstadion"
+    },
+    {
+     "naam": "Sporting Charleroi",
+     "tm": null,
+     "stadion": "Stade du Pays de Charleroi"
+    },
+    {
+     "naam": "OH Leuven",
+     "tm": null,
+     "stadion": "Den Dreef"
+    },
+    {
+     "naam": "KVC Westerlo",
+     "tm": null,
+     "stadion": "Het Kuipje"
+    },
+    {
+     "naam": "KV Mechelen",
+     "tm": 354,
+     "stadion": "Achter de Kazerne"
+    },
+    {
+     "naam": "Sint-Truidense VV",
+     "tm": 475,
+     "stadion": "Stayen"
+    },
+    {
+     "naam": "FCV Dender EH",
+     "tm": 9010,
+     "stadion": "Van Roystadion"
+    },
+    {
+     "naam": "Zulte Waregem",
+     "tm": 3508,
+     "stadion": "Elindus Arena"
+    },
+    {
+     "naam": "RAAL La Louvière",
+     "tm": null,
+     "stadion": "Stade du Tivoli"
+    }
+   ]
+  }
+ ],
+ "werelddelen": [
+  {
+   "id": "europa",
+   "naam": "Europa",
+   "codes": [
+    "al",
+    "ad",
+    "am",
+    "at",
+    "az",
+    "by",
+    "be",
+    "ba",
+    "bg",
+    "hr",
+    "cy",
+    "cz",
+    "dk",
+    "en",
+    "ee",
+    "fo",
+    "fi",
+    "fr",
+    "ge",
+    "de",
+    "gi",
+    "gr",
+    "hu",
+    "is",
+    "ie",
+    "il",
+    "it",
+    "kz",
+    "xk",
+    "lv",
+    "li",
+    "lt",
+    "lu",
+    "mt",
+    "md",
+    "me",
+    "nl",
+    "mk",
+    "nx",
+    "no",
+    "pl",
+    "pt",
+    "ro",
+    "ru",
+    "sm",
+    "sx",
+    "rs",
+    "sk",
+    "si",
+    "es",
+    "se",
+    "ch",
+    "tr",
+    "ua",
+    "wa"
+   ]
+  },
+  {
+   "id": "zuid-amerika",
+   "naam": "Zuid-Amerika",
+   "codes": [
+    "ar",
+    "bo",
+    "br",
+    "cl",
+    "co",
+    "ec",
+    "py",
+    "pe",
+    "uy",
+    "ve"
+   ]
+  },
+  {
+   "id": "afrika",
+   "naam": "Afrika",
+   "codes": [
+    "dz",
+    "ao",
+    "bj",
+    "bw",
+    "bf",
+    "bi",
+    "cf",
+    "km",
+    "cg",
+    "cd",
+    "dj",
+    "eg",
+    "gq",
+    "er",
+    "sz",
+    "et",
+    "ga",
+    "gm",
+    "gh",
+    "gn",
+    "gw",
+    "ci",
+    "cv",
+    "cm",
+    "ke",
+    "ls",
+    "lr",
+    "ly",
+    "mg",
+    "mw",
+    "ml",
+    "ma",
+    "mr",
+    "mu",
+    "mz",
+    "na",
+    "ne",
+    "ng",
+    "ug",
+    "rw",
+    "st",
+    "sn",
+    "sl",
+    "sd",
+    "so",
+    "tz",
+    "tg",
+    "td",
+    "tn",
+    "zm",
+    "zw",
+    "za",
+    "ss",
+    "sc"
+   ]
+  },
+  {
+   "id": "noord-amerika",
+   "naam": "Noord- en Midden-Amerika",
+   "codes": [
+    "ag",
+    "aw",
+    "bs",
+    "bb",
+    "bz",
+    "bm",
+    "ca",
+    "cr",
+    "cu",
+    "cw",
+    "dm",
+    "do",
+    "sv",
+    "gd",
+    "gt",
+    "gy",
+    "ht",
+    "hn",
+    "jm",
+    "ky",
+    "vi",
+    "mx",
+    "ms",
+    "ni",
+    "pa",
+    "pr",
+    "kn",
+    "lc",
+    "vc",
+    "sr",
+    "tt",
+    "us",
+    "vg",
+    "tc",
+    "ai"
+   ]
+  },
+  {
+   "id": "azie",
+   "naam": "Azië",
+   "codes": [
+    "af",
+    "au",
+    "bh",
+    "bd",
+    "bt",
+    "bn",
+    "kh",
+    "cn",
+    "ph",
+    "in",
+    "id",
+    "iq",
+    "ir",
+    "jp",
+    "ye",
+    "jo",
+    "kg",
+    "kw",
+    "la",
+    "lb",
+    "mo",
+    "mv",
+    "my",
+    "mn",
+    "mm",
+    "np",
+    "kp",
+    "uz",
+    "om",
+    "tl",
+    "pk",
+    "ps",
+    "qa",
+    "sa",
+    "sg",
+    "lk",
+    "sy",
+    "tj",
+    "tw",
+    "th",
+    "tm",
+    "ae",
+    "vn",
+    "kr",
+    "hk",
+    "gu"
+   ]
+  },
+  {
+   "id": "oceanie",
+   "naam": "Oceanië",
+   "codes": [
+    "as",
+    "ck",
+    "fj",
+    "pf",
+    "nc",
+    "nz",
+    "pg",
+    "sb",
+    "ws",
+    "to",
+    "vu"
+   ]
+  }
+ ]
+}

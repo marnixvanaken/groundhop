@@ -37,7 +37,8 @@ function vlag(a2){
     return '\u{1F3F4}' + [...deel].map(c => String.fromCodePoint(0xE0000 + c.charCodeAt(0))).join('')
            + '\u{E007F}';
   }
-  if (code.length !== 2) return '';
+  // Noord-Ierland heeft geen eigen vlag-emoji; letters zouden als fout lezen.
+  if (code.length !== 2 || code === 'nx') return '';
   return [...code].map(c => String.fromCodePoint(0x1F1E6 + c.charCodeAt(0) - 97)).join('');
 }
 
@@ -112,6 +113,7 @@ const stadionHref   = key => `stadiondetail.html#v=${encodeURIComponent(key)}`;
 const spelerHref    = id  => `speler.html#id=${id}`;
 const clubHref      = id  => `club.html#id=${id}`;
 const compHref      = naam => `competitie.html#t=${encodeURIComponent(naam)}`;
+const albumHref     = id  => `album.html#id=${encodeURIComponent(id)}`;
 
 /* Een wedstrijd uit APP in de vorm die duel() leest. */
 function alsDuel(m){
@@ -155,6 +157,7 @@ const TITELS = {
   'spelers.html': 'Spelers', 'meer.html': 'Meer', 'wedstrijddetail.html': 'Wedstrijd',
   'stadiondetail.html': 'Stadion', 'speler.html': 'Speler', 'toevoegen.html': 'Toevoegen',
   'club.html': 'Club', 'competitie.html': 'Competitie',
+  'collecties.html': 'Collecties', 'album.html': 'Album',
 };
 
 function vorigeScherm(){
@@ -270,3 +273,27 @@ function leeftijd(dob, op){
 }
 
 const clubOpNaam = naam => (window.APP?.clubs || []).find(c => c.name === naam);
+
+/* ── Collecties ──────────────────────────────────────────────────────────
+   Landnamen komen van de browser zelf (Intl.DisplayNames), in het Nederlands.
+   Transfermarkt heeft eigen codes voor de Britse landsdelen en Kosovo. */
+const LANDNAAM = {en: 'Engeland', sx: 'Schotland', wa: 'Wales', wl: 'Wales', nx: 'Noord-Ierland', xk: 'Kosovo'};
+let _regio;
+function landNaam(code){
+  if (LANDNAAM[code]) return LANDNAAM[code];
+  try {
+    _regio ||= new Intl.DisplayNames(['nl'], {type: 'region'});
+    return _regio.of(code.toUpperCase()) || code.toUpperCase();
+  } catch { return code.toUpperCase(); }
+}
+
+/* Een meter: hoeveel van het album je al hebt. Groen op een lichtere baan van
+   hetzelfde groen; het getal ernaast staat in tekstkleur. */
+function meter(gezien, totaal){
+  const pct = totaal ? Math.round(gezien / totaal * 100) : 0;
+  return `<div class="meter" role="img" aria-label="${gezien} van ${totaal}"><i style="width:${pct}%"></i></div>`;
+}
+
+const albums = () => window.APP?.albums || [];
+const album  = id => albums().find(a => a.id === id);
+const albumNaam = a => a.soort === 'landen' ? `Spelers uit ${a.titel}` : `${a.titel} · ${a.groep}`;

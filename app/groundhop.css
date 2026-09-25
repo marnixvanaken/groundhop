@@ -279,6 +279,18 @@ body:has(.bar.met-zoek){--bar-h:calc(102px + env(safe-area-inset-top,0px));}
   border-top:0.5px solid var(--separator); background:none; cursor:pointer;
   color:var(--accent); font:inherit; font-size:15px; text-align:left; text-decoration:none;}
 
+/* ── Collecties ────────────────────────────────────────────────────────── */
+.meter{height:6px; border-radius:3px; background:var(--accent-soft); overflow:hidden;}
+.meter i{display:block; height:100%; border-radius:3px; background:var(--accent);}
+.album-rij{display:block; padding:10px 16px 12px; color:inherit; text-decoration:none;}
+.album-rij + .album-rij{border-top:0.5px solid var(--separator);}
+.album-kop{display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  margin-bottom:7px;}
+.album-titel{font-size:15px; font-weight:500; min-width:0;}
+.album-tal{font-family:var(--display); font-variant-numeric:tabular-nums; font-size:14px;
+  font-weight:600; color:var(--content); white-space:nowrap;}
+.album-tal span{color:var(--content-2); font-weight:500;}
+
 /* ── De tellerband. Groen, want dit gaat over jou. ──────────────────────── */
 .tally{
   display:grid; grid-template-columns:repeat(3,1fr);

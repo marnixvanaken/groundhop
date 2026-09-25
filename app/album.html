@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<title>Album — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Een album als plakboek: wat je zag staat in kleur, wat nog mist is grijs
+   met alleen de naam. Vaste, alfabetische volgorde, zodat de gaten zichtbaar
+   blijven waar ze horen. Groen betekent ook hier: van jou. */
+.albumkop{padding:18px 16px 16px;}
+.albumkop .groep{font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
+  color:var(--content-2);}
+.albumkop h2{font-family:var(--display); font-size:24px; font-weight:700; letter-spacing:-0.02em;
+  line-height:1.15; margin:2px 0 12px;}
+.albumkop .stand{display:flex; align-items:baseline; gap:8px; margin-bottom:8px;}
+.albumkop .stand b{font-family:var(--display); font-size:34px; font-weight:700;
+  letter-spacing:-0.02em; color:var(--accent); line-height:1;}
+.albumkop .stand span{font-size:15px; color:var(--content-2);}
+
+.tegels{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; padding:8px 8px 12px;}
+.tegels.landen{grid-template-columns:repeat(4,minmax(0,1fr));}
+.tegel{display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 4px 10px;
+  border-radius:12px; color:inherit; text-decoration:none; text-align:center; min-width:0;}
+a.tegel:active{background:var(--card-sunken);}
+.tegel .crest,.tegel .crest-fallback{width:44px; height:44px; font-size:13px;}
+.tegel .vlag-groot{font-size:34px; line-height:1; height:40px; display:flex; align-items:center;}
+.tegel .code{font-family:var(--display); font-weight:700; font-size:14px; color:var(--content-2);
+  width:40px; height:40px; border-radius:50%; background:var(--card-sunken);
+  display:flex; align-items:center; justify-content:center;}
+.tegel-naam{font-size:12px; line-height:1.25; overflow-wrap:anywhere;}
+.tegel-tal{font-family:var(--display); font-variant-numeric:tabular-nums; font-size:12px;
+  font-weight:600; color:var(--accent);}
+
+/* Wat nog mist: grijs en stil, zonder kleur. */
+.tegel.mist .crest-fallback,.tegel.mist .code{background:transparent;
+  border:1.5px dashed var(--separator); color:var(--content-2);}
+.tegel.mist .vlag-groot{filter:grayscale(1); opacity:.35;}
+.tegel.mist .tegel-naam{color:var(--content-2);}
+.tegel.mist .tegel-tal{visibility:hidden;}
+
+.rij-mist .lijst-naam{color:var(--content-2);}
+.nog{font-size:12px; color:var(--content-2); white-space:nowrap;}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="groundhop.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('meer', true);
+document.getElementById('bar').innerHTML = terugknop('Collecties', 'collecties.html') + '<h1>Album</h1>';
+
+let FILTER = 'alles';
+
+function naamVan(a, i){ return a.soort === 'landen' ? landNaam(i.code) : i.naam; }
+
+function tegel(a, i){
+  const naam = naamVan(a, i);
+  const klasse = `tegel${i.gezien ? '' : ' mist'}`;
+  if (a.soort === 'landen'){
+    const v = vlag(i.code);
+    const beeld = v ? `<span class="vlag-groot" aria-hidden="true">${v}</span>`
+                    : `<span class="code" aria-hidden="true">${esc(i.code.toUpperCase())}</span>`;
+    const inhoud = `${beeld}<span class="tegel-naam">${esc(naam)}</span>
+      <span class="tegel-tal">${i.n} ${i.n === 1 ? 'speler' : 'spelers'}</span>`;
+    return i.gezien ? `<a class="${klasse}" href="spelers.html#land=${i.code}">${inhoud}</a>`
+                    : `<div class="${klasse}" aria-label="${esc(naam)}, nog niet gezien">${inhoud}</div>`;
+  }
+  // clubs
+  const beeld = i.gezien ? logo(i.crest, naam) : `<span class="crest-fallback" aria-hidden="true">${initialen(naam, 3)}</span>`;
+  const inhoud = `${beeld}<span class="tegel-naam">${esc(naam)}</span>
+    <span class="tegel-tal">${i.n}×</span>`;
+  return i.gezien ? `<a class="${klasse}" href="${clubHref(i.club)}">${inhoud}</a>`
+                  : `<div class="${klasse}" aria-label="${esc(naam)}, nog niet gezien">${inhoud}</div>`;
+}
+
+function stadionRij(i){
+  const inhoud = `
+    <span class="lijst-main">
+      <span class="lijst-naam">${esc(i.naam)}</span>
+      <span class="lijst-sub">${esc(i.sub)}</span>
+    </span>
+    ${i.gezien ? `<span class="badge">${i.n}×</span><span class="chev" aria-hidden="true">›</span>`
+               : '<span class="nog">nog niet</span>'}`;
+  return i.gezien ? `<a class="lijst-rij" href="${stadionHref(i.key)}">${inhoud}</a>`
+                  : `<div class="lijst-rij rij-mist">${inhoud}</div>`;
+}
+
+function render(){
+  const a = album(param('id')) || albums()[0];
+  document.title = `${albumNaam(a)} — GroundHop`;
+  const items = a.items.slice().sort((x, y) => naamVan(a, x).localeCompare(naamVan(a, y), 'nl'));
+  const zichtbaar = items.filter(i => FILTER === 'alles' || (FILTER === 'gezien') === i.gezien);
+  const rest = a.totaal - a.gezien;
+
+  let lijst;
+  if (!zichtbaar.length) lijst = `<div class="note" style="border-top:0">${FILTER === 'mist'
+      ? 'Niets meer te gaan: dit album is vol.' : 'Nog niets in dit album.'}</div>`;
+  else if (a.soort === 'stadions') lijst = '<div style="height:4px"></div>' + zichtbaar.map(stadionRij).join('');
+  else lijst = `<div class="tegels${a.soort === 'landen' ? ' landen' : ''}">${zichtbaar.map(i => tegel(a, i)).join('')}</div>`;
+
+  app.innerHTML = `
+  <section class="card">
+    <div class="albumkop">
+      <div class="groep">${esc(a.groep)}</div>
+      <h2>${esc(a.titel)}</h2>
+      <div class="stand"><b>${a.gezien}</b><span>van ${a.totaal}${rest ? ` · nog ${rest} te gaan` : ' · vol'}</span></div>
+      ${meter(a.gezien, a.totaal)}
+    </div>
+  </section>
+
+  <section class="card">
+    <div class="seg" role="group" aria-label="Toon" style="margin-bottom:4px">
+      ${[['alles', 'Alles'], ['gezien', 'Gezien'], ['mist', 'Nog te gaan']].map(([k, l]) =>
+        `<button type="button" data-filter="${k}" aria-pressed="${FILTER === k}">${l}</button>`).join('')}
+    </div>
+    ${lijst}
+  </section>
+  ${a.soort !== 'landen' ? `<p class="note" style="border-top:0;padding:0 4px">Seizoen ${esc(a.groep.split(' ').pop())}.
+    ${a.soort === 'stadions' ? 'Een stadion telt als je er een wedstrijd zag, van welke competitie ook.'
+                             : 'Een club telt als je hem zag spelen, in welke competitie ook.'}</p>` : ''}`;
+}
+
+app.addEventListener('click', e => {
+  const f = e.target.closest('[data-filter]');
+  if (f){ FILTER = f.dataset.filter; render(); }
+});
+
+if (window.APP && APP.albums){
+  render();
+  window.addEventListener('hashchange', () => { FILTER = 'alles'; render(); app.scrollTop = 0; });
+} else {
+  app.innerHTML = zonderData('album.html');
+}
+</script>
+</body>
+</html>

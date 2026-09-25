@@ -112,6 +112,30 @@ function reeks(){
   </section>`;
 }
 
+/* Collecties: de drie albums die het dichtst bij vol zijn, en nog niet vol.
+   Dat zijn de albums waar een volgende wedstrijd iets verschil maakt. */
+function collecties(){
+  const open = albums().filter(a => a.gezien < a.totaal)
+    .sort((x, y) => (y.gezien / y.totaal - x.gezien / x.totaal) || (x.totaal - x.gezien) - (y.totaal - y.gezien))
+    .slice(0, 3);
+  if (!open.length) return '';
+  const kort = a => a.soort === 'landen' ? `Spelers uit ${a.titel}` : `${a.groep.replace(/ \d{4}\/\d{2}$/, '')} · ${a.titel}`;
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Collecties</h2></div>
+    <div style="height:6px"></div>
+    ${open.map(a => `
+      <a class="album-rij" href="${albumHref(a.id)}">
+        <div class="album-kop">
+          <span class="album-titel">${esc(kort(a))}</span>
+          <span class="album-tal">${a.gezien} <span>van ${a.totaal}</span></span>
+        </div>
+        ${meter(a.gezien, a.totaal)}
+      </a>`).join('')}
+    <a class="meer-knop" href="collecties.html">Alle collecties</a>
+  </section>`;
+}
+
 /* Vaakst gezien: drie ranglijsten achter één keuzeschakelaar, zodat Home kort
    blijft. Elke rij leidt naar zijn eigen scherm. */
 const TOP = {
@@ -188,7 +212,7 @@ function recent(){
 }
 
 function render(){
-  app.innerHTML = verzameling() + laatste() + reeks() + vaakst('clubs') + records() + recent();
+  app.innerHTML = verzameling() + laatste() + collecties() + reeks() + vaakst('clubs') + records() + recent();
   app.addEventListener('click', e => {
     const b = e.target.closest('[data-top]');
     if (b) document.getElementById('vaakst').outerHTML = vaakst(b.dataset.top);
