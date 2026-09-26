@@ -56,23 +56,28 @@ function hoofdclub(p){
 }
 
 function rij(p){
-  const waarde = S.sorteer === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}` : `${p.seen}×`;
+  const waarde = S.sorteer === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}`
+               : S.sorteer === 'mv' ? euro(p.mv) : `${p.seen}×`;
+  const sub = S.sorteer === 'mv' && p.mx && p.mx > (p.mv || 0)
+    ? `hoogste ${euro(p.mx)}${p.mxd ? ' (' + p.mxd.slice(0, 4) + ')' : ''}`
+    : [POSITIE[p.pos], esc(hoofdclub(p))].filter(Boolean).join(' · ');
   return `
     <a class="lijst-rij speler" href="${spelerHref(p.id)}">
       ${portret(p.img, p.n)}
       <span class="lijst-main">
         <span class="lijst-naam">${esc(p.n)}</span>
         <span class="lijst-sub"><span class="vlag">${vlag(p.c)}</span>
-          ${[POSITIE[p.pos], esc(hoofdclub(p))].filter(Boolean).join(' · ')}</span>
+          ${sub}</span>
       </span>
-      <span class="badge">${waarde}</span>
+      <span class="badge${S.sorteer === 'mv' ? ' neutraal' : ''}">${waarde}</span>
       <span class="chev" aria-hidden="true">›</span>
     </a>`;
 }
 
 function render(){
   const q = plat(S.vraag);
-  const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land))
+  const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land)
+                              && (S.sorteer !== 'mv' || p.mv))
     .sort((a, b) => (b[S.sorteer] - a[S.sorteer]) || (b.seen - a.seen));
   const toon = lijst.slice(0, TOON);
 
@@ -85,13 +90,16 @@ function render(){
     <div class="seg" role="group" aria-label="Sorteer op" style="margin-bottom:8px">
       <button type="button" data-sorteer="seen" aria-pressed="${S.sorteer === 'seen'}">Vaakst gezien</button>
       <button type="button" data-sorteer="g" aria-pressed="${S.sorteer === 'g'}">Meeste goals</button>
+      <button type="button" data-sorteer="mv" aria-pressed="${S.sorteer === 'mv'}">Waarde</button>
     </div>
     ${toon.length ? toon.map(rij).join('') : `<div class="leeg">Geen speler gevonden voor
       “${esc(S.vraag)}”.</div>`}
     <div class="note">${lijst.length > TOON
       ? `${TOON} van ${getal(lijst.length)} getoond. Zoek om de rest te vinden.`
       : `${getal(lijst.length)} ${lijst.length === 1 ? 'speler' : 'spelers'}.`}
-      ${S.sorteer === 'g' ? 'Goals die jij zag, niet zijn carrièretotaal.' : ''}</div>
+      ${S.sorteer === 'g' ? 'Goals die jij zag, niet zijn carrièretotaal.' : ''}
+      ${S.sorteer === 'mv' ? `Huidige marktwaarde volgens Transfermarkt. Hoogste waarde bekend bij
+        ${ALLE.filter(p => p.mx).length} van ${ALLE.filter(p => p.mv).length} spelers; de rest vult zich 's nachts aan.` : ''}</div>
   </section>`;
 }
 

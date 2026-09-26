@@ -47,6 +47,7 @@ def daily_scheduler():
         time.sleep(wait_secs)
         print("  [scheduler] Dagelijkse sync gestart (00:00)")
         run_sync()
+        nachtelijke_marktwaarde()
 
 threading.Thread(target=daily_scheduler, daemon=True).start()
 
@@ -165,6 +166,34 @@ def run_sync():
         # het toevoegen niets meer met de hand naar GitHub.
         if not _sync_status["error"]:
             zet_live()
+    finally:
+        _sync_status["running"] = False
+        _sync_slot.release()
+
+
+def nachtelijke_marktwaarde(aantal: int = 400):
+    """Elke nacht de marktwaarde van een deel van de spelers verversen.
+
+    Eén verzoek per speler; alle ~3000 kost uren. 's Nachts 400, vaakst gezien
+    eerst, dus na een week zijn ze allemaal binnen en daarna ververst elke
+    waarde zich ongeveer eens per vier maanden. Loopt er net een sync, dan
+    wacht het tot de volgende nacht.
+    """
+    if huidige_bron() != "transfermarkt" or not _sync_slot.acquire(blocking=False):
+        return
+    try:
+        _sync_status.update(running=True, error=None)
+        for stap in (["transfermarkt_profiles.py", "--marktwaarde", str(aantal)],
+                     ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"],
+                     ["app/build_app_data.py"]):
+            r = subprocess.run([sys.executable] + stap, timeout=6 * 3600, check=False)
+            if r.returncode != 0:
+                _sync_status["error"] = f"{stap[0]} stopte met code {r.returncode}"
+                break
+        else:
+            zet_live()
+    except Exception as e:
+        _sync_status["error"] = str(e)
     finally:
         _sync_status["running"] = False
         _sync_slot.release()

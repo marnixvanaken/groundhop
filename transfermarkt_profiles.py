@@ -20,6 +20,7 @@ Gebruik
     python3 transfermarkt_profiles.py                # alles, uren werk
     python3 transfermarkt_profiles.py --volledig 150 # top 150 ook transfers
     python3 transfermarkt_profiles.py --rapport      # alleen de stand
+    python3 transfermarkt_profiles.py --marktwaarde 400  # waarde + hoogste waarde
 """
 
 from __future__ import annotations
@@ -34,8 +35,8 @@ from collections import Counter
 from datetime import date
 from pathlib import Path
 
-from transfermarkt_poc import (BASE, CEAPI_MARKTWAARDE, CEAPI_TRANSFERS,
-                              fetch, haal_json, parse_player)
+from transfermarkt_poc import (BASE, CEAPI_MARKTWAARDE, CEAPI_TRANSFERS, Diag,
+                              fetch, haal_json, parse_marktwaarde_ceapi, parse_player)
 
 SPELERS = Path("data/tm_players.json")
 CACHE = Path("data/tm_player_cache")
@@ -94,6 +95,63 @@ def haal_profiel(pid: int, volledig: bool, force: bool = False) -> dict | None:
     record["_gemist"] = [r[0] for r in diag.rows if r[1] == "GEMIST"]
     pad.write_text(json.dumps(record, ensure_ascii=False, indent=2), "utf-8")
     return record
+
+
+# ─── Marktwaarde ─────────────────────────────────────────────────────────────
+#
+# Het profiel geeft alleen de huidige waarde, zonder datum. De grafiek op
+# Transfermarkt (een ceapi-endpoint, één verzoek per speler) heeft elke
+# waardering met datum, en daarmee ook de hoogste. Een marktwaarde verandert
+# een paar keer per jaar; na MV_VERS_DAGEN mag hij opnieuw.
+
+MV_VERS_DAGEN = 120
+
+
+def vat_marktwaarde_samen(data: dict | None) -> dict:
+    """Huidige waarde met datum, en de hoogste met de datum waarop die voor
+    het eerst werd bereikt."""
+    huidig, historie = parse_marktwaarde_ceapi(data or {}, Diag())
+    met = [h for h in historie if h.get("value")]
+    uit = {"market_value": huidig,
+           "market_value_date": met[-1]["date"] if met else None,
+           "max_market_value": None, "max_market_value_date": None}
+    if met:
+        top = max(h["value"] for h in met)
+        eerste = next(h for h in met if h["value"] == top)
+        uit["max_market_value"], uit["max_market_value_date"] = top, eerste["date"]
+    return uit
+
+
+def haal_marktwaarde(pid: int) -> bool:
+    """Vult de marktwaarde aan in de profielcache van deze speler."""
+    pad = CACHE / f"{pid}.json"
+    if not pad.exists():
+        return False
+    data = haal_json(BASE + CEAPI_MARKTWAARDE.format(id=pid))
+    if data is None:
+        return False
+    record = json.loads(pad.read_text("utf-8"))
+    for k, v in vat_marktwaarde_samen(data).items():
+        # Een lege grafiek (gestopte speler) laat de waarde van het profiel staan.
+        if v is not None or k != "market_value":
+            record[k] = v
+    record["_mv_opgehaald"] = date.today().isoformat()
+    pad.write_text(json.dumps(record, ensure_ascii=False, indent=2), "utf-8")
+    return True
+
+
+def mv_te_doen(spelers: list[dict], vandaag: date | None = None) -> list[dict]:
+    """Wie een verse marktwaarde nodig heeft: vaakst gezien eerst."""
+    vandaag = vandaag or date.today()
+    uit = []
+    for s in spelers:
+        pad = CACHE / f"{s['id']}.json"
+        if not pad.exists():
+            continue
+        wanneer = json.loads(pad.read_text("utf-8")).get("_mv_opgehaald")
+        if not wanneer or (vandaag - date.fromisoformat(wanneer)).days > MV_VERS_DAGEN:
+            uit.append(s)
+    return sorted(uit, key=lambda s: -(s.get("matches_seen") or 0))
 
 
 # ─── Controle ────────────────────────────────────────────────────────────────
@@ -500,6 +558,9 @@ def main():
                    help="toon de stand en de controle, haal niets op")
     p.add_argument("--zelftest", action="store_true",
                    help="reken de geboortedatumcontrole na, haal niets op")
+    p.add_argument("--marktwaarde", type=int, default=0, metavar="N",
+                   help="haal voor N spelers (vaakst gezien eerst) de huidige en "
+                        "hoogste marktwaarde met datum op, 1 verzoek elk")
     p.add_argument("--pauze", type=float, metavar="SEC",
                    help="minimale wachttijd tussen verzoeken (standaard 3)")
     args = p.parse_args()
@@ -548,6 +609,15 @@ def main():
             print(f"  [{i}/{len(te_doen)}] {s['name']} "
                   f"({s['minutes_played']} min){'  +transfers' if volledig else ''}")
             haal_profiel(s["id"], volledig, args.force)
+            wacht()
+
+    if args.marktwaarde and not args.rapport:
+        mv = mv_te_doen(spelers)[:args.marktwaarde]
+        print(f"\n  marktwaarde: {len(mv)} spelers"
+              f" (~{int(len(mv) * ((MIN_DELAY + MAX_DELAY) / 2 + 0.7)) // 60} minuten)")
+        for i, s in enumerate(mv, 1):
+            print(f"  [{i}/{len(mv)}] {s['name']}")
+            haal_marktwaarde(s["id"])
             wacht()
 
     # Voeg de profielgegevens samen met de afgeleide spelerslaag.

@@ -308,3 +308,13 @@ function meter(gezien, totaal){
 const albums = () => window.APP?.albums || [];
 const album  = id => albums().find(a => a.id === id);
 const albumNaam = a => a.soort === 'landen' ? `Spelers uit ${a.titel}` : `${a.titel} · ${a.groep}`;
+
+/* Een bedrag zoals Transfermarkt het schrijft: € 15 mln, € 7,5 mln, € 450.000. */
+function euro(n){
+  if (n == null) return '—';
+  if (n >= 1e6){
+    const m = n / 1e6;
+    return `€ ${m.toLocaleString('nl-NL', {maximumFractionDigits: m < 10 ? 1 : 0})} mln`;
+  }
+  return `€ ${n.toLocaleString('nl-NL')}`;
+}

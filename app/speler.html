@@ -23,6 +23,14 @@
 .kop p{font-size:13px; color:var(--content-2); margin-top:4px;}
 .span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
 .drie{display:grid; grid-template-columns:repeat(3,1fr);}
+
+/* Marktwaarde: nu en de hoogste. Tekstkleur, geen groen: het is de waarde van
+   de speler, niet iets van jou. */
+.waarde{display:grid; grid-template-columns:1fr 1fr;}
+.waarde > div{padding:12px 16px 14px; min-width:0;}
+.waarde > div + div{border-left:0.5px solid var(--separator);}
+.waarde b{display:block; font-family:var(--display); font-size:22px; font-weight:700;
+  letter-spacing:-0.01em; margin:2px 0 1px;}
 .drie > div{padding:12px 16px; min-width:0;}
 </style>
 </head>
@@ -88,6 +96,19 @@ function render(){
       ? `${datum(eerste.m.date)} &nbsp;—&nbsp; ${datum(laatste.m.date)}`
       : datum(laatste.m.date, true)}</div>
   </section>
+
+  ${p.mv ? `
+  <section class="card">
+    <div class="card-head"><h2>Marktwaarde</h2></div>
+    <div class="waarde">
+      <div><div class="row-label">Nu</div><b>${euro(p.mv)}</b>
+        <div class="row-label">${p.mvd ? 'per ' + datum(p.mvd) : 'volgens Transfermarkt'}</div></div>
+      ${p.mx ? `<div><div class="row-label">Hoogste</div><b>${euro(p.mx)}</b>
+        <div class="row-label">${p.mxd ? datum(p.mxd) : ''}</div></div>`
+        : `<div><div class="row-label">Hoogste</div><b>—</b>
+        <div class="row-label">wordt 's nachts opgehaald</div></div>`}
+    </div>
+  </section>` : ''}
 
   <section class="card">
     <div class="card-head"><h2>Voor wie je hem zag</h2></div>

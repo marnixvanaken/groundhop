@@ -403,6 +403,9 @@ def main():
             "g": p.get("goals") or 0,
             "as": p.get("assists") or 0,
             "teams": p.get("teams_seen_for") or [],
+            # Marktwaarde volgens Transfermarkt: nu (met datum) en de hoogste ooit.
+            "mv": p.get("market_value"), "mvd": p.get("market_value_date"),
+            "mx": p.get("max_market_value"), "mxd": p.get("max_market_value_date"),
             "m": [[x["match_id"], x.get("team"), x.get("minutes"), x.get("goals") or 0,
                    x.get("assists") or 0, 1 if x.get("starter") else 0, x.get("rating")]
                   for x in md],
