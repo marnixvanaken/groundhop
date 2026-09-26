@@ -57,6 +57,7 @@ function hoofdclub(p){
 
 function rij(p){
   const waarde = S.sorteer === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}`
+               : S.sorteer === 'min' ? `${getal(p.min)} min`
                : S.sorteer === 'mv' ? euro(p.mv) : `${p.seen}×`;
   const sub = S.sorteer === 'mv' && p.mx && p.mx > (p.mv || 0)
     ? `hoogste ${euro(p.mx)}${p.mxd ? ' (' + p.mxd.slice(0, 4) + ')' : ''}`
@@ -88,8 +89,9 @@ function render(){
       <a class="back" href="spelers.html" aria-label="Filter wissen">✕</a></div></section>` : ''}
   <section class="card">
     <div class="seg" role="group" aria-label="Sorteer op" style="margin-bottom:8px">
-      <button type="button" data-sorteer="seen" aria-pressed="${S.sorteer === 'seen'}">Vaakst gezien</button>
-      <button type="button" data-sorteer="g" aria-pressed="${S.sorteer === 'g'}">Meeste goals</button>
+      <button type="button" data-sorteer="seen" aria-pressed="${S.sorteer === 'seen'}">Gezien</button>
+      <button type="button" data-sorteer="g" aria-pressed="${S.sorteer === 'g'}">Goals</button>
+      <button type="button" data-sorteer="min" aria-pressed="${S.sorteer === 'min'}">Minuten</button>
       <button type="button" data-sorteer="mv" aria-pressed="${S.sorteer === 'mv'}">Waarde</button>
     </div>
     ${toon.length ? toon.map(rij).join('') : `<div class="leeg">Geen speler gevonden voor
@@ -98,6 +100,7 @@ function render(){
       ? `${TOON} van ${getal(lijst.length)} getoond. Zoek om de rest te vinden.`
       : `${getal(lijst.length)} ${lijst.length === 1 ? 'speler' : 'spelers'}.`}
       ${S.sorteer === 'g' ? 'Goals die jij zag, niet zijn carrièretotaal.' : ''}
+      ${S.sorteer === 'min' ? 'Minuten die jij hem zag spelen, opgeteld over je duels.' : ''}
       ${S.sorteer === 'mv' ? `Huidige marktwaarde volgens Transfermarkt. Hoogste waarde bekend bij
         ${ALLE.filter(p => p.mx).length} van ${ALLE.filter(p => p.mv).length} spelers; de rest vult zich 's nachts aan.` : ''}</div>
   </section>`;

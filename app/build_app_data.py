@@ -402,6 +402,8 @@ def main():
             "seen": p.get("matches_seen") or len(md),
             "g": p.get("goals") or 0,
             "as": p.get("assists") or 0,
+            # Minuten die je hem zag spelen, opgeteld over je wedstrijden.
+            "min": p.get("minutes_played") or sum(x.get("minutes") or 0 for x in md),
             "teams": p.get("teams_seen_for") or [],
             # Marktwaarde volgens Transfermarkt: nu (met datum) en de hoogste ooit.
             "mv": p.get("market_value"), "mvd": p.get("market_value_date"),
