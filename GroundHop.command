@@ -26,7 +26,20 @@ fi
 # stappen pas bij de volgende start doen.
 if [ "$1" != "--bijgewerkt" ]; then
   voor=$(git hash-object "$0" 2>/dev/null)
-  if git pull --ff-only --autostash -q 2>/tmp/groundhop-pull.log; then
+  # publiceer.py zet data rechtstreeks op GitHub. Een bestand dat daar zo voor
+  # het eerst verschijnt, staat hier nog als nieuw, en dan weigert git pull
+  # ("would be overwritten"). Even opzij, en daarna de eigen versie terug:
+  # die van deze laptop is de nieuwste.
+  opzij=""
+  for f in data/dashboard_data.json data/collecties_ids.json data/collecties_seizoen.json; do
+    if [ -f "$f" ] && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
+      mv "$f" "$f.lokaal" && opzij="$opzij $f"
+    fi
+  done
+  git pull --ff-only --autostash -q 2>/tmp/groundhop-pull.log
+  gelukt=$?
+  for f in $opzij; do mv "$f.lokaal" "$f"; done
+  if [ $gelukt -eq 0 ]; then
     echo "  ✓ Nieuwste versie"
     if [ "$(git hash-object "$0" 2>/dev/null)" != "$voor" ]; then
       echo "  ↻ het startbestand is bijgewerkt — opnieuw starten"
