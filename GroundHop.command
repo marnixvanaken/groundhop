@@ -53,4 +53,10 @@ python3 app/build_app_data.py >/dev/null 2>&1 && echo "  ✓ App-data bijgewerkt
 ( sleep 2; open http://localhost:4000 ) &
 echo "  ✓ Server start — laat dit venster open, sluit het om te stoppen."
 echo ""
+# Zolang de server draait, valt de Mac niet in slaap: anders slaat hij de
+# nachtelijke ronde en het ophalen van de marktwaarde over. Het deksel dicht
+# doet hem nog wel slapen.
+if command -v caffeinate >/dev/null 2>&1; then
+  exec caffeinate -i python3 server.py
+fi
 exec python3 server.py

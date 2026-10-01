@@ -171,18 +171,11 @@ def run_sync():
         _sync_slot.release()
 
 
-def nachtelijke_marktwaarde(aantal: int = 400):
-    """Elke nacht de marktwaarde van een deel van de spelers verversen.
-
-    Eén verzoek per speler; alle ~3000 kost uren. 's Nachts 400, vaakst gezien
-    eerst, dus na een week zijn ze allemaal binnen en daarna ververst elke
-    waarde zich ongeveer eens per vier maanden. Loopt er net een sync, dan
-    wacht het tot de volgende nacht.
-    """
-    if huidige_bron() != "transfermarkt" or not _sync_slot.acquire(blocking=False):
-        return
+def _marktwaarde_ronde(aantal: int):
+    """Haal voor `aantal` spelers de marktwaarde op en zet het resultaat live.
+    Wie dit aanroept, heeft het sync-slot al."""
+    _sync_status.update(running=True, error=None)
     try:
-        _sync_status.update(running=True, error=None)
         for stap in (["transfermarkt_profiles.py", "--marktwaarde", str(aantal)],
                      ["transfermarkt_dashboard.py", "--uitvoer", "data/dashboard_data.json"],
                      ["app/build_app_data.py"]):
@@ -196,7 +189,82 @@ def nachtelijke_marktwaarde(aantal: int = 400):
         _sync_status["error"] = str(e)
     finally:
         _sync_status["running"] = False
+    return _sync_status["error"]
+
+
+def nachtelijke_marktwaarde(aantal: int = 400):
+    """Elke nacht de marktwaarde van een deel van de spelers verversen.
+
+    Eén verzoek per speler; alle ~3000 kost uren. 's Nachts 400, vaakst gezien
+    eerst, dus na een week zijn ze allemaal binnen en daarna ververst elke
+    waarde zich ongeveer eens per vier maanden. Loopt er net een sync, dan
+    wacht het tot de volgende nacht.
+    """
+    if huidige_bron() != "transfermarkt" or not _sync_slot.acquire(blocking=False):
+        return
+    try:
+        _marktwaarde_ronde(aantal)
+    finally:
         _sync_slot.release()
+
+
+def marktwaarde_stand() -> dict:
+    """Bij hoeveel spelers de marktwaarde (met de hoogste ooit) vers binnen is."""
+    import transfermarkt_profiles as tp
+    if not tp.SPELERS.exists():
+        return {"totaal": 0, "te_doen": 0}
+    spelers = [s for s in json.loads(tp.SPELERS.read_text("utf-8"))
+               if (tp.CACHE / f"{s['id']}.json").exists()]
+    return {"totaal": len(spelers), "te_doen": len(tp.mv_te_doen(spelers))}
+
+
+# De knop 'Nu ophalen' in Meer: alles in één keer in plaats van 400 per nacht.
+_mv_alles = {"bezig": False, "fout": None, "klaar": None, "rondes": 0}
+_mv_alles_slot = threading.Lock()
+MV_PER_RONDE = 300
+
+
+def start_marktwaarde_alles() -> bool:
+    """Start de rondes op de achtergrond, tenzij ze al lopen."""
+    with _mv_alles_slot:
+        if _mv_alles["bezig"]:
+            return False
+        _mv_alles.update(bezig=True, fout=None, klaar=None, rondes=0)
+    threading.Thread(target=marktwaarde_alles, daemon=True).start()
+    return True
+
+
+def marktwaarde_alles():
+    """Haal de marktwaarde van alle spelers op, in rondes van MV_PER_RONDE.
+
+    Na elke ronde gaat het resultaat live, dus wat binnen is staat er al,
+    ook als de laptop halverwege dichtgaat. Daarna pakt de knop de rest op:
+    wie al binnen is, slaat hij over. Tussen de rondes door krijgt een sync
+    (na toevoegen) voorrang.
+    """
+    try:
+        vorige = None
+        while True:
+            te_doen = marktwaarde_stand()["te_doen"]
+            if te_doen == 0:
+                _mv_alles["klaar"] = time.strftime("%d-%m %H:%M")
+                break
+            if te_doen == vorige:
+                # Een hele ronde zonder één waarde erbij: Transfermarkt houdt
+                # ons tegen. Niet blijven hameren.
+                _mv_alles["fout"] = "Transfermarkt gaf niets terug. Probeer het later nog eens."
+                break
+            vorige = te_doen
+            with _sync_slot:
+                fout = _marktwaarde_ronde(MV_PER_RONDE)
+            _mv_alles["rondes"] += 1
+            if fout:
+                _mv_alles["fout"] = fout
+                break
+    except Exception as e:
+        _mv_alles["fout"] = str(e)
+    finally:
+        _mv_alles["bezig"] = False
 
 
 def nog_op_te_halen() -> int:
@@ -332,6 +400,14 @@ class Handler(SimpleHTTPRequestHandler):
 
         if path == "/api/live/nu":
             self.send_json(zet_live())
+            return
+
+        if path == "/api/live/marktwaarde":
+            if huidige_bron() != "transfermarkt":
+                self.send_json({"ok": False, "error": "Alleen met Transfermarkt als bron."})
+                return
+            start_marktwaarde_alles()
+            self.send_json({"ok": True})
             return
 
         if path == "/api/cookies/save":
@@ -551,6 +627,15 @@ class Handler(SimpleHTTPRequestHandler):
             import publiceer
             self.send_json({"gekoppeld": publiceer.gekoppeld(), "repo": publiceer.repo(),
                             "laatst": _sync_status.get("live"),
+                            "lokaal": self.client_address[0] in ("127.0.0.1", "::1")})
+
+        elif path == "/api/marktwaarde":
+            try:
+                stand = marktwaarde_stand()
+            except Exception as e:
+                stand = {"totaal": 0, "te_doen": 0, "error": str(e)}
+            self.send_json({**stand, **_mv_alles, "per_ronde": MV_PER_RONDE,
+                            "bron": huidige_bron(),
                             "lokaal": self.client_address[0] in ("127.0.0.1", "::1")})
 
         elif path == "/api/tm/selectie":

@@ -240,6 +240,19 @@ python3 app/build_app_data.py     # schrijft app/app-data.js en app/speler-data.
   wachtwoord nodig op de live site. Alternatief: het ophalen helemaal in
   GitHub Actions, maar het is onzeker of Transfermarkt die servers toelaat.
 - **Zelf invullen** van een wedstrijd die onder geen club valt.
+- **Mijlpalen** (Meer → Mijlpalen). Een moment met een datum en een wedstrijd,
+  geen album om vol te krijgen. Voorstel:
+  - *Tellers met drempels*: duels (1/50/100/150/200/250/500), grounds
+    (1/10/25/50/75/100), landen (5/10/15/20), goals gezien (100/250/500/750/1000),
+    100 bezoeken aan één ground.
+  - *Groundhoppen*: eerste keer buitenland, eerste ground buiten Europa, verste
+    ground, double (twee duels op één dag), hattrick-weekend (drie grounds in drie
+    dagen), record nieuwe grounds in een seizoen, elk seizoen een nieuwe ground.
+  - *Wedstrijdmomenten*: comeback gezien, winnende goal na de 90e minuut, hattrick,
+    0–0, 7+ goals, rode kaart, strafschoppenserie.
+  - Scherm: bovenaan 'Volgende' (2–3 met een balk: '200e duel · nog 13'), daaronder
+    een tijdlijn; op Home één regel; een melding na toevoegen.
+  - Open vraag: afstanden vanaf het Philips Stadion of vanaf thuis?
 
 ## Figma-opzet
 

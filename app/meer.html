@@ -36,6 +36,7 @@
 .knop.stil{background:var(--card-sunken); color:var(--content);}
 .knop:disabled{opacity:.5;}
 .live-status{margin-top:8px;}
+.live .meter{margin:10px 0 4px;}
 </style>
 </head>
 <body>
@@ -110,6 +111,53 @@ async function toonLive(){
   const html = liveKaart(info);
   if (oud) oud.outerHTML = html || '';
   else if (html) app.insertAdjacentHTML('afterbegin', html);
+  toonMarktwaarde();
+}
+
+/* Marktwaarde in één keer ophalen, in plaats van 400 per nacht. Ook alleen
+   op de laptop: de live site heeft geen /api/marktwaarde. */
+const uren = n => {
+  const min = Math.round(n * 5.2 / 60);   // ~4,5 s wachten + ophalen per speler
+  return min < 90 ? `± ${Math.max(min, 1)} minuten` : `± ${Math.round(min / 60)} uur`;
+};
+
+function marktwaardeKaart(m){
+  if (!m || !m.lokaal || m.bron !== 'transfermarkt' || !m.totaal) return '';
+  const binnen = m.totaal - m.te_doen;
+  const tekst = m.bezig
+    ? `Bezig: bij ${binnen} van ${m.totaal} spelers binnen, nog ${uren(m.te_doen)}.
+       Na elke ${m.per_ronde} gaat het live. Laat GroundHop open en de laptop open.`
+    : m.te_doen === 0
+      ? `Bij alle ${m.totaal} spelers binnen${m.klaar ? ` (klaar ${m.klaar})` : ''}. Elke nacht ververst GroundHop de oudste.`
+      : `De hoogste waarde ooit is bekend bij ${binnen} van ${m.totaal} spelers.
+         's Nachts komen er 400 bij; met de knop haal je de rest nu op.`;
+  const knop = m.bezig || m.te_doen === 0 ? ''
+    : `<div class="live-rij"><button class="knop" type="button" id="mv-nu">Nu alles ophalen (${uren(m.te_doen)})</button></div>`;
+  return `
+    <section class="card" id="marktwaarde">
+      <div class="card-head"><h2>Marktwaarde</h2><span class="kop-tel">${binnen}/${m.totaal}</span></div>
+      <div class="live">
+        ${meter(binnen, m.totaal)}
+        <div class="live-status">${tekst}</div>
+        ${m.fout ? `<div class="live-status">Gestopt: ${esc(m.fout)}</div>` : ''}
+        ${knop}
+      </div>
+    </section>`;
+}
+
+let mvKlok = null;
+async function toonMarktwaarde(){
+  const m = await api('/api/marktwaarde');
+  const oud = document.getElementById('marktwaarde');
+  const html = marktwaardeKaart(m);
+  if (oud) oud.outerHTML = html || '';
+  else if (html){
+    const live = document.getElementById('live');
+    if (live) live.insertAdjacentHTML('afterend', html);
+    else app.insertAdjacentHTML('afterbegin', html);
+  }
+  clearTimeout(mvKlok);
+  if (m?.bezig) mvKlok = setTimeout(toonMarktwaarde, 15000);
 }
 
 app.addEventListener('click', async e => {
@@ -127,6 +175,11 @@ app.addEventListener('click', async e => {
                                            : 'Live gezet. Vercel is over een minuut bijgewerkt.')
                  : (r?.fout || 'Live zetten lukte niet.'));
     e.target.disabled = false;
+  }
+  if (e.target.id === 'mv-nu'){
+    e.target.disabled = true;
+    await api('/api/live/marktwaarde', {method: 'POST'});
+    toonMarktwaarde();
   }
   if (e.target.id === 'live-los'){
     await api('/api/live/ontkoppel', {method: 'POST'}); toonLive();
