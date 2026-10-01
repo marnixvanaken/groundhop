@@ -18,6 +18,10 @@
    zoekveld vindt de rest. */
 .speler .avatar,.speler .avatar-fallback{width:40px; height:40px;}
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
+/* Onder Waarde: een tweede, kleinere keuze. Alleen daar nodig, dus geen
+   vijfde tab. */
+.seg.klein{width:max-content; margin:0 auto 8px;}
+.seg.klein button{min-height:28px; padding:0 16px; font-size:12px;}
 </style>
 </head>
 <body>
@@ -45,7 +49,9 @@ const app = document.getElementById('app');
 tabbalk('spelers');
 
 const TOON = 50;
-const S = {vraag: '', sorteer: 'seen', land: null};
+const S = {vraag: '', sorteer: 'seen', waarde: 'mv', land: null};
+/* Waarde sorteert op de huidige (mv) of de hoogste ooit (mx). */
+const sleutel = () => S.sorteer === 'mv' ? S.waarde : S.sorteer;
 const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => ({id, ...p, zoek: plat(p.n)})) : [];
 
 /* De club waarvoor je hem het vaakst zag, niet de eerste in de lijst. */
@@ -56,10 +62,13 @@ function hoofdclub(p){
 }
 
 function rij(p){
-  const waarde = S.sorteer === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}`
-               : S.sorteer === 'min' ? `${getal(p.min)} min`
-               : S.sorteer === 'mv' ? euro(p.mv) : `${p.seen}×`;
-  const sub = S.sorteer === 'mv' && p.mx && p.mx > (p.mv || 0)
+  const k = sleutel();
+  const waarde = k === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}`
+               : k === 'min' ? `${getal(p.min)} min`
+               : k === 'mv' || k === 'mx' ? euro(p[k]) : `${p.seen}×`;
+  const sub = k === 'mx'
+    ? [p.mxd ? datum(p.mxd) : '', !p.mv ? '' : p.mv === p.mx ? 'nu ook' : `nu ${euro(p.mv)}`].filter(Boolean).join(' · ')
+    : k === 'mv' && p.mx && p.mx > (p.mv || 0)
     ? `hoogste ${euro(p.mx)}${p.mxd ? ' (' + p.mxd.slice(0, 4) + ')' : ''}`
     : [POSITIE[p.pos], esc(hoofdclub(p))].filter(Boolean).join(' · ');
   return `
@@ -76,10 +85,10 @@ function rij(p){
 }
 
 function render(){
-  const q = plat(S.vraag);
+  const q = plat(S.vraag), k = sleutel();
   const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land)
-                              && (S.sorteer !== 'mv' || p.mv))
-    .sort((a, b) => (b[S.sorteer] - a[S.sorteer]) || (b.seen - a.seen));
+                              && (S.sorteer !== 'mv' || p[k]))
+    .sort((a, b) => (b[k] - a[k]) || (b.seen - a.seen));
   const toon = lijst.slice(0, TOON);
 
   app.innerHTML = `
@@ -94,6 +103,10 @@ function render(){
       <button type="button" data-sorteer="min" aria-pressed="${S.sorteer === 'min'}">Minuten</button>
       <button type="button" data-sorteer="mv" aria-pressed="${S.sorteer === 'mv'}">Waarde</button>
     </div>
+    ${S.sorteer === 'mv' ? `<div class="seg klein" role="group" aria-label="Welke waarde">
+      <button type="button" data-waarde="mv" aria-pressed="${S.waarde === 'mv'}">Nu</button>
+      <button type="button" data-waarde="mx" aria-pressed="${S.waarde === 'mx'}">Hoogste</button>
+    </div>` : ''}
     ${toon.length ? toon.map(rij).join('') : `<div class="leeg">Geen speler gevonden voor
       “${esc(S.vraag)}”.</div>`}
     <div class="note">${lijst.length > TOON
@@ -101,14 +114,18 @@ function render(){
       : `${getal(lijst.length)} ${lijst.length === 1 ? 'speler' : 'spelers'}.`}
       ${S.sorteer === 'g' ? 'Goals die jij zag, niet zijn carrièretotaal.' : ''}
       ${S.sorteer === 'min' ? 'Minuten die jij hem zag spelen, opgeteld over je duels.' : ''}
-      ${S.sorteer === 'mv' ? `Huidige marktwaarde volgens Transfermarkt. Hoogste waarde bekend bij
-        ${ALLE.filter(p => p.mx).length} van ${ALLE.filter(p => p.mv).length} spelers; de rest vult zich 's nachts aan.` : ''}</div>
+      ${k === 'mv' ? 'Huidige marktwaarde volgens Transfermarkt.' : ''}
+      ${k === 'mx' ? 'Hoogste marktwaarde ooit volgens Transfermarkt, met de datum waarop hij die voor het eerst bereikte.' : ''}
+      ${S.sorteer === 'mv' && ALLE.filter(p => p.mx).length < ALLE.filter(p => p.mv).length
+        ? `Hoogste waarde bekend bij ${getal(ALLE.filter(p => p.mx).length)} van ${getal(ALLE.filter(p => p.mv).length)} spelers; de rest vult zich 's nachts aan.` : ''}</div>
   </section>`;
 }
 
 app.addEventListener('click', e => {
   const b = e.target.closest('[data-sorteer]');
   if (b){ S.sorteer = b.dataset.sorteer; render(); }
+  const w = e.target.closest('[data-waarde]');
+  if (w){ S.waarde = w.dataset.waarde; render(); }
 });
 
 if (window.APP && window.SPELERS){
