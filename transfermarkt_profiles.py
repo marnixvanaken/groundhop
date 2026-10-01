@@ -122,14 +122,15 @@ def vat_marktwaarde_samen(data: dict | None) -> dict:
     return uit
 
 
-def haal_marktwaarde(pid: int) -> bool:
-    """Vult de marktwaarde aan in de profielcache van deze speler."""
+def haal_marktwaarde(pid: int) -> dict | None:
+    """Vult de marktwaarde aan in de profielcache van deze speler en geeft
+    het bijgewerkte record terug; None als er niets binnenkwam."""
     pad = CACHE / f"{pid}.json"
     if not pad.exists():
-        return False
+        return None
     data = haal_json(BASE + CEAPI_MARKTWAARDE.format(id=pid))
     if data is None:
-        return False
+        return None
     record = json.loads(pad.read_text("utf-8"))
     for k, v in vat_marktwaarde_samen(data).items():
         # Een lege grafiek (gestopte speler) laat de waarde van het profiel staan.
@@ -137,7 +138,26 @@ def haal_marktwaarde(pid: int) -> bool:
             record[k] = v
     record["_mv_opgehaald"] = date.today().isoformat()
     pad.write_text(json.dumps(record, ensure_ascii=False, indent=2), "utf-8")
-    return True
+    return record
+
+
+def euro(n) -> str:
+    """15000000 → '€15 mln', 750000 → '€750k'."""
+    if not n:
+        return "–"
+    if n >= 1_000_000:
+        return f"€{n / 1_000_000:.2f}".rstrip("0").rstrip(".").replace(".", ",") + " mln"
+    return f"€{round(n / 1000)}k"
+
+
+def marktwaarde_regel(r: dict | None) -> str:
+    """Wat er binnenkwam, op één regel voor in de terminal."""
+    if r is None:
+        return "niets binnen"
+    if not r.get("max_market_value"):
+        return f"nu {euro(r.get('market_value'))}, geen verloop op Transfermarkt"
+    return (f"nu {euro(r.get('market_value'))} ({r.get('market_value_date') or '?'}), "
+            f"hoogste {euro(r['max_market_value'])} ({r['max_market_value_date']})")
 
 
 def mv_te_doen(spelers: list[dict], vandaag: date | None = None) -> list[dict]:
@@ -616,8 +636,8 @@ def main():
         print(f"\n  marktwaarde: {len(mv)} spelers"
               f" (~{int(len(mv) * ((MIN_DELAY + MAX_DELAY) / 2 + 0.7)) // 60} minuten)")
         for i, s in enumerate(mv, 1):
-            print(f"  [{i}/{len(mv)}] {s['name']}")
-            haal_marktwaarde(s["id"])
+            print(f"  [{i}/{len(mv)}] {s['name']} — {marktwaarde_regel(haal_marktwaarde(s['id']))}",
+                  flush=True)
             wacht()
 
     # Voeg de profielgegevens samen met de afgeleide spelerslaag.
