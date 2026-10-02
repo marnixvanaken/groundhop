@@ -191,7 +191,8 @@ function render(){
       <div class="goals">
         ${m.goals.map(g => {
           const soort = g.type === 'penalty' ? '<span class="kind">pen</span>'
-                      : g.type === 'ownGoal' ? '<span class="kind">eigen goal</span>' : '';
+                      // Sofascore: 'ownGoal', Transfermarkt: 'own'.
+                      : g.type === 'ownGoal' || g.type === 'own' ? '<span class="kind">eigen goal</span>' : '';
           const ploeg = g.team === h.name ? h : g.team === a.name ? a : {name: g.team || '?'};
           return `<div class="goal">
             <div class="minute num">${minuut(g)}</div>

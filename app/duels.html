@@ -13,12 +13,11 @@
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
-   Alle duels, nieuwste eerst, per seizoen of per competitie in een eigen
-   kaart. Het zoekveld blijft in de bovenbalk staan en zoekt terwijl je typt,
-   op club, stadion en competitie tegelijk. De chiprij springt naar een seizoen
-   of competitie in plaats van de rest te verbergen: zo blijft de lijst één
-   doorlopende reeks. Bijzonder toont één lijst: finales, verlengingen en
-   ander duels die je wilt terugvinden. */
+   Alle duels, nieuwste eerst, per seizoen in een eigen kaart. Het zoekveld
+   blijft in de bovenbalk staan en zoekt terwijl je typt, op club, stadion en
+   competitie tegelijk. Bij Seizoenen springt de chiprij naar een seizoen in
+   plaats van de rest te verbergen: zo blijft de lijst één doorlopende reeks.
+   Competities en Bijzonder filteren: één competitie, of één soort duel. */
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
 .kop-tel{font-size:12px; color:var(--content-2);}
 .chips-kaart{padding:2px 0;}
@@ -90,15 +89,24 @@ const BIJZONDER = [
 const TABS_DUELS = [{id: 'seizoenen', label: 'Seizoenen'}, {id: 'competities', label: 'Competities'},
                     {id: 'bijzonder', label: 'Bijzonder'}];
 
+/* De competities als filter, meeste duels eerst. */
+const COMPETITIES = (() => {
+  const n = {};
+  (window.APP?.matches || []).forEach(m => n[m.t] = (n[m.t] || 0) + 1);
+  return Object.keys(n).sort((a, b) => n[b] - n[a]);
+})();
+
 /* Welke tab en welke lijst, ook als je terugkomt van een wedstrijd. */
-const S = {tab: 'seizoenen', bijzonder: BIJZONDER[0].id, vraag: ''};
+const S = {tab: 'seizoenen', bijzonder: BIJZONDER[0].id, competitie: COMPETITIES[0], vraag: ''};
 try {
   const o = JSON.parse(sessionStorage.getItem('gh-duels')) || {};
   if (TABS_DUELS.some(t => t.id === o.tab)) S.tab = o.tab;
   if (BIJZONDER.some(b => b.id === o.bijzonder)) S.bijzonder = o.bijzonder;
+  if (COMPETITIES.includes(o.competitie)) S.competitie = o.competitie;
 } catch {}
 function onthoud(){
-  try { sessionStorage.setItem('gh-duels', JSON.stringify({tab: S.tab, bijzonder: S.bijzonder})); } catch {}
+  try { sessionStorage.setItem('gh-duels', JSON.stringify({tab: S.tab, bijzonder: S.bijzonder,
+                                                           competitie: S.competitie})); } catch {}
 }
 
 function past(m, q){
@@ -108,25 +116,27 @@ function past(m, q){
     .some(t => plat(t).includes(q));
 }
 
-const rij = (m, extra) => duel({...alsDuel(m), tournament: extra ? `${m.t} · ${extra}` : m.t},
+/* Een duel; tekst vervangt wat er achter de datum staat (anders de competitie). */
+const rij = (m, tekst) => duel({...alsDuel(m), tournament: tekst || m.t},
                                {attrs: ` href="${wedstrijdHref(m.id)}"`});
 const aantal = n => `${n} ${n === 1 ? 'duel' : 'duels'}`;
 
-/* Per seizoen of per competitie een kaart, met een chiprij om te springen. */
-function groepen(lijst, sleutel, label, volgorde){
-  const per = {};
-  lijst.forEach(m => (per[sleutel(m)] ||= []).push(m));
-  const ks = Object.keys(per).sort(volgorde(per));
-  return {
-    chips: ks.length > 1 ? `<div class="chips" role="group" aria-label="Spring naar">
-      ${ks.map((k, i) => `<button type="button" data-spring="g${i}">${esc(label(k, true))}</button>`).join('')}
-    </div>` : '',
-    kaarten: ks.map((k, i) => `
-  <section class="card" id="g${i}">
-    <div class="card-head"><h2>${esc(label(k))}</h2><span class="kop-tel">${aantal(per[k].length)}</span></div>
-    <div style="height:8px"></div>
-    ${per[k].map(m => rij(m)).join('')}
-  </section>`).join('')};
+/* Eén kaart met de gefilterde duels, onder een chiprij om te kiezen. */
+function filterlijst(kop, soort, keuzes, actief, titel, hier, tekst, voet){
+  return `${kop}
+      <div class="chips klein" role="group" aria-label="${soort === 'bijzonder' ? 'Soort duel' : 'Competitie'}">
+        ${keuzes.map(([id, label]) => `<button type="button" data-${soort}="${esc(id)}"
+          aria-pressed="${id === actief}">${esc(label)}</button>`).join('')}
+      </div>
+    </section>
+    ${S.vraag ? `<div class="kop-tel" style="padding:0 4px">${aantal(hier.length)} voor “${esc(S.vraag)}”</div>` : ''}
+    <section class="card">
+      <div class="card-head"><h2>${esc(titel)}</h2><span class="kop-tel">${aantal(hier.length)}</span></div>
+      <div style="height:8px"></div>
+      ${hier.length ? hier.map(m => rij(m, tekst(m))).join('')
+        : `<div class="leeg">${S.vraag ? `Geen duel gevonden voor “${esc(S.vraag)}” in deze lijst.` : 'Nog geen duel in deze lijst.'}</div>`}
+      ${voet}
+    </section>`;
 }
 
 function render(){
@@ -140,39 +150,47 @@ function render(){
     <div class="seg" role="group" aria-label="Indeling">
       ${TABS_DUELS.map(t => `<button type="button" data-tab="${t.id}" aria-pressed="${t.id === S.tab}">${t.label}</button>`).join('')}
     </div>`;
-  const teller = S.vraag ? `<div class="kop-tel" style="padding:0 4px">${aantal(lijst.length)}
-    voor “${esc(S.vraag)}”</div>` : '';
-  const geen = `<section class="card"><div class="leeg">Geen duel gevonden voor
-    “${esc(S.vraag)}”. Zoeken gaat op club, stadion en competitie.</div></section>`;
-
   if (S.tab === 'bijzonder'){
     const b = BIJZONDER.find(x => x.id === S.bijzonder);
     const hier = lijst.filter(b.in);
     if (b.volgorde) hier.sort((x, y) => b.volgorde(x, y) || y.date.localeCompare(x.date));
-    app.innerHTML = `${kop}
-      <div class="chips klein" role="group" aria-label="Soort duel">
-        ${BIJZONDER.map(x => `<button type="button" data-bijzonder="${x.id}" aria-pressed="${x.id === b.id}">${x.label}</button>`).join('')}
-      </div>
-    </section>
-    ${teller}
-    <section class="card">
-      <div class="card-head"><h2>${b.label}</h2><span class="kop-tel">${aantal(hier.length)}</span></div>
-      <div style="height:8px"></div>
-      ${hier.length ? hier.map(m => rij(m, b.extra(m))).join('')
-        : `<div class="leeg">${S.vraag ? `Geen duel gevonden voor “${esc(S.vraag)}” in deze lijst.` : 'Nog geen duel in deze lijst.'}</div>`}
-      <div class="note">${b.noot}</div>
-    </section>`;
+    app.innerHTML = filterlijst(kop, 'bijzonder', BIJZONDER.map(x => [x.id, x.label]), b.id, b.label,
+                                hier, m => `${m.t} · ${b.extra(m)}`, `<div class="note">${b.noot}</div>`);
     schuifrij(app.querySelector('.chips.klein'), vorige);
     return;
   }
 
-  if (!lijst.length){ app.innerHTML = `${kop}</section>${geen}`; return; }
+  if (S.tab === 'competities'){
+    const c = S.competitie;
+    // Achter de datum de ronde, want de competitie staat al boven de kaart.
+    const ronde = m => m.rn || (m.round ? `Ronde ${m.round}` : '');
+    app.innerHTML = filterlijst(kop, 'competitie', COMPETITIES.map(k => [k, comp(k)]), c, c,
+      lijst.filter(m => m.t === c), ronde,
+      `<a class="meer-knop" href="${compHref(c)}">Alles over ${esc(comp(c))}</a>`);
+    schuifrij(app.querySelector('.chips.klein'), vorige);
+    return;
+  }
 
-  const g = S.tab === 'competities'
-    // Meeste duels eerst; binnen een competitie nieuwste eerst.
-    ? groepen(lijst, m => m.t, (k, kort) => kort ? comp(k) : k, per => (a, b) => per[b].length - per[a].length)
-    : groepen(lijst, m => m.season, j => seizoenLabel(+j), () => (a, b) => b - a);
-  app.innerHTML = `${kop}${g.chips}</section>${teller}${g.kaarten}`;
+  if (!lijst.length){
+    app.innerHTML = `${kop}</section><section class="card"><div class="leeg">Geen duel gevonden voor
+      “${esc(S.vraag)}”. Zoeken gaat op club, stadion en competitie.</div></section>`;
+    return;
+  }
+  const per = {};
+  lijst.forEach(m => (per[m.season] ||= []).push(m));
+  const jaren = Object.keys(per).map(Number).sort((a, b) => b - a);
+  app.innerHTML = `${kop}
+      ${jaren.length > 1 ? `<div class="chips" role="group" aria-label="Spring naar seizoen">
+        ${jaren.map(j => `<button type="button" data-spring="s${j}">${seizoenLabel(j)}</button>`).join('')}
+      </div>` : ''}
+    </section>
+    ${S.vraag ? `<div class="kop-tel" style="padding:0 4px">${aantal(lijst.length)} voor “${esc(S.vraag)}”</div>` : ''}
+    ${jaren.map(j => `
+    <section class="card" id="s${j}">
+      <div class="card-head"><h2>${seizoenLabel(j)}</h2><span class="kop-tel">${aantal(per[j].length)}</span></div>
+      <div style="height:8px"></div>
+      ${per[j].map(m => rij(m)).join('')}
+    </section>`).join('')}`;
   schuifrij(app.querySelector('.chips'));
 }
 
@@ -181,6 +199,8 @@ app.addEventListener('click', e => {
   if (t){ S.tab = t.dataset.tab; onthoud(); render(); app.scrollTop = 0; return; }
   const b = e.target.closest('[data-bijzonder]');
   if (b){ S.bijzonder = b.dataset.bijzonder; onthoud(); render(); return; }
+  const c = e.target.closest('[data-competitie]');
+  if (c){ S.competitie = c.dataset.competitie; onthoud(); render(); return; }
   const s = e.target.closest('[data-spring]');
   if (!s) return;
   const doel = document.getElementById(s.dataset.spring);
