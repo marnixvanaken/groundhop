@@ -18,11 +18,6 @@
    zoekveld vindt de rest. */
 .speler .avatar,.speler .avatar-fallback{width:40px; height:40px;}
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
-/* Onder elke tab een tweede, kleinere keuze: wat er precies geteld wordt.
-   Past het niet op één regel, dan loopt het door op de volgende, zodat je
-   alles ziet zonder te schuiven. */
-.seg.klein{margin:6px 16px 8px; flex-wrap:wrap;}
-.seg.klein button{flex:1 0 auto; min-height:28px; padding:0 6px; font-size:12px;}
 </style>
 </head>
 <body>
@@ -199,8 +194,12 @@ function render(){
   const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land) && l.w(p))
     .sort((a, b) => (l.oplopend ? l.w(a) - l.w(b) : l.w(b) - l.w(a)) || (b.seen - a.seen));
   const toon = lijst.slice(0, TOON);
+  // Onder elke tab een schuifbare rij: wat er precies geteld wordt.
+  const oud = app.querySelector('.chips.klein');
+  const vorige = oud?.dataset.tab === t.id ? oud.scrollLeft : 0;
   const knoppen = (soort, items, actief, label) => `
-    <div class="seg${soort === 'lijst' ? ' klein' : ''}" role="group" aria-label="${label}">
+    <div class="${soort === 'lijst' ? 'chips klein' : 'seg'}" role="group" aria-label="${label}"
+      ${soort === 'lijst' ? `data-tab="${t.id}"` : ''}>
       ${items.map(x => `<button type="button" data-${soort}="${x.id}" aria-pressed="${x.id === actief}">${x.label}</button>`).join('')}
     </div>`;
   const metMx = ALLE.filter(p => p.mx).length, metMv = ALLE.filter(p => p.mv).length;
@@ -223,6 +222,7 @@ function render(){
       ${t.id === 'waarde' && metMx < metMv
         ? `Hoogste waarde bekend bij ${getal(metMx)} van ${getal(metMv)} spelers; de rest vult zich 's nachts aan.` : ''}</div>
   </section>`;
+  schuifrij(app.querySelector('.chips.klein'), vorige);
 }
 
 app.addEventListener('click', e => {

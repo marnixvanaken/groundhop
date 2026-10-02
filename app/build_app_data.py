@@ -23,6 +23,7 @@ Gebruik:  python3 app/build_app_data.py
 import collections
 from collections import defaultdict
 import json
+import re
 import shutil
 from pathlib import Path
 
@@ -283,10 +284,17 @@ def main():
         c["logo"] = kopieer("tournaments", c["id"], "tournament")
     samengevoegd = {k: sorted(c) for k, c in namen.items() if len(c) > 1}
 
+    def rondenaam(m):
+        """'Achtste finale heenwedstrijden      2' → 'Achtste finale heenwedstrijden'.
+        Transfermarkt plakt er soms een reeks spaties en een speeldag achter."""
+        naam = re.split(r"\s{2,}", (m.get("round_name") or "").strip())[0]
+        return naam or None
+
     def wedstrijd(m):
         v = stadion_sleutel((m.get("venue") or {}).get("name"))
         ref = m.get("referee") or {}
         ht = m.get("half_time") or {}
+        pen = m.get("penalty_shootout") or {}
         return {
             "id": m["id"],
             "date": m["date"],
@@ -300,6 +308,10 @@ def main():
                   and ht.get("away") is not None else None,
             "t": naam_van[sleutel(m)],
             "round": m.get("round"),
+            # 'Finale', 'Kwartfinale', 'Groep B': waaraan Duels een finale of
+            # een knock-outduel herkent.
+            "rn": rondenaam(m),
+            "pen": [pen["home"], pen["away"]] if pen.get("home") is not None else None,
             "venue": v,
             "att": m.get("attendance"),
             "ref": ref.get("name"),
@@ -314,7 +326,9 @@ def main():
             "cards": [
                 {"min": k.get("minute"), "p": k.get("player"), "team": k.get("team"),
                  "type": k.get("type")}
-                for k in m.get("cards") or [] if k.get("type") in ("red", "yellowRed")
+                # Twee keer geel heet bij Sofascore 'yellowRed', bij
+                # Transfermarkt 'second_yellow'.
+                for k in m.get("cards") or [] if k.get("type") in ("red", "yellowRed", "second_yellow")
             ],
         }
 

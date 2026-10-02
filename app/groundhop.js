@@ -134,6 +134,26 @@ function alsDuel(m){
 }
 const duelLink = m => duel(alsDuel(m), {attrs: ` href="${wedstrijdHref(m.id)}"`});
 
+/* Een chiprij die niet op één regel past, schuift. Na opnieuw tekenen staat
+   hij weer waar hij stond (vorige), met de gekozen chip in beeld; een
+   vervaagde rand wijst aan aan welke kant er nog meer staat. */
+function schuifrij(rij, vorige = 0){
+  if (!rij) return;
+  rij.scrollLeft = vorige;
+  const knop = rij.querySelector('[aria-pressed="true"]');
+  if (knop){
+    const l = knop.offsetLeft, r = l + knop.offsetWidth, marge = 40;
+    if (l - marge < rij.scrollLeft) rij.scrollLeft = l - marge;
+    else if (r + marge > rij.scrollLeft + rij.clientWidth) rij.scrollLeft = r + marge - rij.clientWidth;
+  }
+  const rand = () => {
+    rij.classList.toggle('meer-links', rij.scrollLeft > 1);
+    rij.classList.toggle('meer-rechts', rij.scrollLeft + rij.clientWidth < rij.scrollWidth - 1);
+  };
+  rand();
+  rij.addEventListener('scroll', rand, {passive: true});
+}
+
 /* Parameters staan achter de # en niet achter de ?: een statische host kan
    een querystring weggooien, een hash nooit. */
 const param = naam => new URLSearchParams(location.hash.slice(1)).get(naam);

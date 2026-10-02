@@ -228,6 +228,18 @@ body:has(.bar.met-zoek){--bar-h:calc(102px + env(safe-area-inset-top,0px));}
   font-variant-numeric:tabular-nums; white-space:nowrap;
 }
 .chips button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+/* Kleiner, onder een keuzeschakelaar: wat er precies getoond wordt. Past de
+   rij, dan vult hij de breedte; anders schuift hij. Een vervaagde rand laat
+   zien aan welke kant er nog meer staat (schuifrij() in groundhop.js). */
+.chips.klein{position:relative; margin:6px 16px 8px;}
+.chips.klein button{flex:1 0 auto; min-height:28px; padding:0 10px; font-size:12px;}
+.chips.meer-rechts{-webkit-mask-image:linear-gradient(to right,#000 85%,transparent);
+  mask-image:linear-gradient(to right,#000 85%,transparent);}
+.chips.meer-links{-webkit-mask-image:linear-gradient(to left,#000 85%,transparent);
+  mask-image:linear-gradient(to left,#000 85%,transparent);}
+.chips.meer-links.meer-rechts{
+  -webkit-mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);
+  mask-image:linear-gradient(to right,transparent,#000 15%,#000 85%,transparent);}
 
 /* ── Seizoensreeks ─────────────────────────────────────────────────────── */
 .chart{padding:14px 16px 4px;}
