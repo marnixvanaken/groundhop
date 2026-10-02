@@ -19,9 +19,9 @@
 .speler .avatar,.speler .avatar-fallback{width:40px; height:40px;}
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
 /* Onder elke tab een tweede, kleinere keuze: wat er precies geteld wordt.
-   Breed genoeg vult hij de rij; op een heel smal scherm schuift hij. */
-.seg.klein{margin:6px 16px 8px; overflow-x:auto; scrollbar-width:none;}
-.seg.klein::-webkit-scrollbar{display:none;}
+   Past het niet op één regel, dan loopt het door op de volgende, zodat je
+   alles ziet zonder te schuiven. */
+.seg.klein{margin:6px 16px 8px; flex-wrap:wrap;}
 .seg.klein button{flex:1 0 auto; min-height:28px; padding:0 6px; font-size:12px;}
 </style>
 </head>
@@ -58,7 +58,10 @@ const TOON = 50;
 const meer = (n, een, veel) => `${getal(n)} ${n === 1 ? een : veel}`;
 const jaar = iso => iso ? ` (${iso.slice(0, 4)})` : '';
 const leeftijdOp = a => a[0] * 366 + a[1];
-const opLeeftijd = a => `${a[0]} jaar en ${meer(a[1], 'dag', 'dagen')} · ${datum(a[2]).replace(/ /g, '&nbsp;')}`;
+const kort = iso => datum(iso).replace(/ /g, '&nbsp;');
+const opLeeftijd = a => `${a[0]} jaar en ${meer(a[1], 'dag', 'dagen')} · ${kort(a[2])}`;
+const duur = d => d >= 365 ? `${Math.floor(d / 365.25)} jaar`
+                : d >= 31 ? `${Math.round(d / 30.44)} mnd` : meer(d, 'dag', 'dagen');
 
 const TABS_SPELERS = [
   {id: 'wedstrijd', label: 'Wedstrijd', lijsten: [
@@ -77,6 +80,17 @@ const TABS_SPELERS = [
      noot: 'Goals die jij zag, niet zijn carrièretotaal.'},
     {id: 'as', label: 'Assists', w: p => p.as, badge: p => meer(p.as, 'assist', 'assists'),
      noot: 'Assists die jij zag, niet zijn carrièretotaal.'},
+    {id: 'pen', label: "Penalty's", w: p => p.pen, badge: p => meer(p.pen, 'penalty', "penalty's"),
+     sub: p => `${meer(p.g, 'goal', 'goals')} in totaal`,
+     noot: "Penalty's die jij hem zag benutten."},
+    {id: 'sup', label: 'Supersub', w: p => p.sup, badge: p => meer(p.sup, 'goal', 'goals'),
+     sub: p => `${meer(p.g, 'goal', 'goals')} in totaal`,
+     noot: 'Goals die jij hem zag maken nadat hij was ingevallen.'},
+    {id: 'laat', label: 'Laat raak', w: p => p.laat, badge: p => meer(p.laat, 'goal', 'goals'),
+     sub: p => `${meer(p.g, 'goal', 'goals')} in totaal`,
+     noot: 'Goals in de 90e minuut of later die jij zag, met blessuretijd en verlenging.'},
+    {id: 'eg', label: 'Eigen goals', w: p => p.eg, badge: p => meer(p.eg, 'eigen goal', 'eigen goals'),
+     noot: 'Eigen goals die jij hem zag maken.'},
     {id: 'ge', label: 'Geel', w: p => p.ge, badge: p => `${p.ge}× geel`,
      noot: 'Gele kaarten die jij zag.'},
     {id: 'ro', label: 'Rood', w: p => p.ro, badge: p => `${p.ro}× rood`,
@@ -95,6 +109,13 @@ const TABS_SPELERS = [
     {id: 'teams', label: 'Teams', w: p => p.teams.length, badge: p => meer(p.teams.length, 'team', 'teams'),
      sub: p => p.teams.map(esc).join(' · '),
      noot: 'Teams waarvoor je hem zag, ook jeugd- en nationale elftallen.'},
+    {id: 'stad', label: 'Stadions', w: p => p.stad.length, badge: p => meer(p.stad.length, 'stadion', 'stadions'),
+     sub: p => p.stad.slice(0, 3).map(k => esc(stadion(k)?.name || k)).join(' · ')
+       + (p.stad.length > 3 ? ` +${p.stad.length - 3}` : ''),
+     noot: 'In hoeveel verschillende stadions je hem zag.'},
+    {id: 'volg', label: 'Gevolgd', w: p => p.dagen, badge: p => duur(p.dagen),
+     sub: p => `${kort(p.van)} – ${kort(p.tot)}`,
+     noot: 'De tijd tussen de eerste en de laatste keer dat je hem zag.'},
     {id: 'jo', label: 'Jongste', oplopend: true, w: p => p.jo && leeftijdOp(p.jo),
      badge: p => `${p.jo[0]} jaar`, sub: p => opLeeftijd(p.jo),
      noot: 'Zijn leeftijd de eerste keer dat je hem zag spelen; de bank telt niet mee.'},
@@ -129,7 +150,33 @@ function teams(p){
   p.m.forEach(r => { if (r[1]) t[r[1]] = (t[r[1]] || 0) + 1; });
   return Object.entries(t).sort((a, b) => b[1] - a[1]).map(([naam]) => naam);
 }
-const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => ({id, ...p, zoek: plat(p.n), teams: teams(p)})) : [];
+/* Wat de goals zelf vertellen (penalty, eigen goal, minuut). Per speler staat
+   alleen het aantal; de wedstrijden hebben elke goal. Sofascore noemt een
+   eigen goal 'ownGoal', Transfermarkt 'own'. */
+const GOALS = {};
+(window.APP?.matches || []).forEach(m => m.goals.forEach(g => {
+  if (!g.pid) return;
+  const t = GOALS[g.pid] ||= {pen: 0, eg: 0, laat: 0};
+  if (g.type === 'own' || g.type === 'ownGoal'){ t.eg++; return; }
+  if (g.type === 'penalty') t.pen++;
+  if (g.min >= 90) t.laat++;
+}));
+
+function verrijk(id, p){
+  const duels = p.m.map(r => wedstrijd(r[0])).filter(Boolean);
+  const data = duels.map(m => m.date).sort();
+  const perStadion = {};
+  duels.forEach(m => { if (m.venue) perStadion[m.venue] = (perStadion[m.venue] || 0) + 1; });
+  const g = GOALS[id] || {};
+  return {id, ...p, zoek: plat(p.n), teams: teams(p),
+    pen: g.pen || 0, eg: g.eg || 0, laat: g.laat || 0,
+    // Wie niet in de basis begon en toch scoorde, viel in.
+    sup: p.m.reduce((n, r) => n + (r[5] ? 0 : r[3] || 0), 0),
+    stad: Object.entries(perStadion).sort((a, b) => b[1] - a[1]).map(([k]) => k),
+    van: data[0], tot: data[data.length - 1],
+    dagen: data.length ? Math.round((new Date(data[data.length - 1]) - new Date(data[0])) / 864e5) : 0};
+}
+const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => verrijk(id, p)) : [];
 
 function rij(p){
   const l = gekozen();
