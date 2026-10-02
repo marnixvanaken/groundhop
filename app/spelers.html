@@ -90,10 +90,6 @@ const TABS_SPELERS = [
      sub: p => [p.mxd ? datum(p.mxd) : '', !p.mv ? '' : p.mv === p.mx ? 'nu ook' : `nu ${euro(p.mv)}`]
        .filter(Boolean).join(' · '),
      noot: 'Hoogste marktwaarde ooit volgens Transfermarkt, met de datum waarop hij die voor het eerst bereikte.'},
-    {id: 'zak', label: 'Gezakt', neutraal: true, w: p => p.mv && p.mx > p.mv ? p.mx - p.mv : 0,
-     badge: p => `− ${euro(p.mx - p.mv)}`,
-     sub: p => `${euro(p.mx)}${p.mxd ? ' in ' + p.mxd.slice(0, 4) : ''} · nu ${euro(p.mv)}`,
-     noot: 'Hoeveel zijn marktwaarde nu onder zijn hoogste ooit ligt, volgens Transfermarkt.'},
   ]},
   {id: 'overig', label: 'Overig', lijsten: [
     {id: 'teams', label: 'Teams', w: p => p.teams.length, badge: p => meer(p.teams.length, 'team', 'teams'),
