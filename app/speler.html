@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
 <title>Speler — GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">
 <link rel="stylesheet" href="groundhop.css">
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
@@ -18,19 +18,19 @@
 .kop{padding:20px 16px 6px; text-align:center;}
 .kop .avatar,.kop .avatar-fallback{width:88px; height:88px; margin:0 auto 10px; font-size:26px;}
 .kop img.avatar{display:block;}
-.kop h2{font-family:var(--display); font-size:24px; font-weight:700; letter-spacing:-0.02em;
-  line-height:1.15;}
-.kop p{font-size:13px; color:var(--content-2); margin-top:4px;}
-.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
+.kop h2{font-family:var(--display); font-size:32px; font-weight:500; letter-spacing:-0.025em;
+  line-height:1.1; text-wrap:balance;}
+.kop p{font-family:var(--mono); font-size:11px; color:var(--content-2); margin-top:8px;}
+.span{text-align:center; padding:14px 16px; font-family:var(--serif); font-style:italic; font-size:14px; color:var(--content-2);}
 .drie{display:grid; grid-template-columns:repeat(3,1fr);}
 
 /* Marktwaarde: nu en de hoogste. Tekstkleur, geen groen: het is de waarde van
    de speler, niet iets van jou. */
 .waarde{display:grid; grid-template-columns:1fr 1fr;}
 .waarde > div{padding:12px 16px 14px; min-width:0;}
-.waarde > div + div{border-left:0.5px solid var(--separator);}
-.waarde b{display:block; font-family:var(--display); font-size:22px; font-weight:700;
-  letter-spacing:-0.01em; margin:2px 0 1px;}
+.waarde > div + div{border-left:1px solid var(--separator);}
+.waarde b{display:block; font-family:var(--display); font-variant-numeric:lining-nums;
+  font-size:28px; font-weight:400; letter-spacing:-0.02em; margin:4px 0 2px;}
 .drie > div{padding:12px 16px; min-width:0;}
 </style>
 </head>
@@ -116,7 +116,7 @@ function render(){
       const c = clubOpNaam(naam);
       return {name: esc(naam), count: n, beeld: logo(c?.crest, naam, true), href: c ? clubHref(c.id) : null};
     }))}
-    <div class="drie" style="border-top:0.5px solid var(--separator)">
+    <div class="drie" style="border-top:1px solid var(--separator)">
       <div><div class="row-label">In de basis</div><div class="row-value">${basis}×</div></div>
       <div><div class="row-label">Ingevallen</div><div class="row-value">${rijen.length - basis}×</div></div>
       <div><div class="row-label">Minuten</div><div class="row-value">${getal(minuten)}</div></div>

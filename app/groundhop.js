@@ -318,3 +318,7 @@ function euro(n){
   }
   return `€ ${n.toLocaleString('nl-NL')}`;
 }
+
+/* De binnenkomst van de kaarten hoort bij het openen van een scherm, niet bij
+   elk herteken: na de laatste kaart (300ms vertraging + 600ms) gaat hij uit. */
+setTimeout(() => document.documentElement.classList.add('geladen'), 1000);

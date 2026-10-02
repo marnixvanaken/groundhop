@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
 <title>GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">
 <link rel="stylesheet" href="groundhop.css">
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
@@ -16,29 +16,32 @@
    Home is een samenvatting van jouw verzameling, niet van het voetbal. Alle
    getallen hier gaan over wat jij zag, en zijn dus groen. */
 
-.merk{font-family:var(--display); font-size:20px; font-weight:800; letter-spacing:-0.02em;
+.merk{font-family:var(--serif); font-size:24px; font-weight:500; letter-spacing:-0.025em;
   padding-left:8px;}
-.merk span{color:var(--accent);}
+.merk span{font-style:italic; color:var(--accent);}
 
-.sinds{font-size:12px; color:var(--content-2);}
-.tally + .tally{border-top:0.5px solid var(--separator);}
+
+.tally + .tally{border-top:1px solid var(--separator);}
 
 /* Het laatste duel groot: dit is wat je het vaakst terug wilt zien. */
 .laatste{display:block; padding:14px 16px 16px; color:inherit; text-decoration:none;}
 .laatste-crests{display:flex; align-items:center; gap:10px; margin:8px 0 10px;}
-.laatste-crests .result{font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:34px; font-weight:700; letter-spacing:-0.02em; margin-left:auto;}
-.laatste .teams{font-size:17px; font-weight:600; line-height:1.25;}
+.laatste-crests .result{font-family:var(--display); font-variant-numeric:lining-nums tabular-nums;
+  font-size:52px; font-weight:400; letter-spacing:-0.03em; line-height:1; margin-left:auto;}
+.laatste .teams{font-family:var(--serif); font-size:22px; font-weight:500; letter-spacing:-0.015em;
+  line-height:1.2; text-wrap:balance;}
 .laatste .duel-meta{margin-top:3px;}
-.context{padding:10px 16px 14px; border-top:0.5px solid var(--separator);
-  font-size:13px; color:var(--content-2);}
-.context b{color:var(--accent); font-family:var(--display); font-variant-numeric:tabular-nums;}
+.context{padding:12px 16px 14px; border-top:1px solid var(--separator);
+  font-family:var(--serif); font-style:italic; font-size:15px; color:var(--content-2);}
+.context b{color:var(--accent); font-style:normal; font-weight:500;
+  font-variant-numeric:lining-nums tabular-nums;}
 
 .record{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
   color:inherit; text-decoration:none;}
-.record + .record{border-top:0.5px solid var(--separator);}
-.record-waarde{font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:20px; font-weight:700; min-width:56px;}
+.record + .record{border-top:1px solid var(--separator);}
+/* Vaste kolom, zodat de omschrijvingen onder elkaar beginnen, ook naast 81.365. */
+.record-waarde{font-family:var(--display); font-variant-numeric:lining-nums tabular-nums;
+  font-size:24px; font-weight:400; letter-spacing:-0.02em; width:80px; flex:none;}
 </style>
 </head>
 <body>

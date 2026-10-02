@@ -3,22 +3,24 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
 <title>Meer — GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">
 <link rel="stylesheet" href="groundhop.css">
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
    Meer is de plek voor wat geen eigen tab verdient: toevoegen, de lijsten
    van clubs, competities en scheidsrechters, en waar de data vandaan komt. */
-.icoon{width:30px; height:30px; border-radius:8px; flex-shrink:0;
+/* Iconen zijn navigatie, dus inkt op papier en geen groen. */
+.icoon{width:32px; height:32px; border-radius:var(--radius-in); flex-shrink:0;
   display:flex; align-items:center; justify-content:center;
-  background:var(--accent); color:var(--card);}
-.icoon svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.4;
+  background:var(--card-sunken); color:var(--content);
+  box-shadow:inset 0 0 0 1px var(--separator);}
+.icoon svg{width:16px; height:16px; fill:none; stroke:currentColor; stroke-width:2.2;
   stroke-linecap:round;}
 
 /* ── Live zetten ─────────────────────────────────────────────────────────
@@ -27,13 +29,17 @@
 .live{padding:4px 16px 14px; font-size:13px; color:var(--content-2);}
 .live ol{margin:6px 0 10px 18px;}
 .live li{margin:3px 0;}
-.live a{color:var(--accent);}
+.live a{color:var(--content); text-underline-offset:3px;}
 .live-rij{display:flex; gap:8px; margin-top:8px;}
-.live-rij input{flex:1; min-width:0; height:40px; border:0; border-radius:11px; padding:0 12px;
-  background:var(--card-sunken); color:var(--content); font:inherit; font-size:16px;}
-.knop{height:40px; padding:0 16px; border:0; border-radius:11px; cursor:pointer;
-  background:var(--accent); color:var(--card); font:inherit; font-size:15px; font-weight:600;}
-.knop.stil{background:var(--card-sunken); color:var(--content);}
+.live-rij input{flex:1; min-width:0; height:40px; border:1px solid var(--separator);
+  border-radius:var(--radius-in); padding:0 12px;
+  background:var(--card); color:var(--content); font:inherit; font-size:16px;}
+.knop{height:40px; padding:0 16px; border:0; border-radius:6px; cursor:pointer;
+  background:var(--content); color:var(--card); font:inherit; font-size:14px; font-weight:500;
+  transition:opacity .2s var(--ease), transform .2s var(--ease);}
+.knop:active{transform:scale(0.98);}
+.knop.stil{background:var(--card-sunken); color:var(--content);
+  box-shadow:inset 0 0 0 1px var(--separator);}
 .knop:disabled{opacity:.5;}
 .live-status{margin-top:8px;}
 .live .meter{margin:10px 0 4px;}

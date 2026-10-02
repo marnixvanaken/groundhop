@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
 <title>Stadion — GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">
 <link rel="stylesheet" href="groundhop.css">
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
@@ -18,20 +18,20 @@
    en onderdelen die bij één bezoek niets zeggen (de seizoensreeks) vallen weg. */
 
 .venue-head{padding:18px 16px 4px; text-align:center;}
-.venue-head h2{font-family:var(--display); font-size:24px; font-weight:700;
-  letter-spacing:-0.02em; line-height:1.15;}
-.venue-head p{font-size:13px; color:var(--content-2); margin-top:3px;}
-.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
+.venue-head h2{font-family:var(--display); font-size:32px; font-weight:500;
+  letter-spacing:-0.025em; line-height:1.1; text-wrap:balance;}
+.venue-head p{font-family:var(--mono); font-size:11px; color:var(--content-2); margin-top:8px;}
+.span{text-align:center; padding:14px 16px; font-family:var(--serif); font-style:italic; font-size:14px; color:var(--content-2);}
 
 .drie{display:grid; grid-template-columns:repeat(3,1fr);}
 .drie > div{padding:12px 16px; min-width:0;}
 
 .solo{padding:16px; display:block; color:inherit; text-decoration:none;}
 .solo-crests{display:flex; gap:10px; margin-bottom:10px;}
-.solo .teams{font-size:19px; font-weight:600; line-height:1.25;}
+.solo .teams{font-family:var(--serif); font-size:22px; font-weight:500; letter-spacing:-0.015em; line-height:1.2;}
 .solo .uitslag{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:34px; font-weight:700; letter-spacing:-0.02em; margin:6px 0 2px;
+  font-family:var(--display); font-variant-numeric:lining-nums tabular-nums;
+  font-size:48px; font-weight:400; letter-spacing:-0.03em; line-height:1; margin:8px 0 4px;
 }
 </style>
 </head>
@@ -104,7 +104,7 @@ function duels(b){
         <div class="uitslag num">${m.hs} – ${m.as}</div>
         <div class="duel-meta">${esc(comp(m.t))} · ${datum(m.date, true)}</div>
       </a>
-      ${m.ref ? `<div class="row" style="border-top:0.5px solid var(--separator)">
+      ${m.ref ? `<div class="row" style="border-top:1px solid var(--separator)">
         <div class="row-main"><div class="row-label">Scheidsrechter</div>
         <div class="row-value">${esc(m.ref)}</div></div></div>` : ''}
     </section>`;

@@ -23,7 +23,7 @@ from pathlib import Path
 DEMO = Path(__file__).resolve().parent
 FONTS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">'''
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">'''
 
 
 SCHERMEN = ["duels.html", "grounds.html", "spelers.html", "meer.html",

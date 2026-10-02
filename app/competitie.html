@@ -3,12 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
-<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<meta name="theme-color" content="#f7f6f3" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#191918" media="(prefers-color-scheme: dark)">
 <title>Competitie — GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;1,6..72,400;1,6..72,500&display=swap">
 <link rel="stylesheet" href="groundhop.css">
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
@@ -18,19 +18,20 @@
    de goals die je zag vallen. */
 .kop{padding:20px 16px 6px; text-align:center;}
 .kop .comp-logo{width:64px; height:64px; margin:0 auto 10px; display:block;}
-.kop .embleem{width:64px; height:64px; margin:0 auto 10px; border-radius:16px;
+.kop .embleem{width:64px; height:64px; margin:0 auto 10px; border-radius:var(--radius);
   display:flex; align-items:center; justify-content:center;
   background:var(--card-sunken); color:var(--content-2);
 }
-.kop h2{font-family:var(--display); font-size:24px; font-weight:700; letter-spacing:-0.02em;
-  line-height:1.15;}
-.kop p{font-size:13px; color:var(--content-2); margin-top:4px;}
-.span{text-align:center; padding:14px 16px; font-size:12px; color:var(--content-2);}
+.kop h2{font-family:var(--display); font-size:32px; font-weight:500; letter-spacing:-0.025em;
+  line-height:1.1; text-wrap:balance;}
+.kop p{font-family:var(--mono); font-size:11px; color:var(--content-2); margin-top:8px;}
+.span{text-align:center; padding:14px 16px; font-family:var(--serif); font-style:italic; font-size:14px; color:var(--content-2);}
 .record{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
   color:inherit; text-decoration:none;}
-.record + .record{border-top:0.5px solid var(--separator);}
-.record-waarde{font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:20px; font-weight:700; min-width:56px;}
+.record + .record{border-top:1px solid var(--separator);}
+/* Vaste kolom, zodat de omschrijvingen onder elkaar beginnen, ook naast 81.365. */
+.record-waarde{font-family:var(--display); font-variant-numeric:lining-nums tabular-nums;
+  font-size:24px; font-weight:400; letter-spacing:-0.02em; width:80px; flex:none;}
 </style>
 </head>
 <body>

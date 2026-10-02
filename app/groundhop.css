@@ -5,47 +5,61 @@
    zodat ze controleerbaar blijven en niet stilletjes wegzakken bij een
    volgende aanpassing.
 
+   De look is papier en inkt: een wedstrijdprogramma, geen app-template.
+   Warm gebroken wit, kaarten met een haarlijn in plaats van een schaduw,
+   koppen in een serif, datums en tellers in een monospace.
+
    Twee regels die het hele ontwerp dragen:
    - Glas hoort alleen op de functionele laag: de bovenbalk en de tabbalk.
      De contentlaag is dekkend. (materials.md › Liquid Glass)
    - Groen betekent precies één ding: jouw geschiedenis. Nooit een oordeel
-     over een wedstrijd of een speler. (color.md › Best practices)
+     over een wedstrijd of een speler, en ook niet de kleur van navigatie
+     of links — die zijn inkt. (color.md › Best practices)
    ─────────────────────────────────────────────────────────────────────────── */
 :root{
-  --surface:        #edeff2;  /* het vlak waar kaarten op liggen          */
+  --surface:        #f7f6f3;  /* papier: het vlak waar kaarten op liggen  */
   --card:           #ffffff;  /* contentlaag: dekkend, geen glas          */
-  --card-sunken:    #f4f5f7;
-  --content:        #14171a;  /* 17.99:1 op kaart                         */
-  --content-2:      #5b646e;  /*  6.01:1 op kaart                         */
-  --separator:      rgba(0,0,0,0.08);
-  --accent:         #0a7a3d;  /*  5.43:1 op kaart — jouw tellers          */
-  --accent-strong:  #11a24f;  /*  3.33:1 met wit — alleen groot en vet    */
-  --accent-soft:    rgba(10,122,61,0.10);
-  --glass:          rgba(237,239,242,0.70);
-  --glass-filter:   blur(30px) saturate(1.5) brightness(1.12);
-  --glass-border:   rgba(255,255,255,0.7);
-  --shadow:         0 1px 2px rgba(20,23,26,0.04), 0 6px 16px rgba(20,23,26,0.06);
-  --radius:         18px;
+  --card-sunken:    #f2f1ed;
+  --content:        #1c1b19;  /* 17.21:1 op kaart — inkt, geen zwart      */
+  --content-2:      #6f6e6a;  /*  5.10:1 op kaart                         */
+  --separator:      #e9e8e4;  /* haarlijn, 1px, geen schaduw              */
+  --accent:         #346538;  /*  6.85:1 op kaart — jouw tellers          */
+  --accent-strong:  #346538;
+  --accent-soft:    #edf3ec;
+  --glass:          rgba(247,246,243,0.84);
+  --glass-filter:   blur(20px) saturate(1.2);
+  --glass-border:   var(--separator);
+  --shadow:         none;
+  --radius:         12px;     /* buitenkant; binnenin 8px en kleiner      */
+  --radius-in:      8px;
   --bar-h:          calc(52px + env(safe-area-inset-top,0px));
-  --tab-h:          calc(74px + env(safe-area-inset-bottom,0px));
-  --ui: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
-  --display: "Outfit", var(--ui);
+  --tab-h:          calc(58px + env(safe-area-inset-bottom,0px));
+  --ui:    "Geist", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --serif: "Newsreader", Georgia, "Times New Roman", serif;
+  --mono:  "Geist Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --display: var(--serif);  /* grote koppen en grote getallen           */
+  --ease:  cubic-bezier(0.16, 1, 0.3, 1);
+  --glow:  rgba(255,255,255,0.75);
+  --grain-opacity: 0.035;
+  --grain-blend:   multiply;
 }
 @media (prefers-color-scheme: dark){
   :root{
-    --surface:       #0e1013;
-    --card:          #1b1f24;  /* contentlaag: dekkend, geen glas         */
-    --card-sunken:   #23282e;
-    --content:       #f2f4f6;  /* 15.02:1 op kaart                        */
-    --content-2:     #98a2ad;  /*  6.39:1 op kaart                        */
-    --separator:     rgba(255,255,255,0.10);
-    --accent:        #45d284;  /*  8.52:1 op kaart                        */
-    --accent-strong: #1c9a57;  /*  3.61:1 met wit                         */
-    --accent-soft:   rgba(69,210,132,0.12);
-    --glass:         rgba(14,16,19,0.74);
-    --glass-filter:  blur(30px) saturate(1.5) brightness(0.6);
-    --glass-border:  rgba(255,255,255,0.12);
-    --shadow:        0 1px 2px rgba(0,0,0,0.3), 0 6px 16px rgba(0,0,0,0.4);
+    --surface:       #191918;
+    --card:          #21211f;  /* contentlaag: dekkend, geen glas         */
+    --card-sunken:   #2a2a28;
+    --content:       #edece9;  /* 13.65:1 op kaart                        */
+    --content-2:     #9b9a96;  /*  5.73:1 op kaart                        */
+    --separator:     #31312e;
+    --accent:        #8fbf95;  /*  7.72:1 op kaart                        */
+    --accent-strong: #8fbf95;
+    --accent-soft:   rgba(143,191,149,0.12);
+    --glass:         rgba(25,25,24,0.84);
+    --glass-filter:  blur(20px) saturate(1.1);
+    --shadow:        none;
+    --glow:          rgba(255,255,255,0.035);
+    --grain-opacity: 0.05;
+    --grain-blend:   screen;
   }
 }
 
@@ -57,13 +71,23 @@ html{-webkit-text-size-adjust:100%;}
 html,body{height:100%; overflow:hidden;}
 body{
   font-family:var(--ui);
-  background:var(--surface);
+  /* Eén zacht lichtvlak van boven, zodat het papier niet dood oogt. */
+  background:
+    radial-gradient(120% 55% at 50% -12%, var(--glow), transparent 70%),
+    var(--surface);
   color:var(--content);
-  font-size:15px;          /* Apple Body, standaard 15pt                  */
-  line-height:1.4;
+  font-size:15px;
+  line-height:1.45;
   -webkit-font-smoothing:antialiased;
 }
-.num{font-family:var(--display);font-variant-numeric:tabular-nums;}
+/* Korrel over alles heen: breekt het digitale vlak, kost geen netwerk. */
+body::after{
+  content:""; position:fixed; inset:0; z-index:30; pointer-events:none;
+  opacity:var(--grain-opacity); mix-blend-mode:var(--grain-blend);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+.num{font-family:var(--display);font-variant-numeric:lining-nums tabular-nums;}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums;}
 
 /* ── Functionele laag: hier hoort glas, en alleen hier ──────────────────── */
 .bar{
@@ -74,22 +98,25 @@ body{
   background:var(--glass);
   backdrop-filter:var(--glass-filter);
   -webkit-backdrop-filter:var(--glass-filter);
-  border-bottom:0.5px solid var(--separator);
+  border-bottom:1px solid var(--separator);
 }
 .back{
   display:flex; align-items:center; gap:2px;
   min-height:44px; min-width:44px; padding:0 8px;  /* 44pt raakvlak */
-  background:none; border:0; cursor:pointer;
-  font:inherit; color:var(--accent); text-decoration:none;
+  background:none; border:0; border-radius:var(--radius-in); cursor:pointer;
+  font:inherit; font-weight:500; color:var(--content); text-decoration:none;
+  transition:background-color .2s var(--ease), transform .2s var(--ease);
 }
-.bar h1{font-size:17px; font-weight:600; letter-spacing:-0.01em;}
+.back:active{transform:scale(0.97);}
+@media (hover:hover){ .back:hover{background:var(--card-sunken);} }
+.bar h1{font-family:var(--serif); font-size:20px; font-weight:500; letter-spacing:-0.015em;}
 
 /* Het scroll edge effect: de content vervaagt waar hij de balken raakt, zodat
    het glas doorschijnend kan blijven zonder dat je er tekst doorheen leest. */
 main{
   position:fixed; inset:0; overflow-y:auto; overscroll-behavior:contain;
-  display:flex; flex-direction:column; align-items:center; gap:16px;
-  padding:calc(var(--bar-h) + 16px) 16px calc(var(--tab-h) + 24px);
+  display:flex; flex-direction:column; align-items:center; gap:20px;
+  padding:calc(var(--bar-h) + 18px) 16px calc(var(--tab-h) + 28px);
   --fade:linear-gradient(to bottom,
     rgba(0,0,0,0)    0,
     rgba(0,0,0,0.26) var(--bar-h),
@@ -103,57 +130,97 @@ main{
    en knipt hun eigen overflow:hidden de onderste regels eraf. */
 main > *{width:100%; max-width:428px; flex:none;}
 
+/* Kaarten komen bij het openen één voor één binnen. Alleen bij het laden:
+   groundhop.js zet daarna .geladen, zodat een herteken (een filter, een
+   schakelaar) niet opnieuw animeert. */
+@keyframes binnen{from{opacity:0; transform:translateY(12px);}}
+main > *{animation:binnen .6s var(--ease) both;}
+main > :nth-child(2){animation-delay:60ms;}
+main > :nth-child(3){animation-delay:120ms;}
+main > :nth-child(4){animation-delay:180ms;}
+main > :nth-child(5){animation-delay:240ms;}
+main > :nth-child(n+6){animation-delay:300ms;}
+.geladen main > *{animation:none;}
+
 /* ── Contentlaag ───────────────────────────────────────────────────────── */
 .card{
   background:var(--card);
+  border:1px solid var(--separator);
   border-radius:var(--radius);
   box-shadow:var(--shadow);
   overflow:hidden;
 }
+/* Kop: titel in de serif, in gewone zinsopbouw. Een tweede kop rechts is
+   een telling en leest als metadata. */
 .card-head{
-  display:flex; align-items:baseline; justify-content:space-between;
-  padding:14px 16px 0;
+  display:flex; align-items:baseline; justify-content:space-between; gap:12px;
+  padding:16px 16px 2px;
 }
 .card-head h2{
-  font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--content-2);
+  font-family:var(--serif); font-size:20px; font-weight:500; line-height:1.15;
+  letter-spacing:-0.015em; color:var(--content);
+  text-wrap:balance; min-width:0;
 }
-.group-label{
-  padding:14px 16px 4px;
-  font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase;
-  color:var(--content-2);
+.card-head h2 + h2,.card-head .kop-tel,.card-head .sinds{
+  font-family:var(--mono); font-size:11px; font-weight:400; letter-spacing:0.02em;
+  font-variant-numeric:tabular-nums; color:var(--content-2); white-space:nowrap;
 }
+.group-label,.row-label{
+  font-family:var(--mono); font-size:10.5px; font-weight:500;
+  letter-spacing:0.08em; text-transform:uppercase; color:var(--content-2);
+}
+.group-label{padding:16px 16px 4px;}
 .row{
   display:flex; align-items:center; gap:12px;
   padding:12px 16px; min-height:44px;
   color:inherit; text-decoration:none;
 }
-.row + .row{border-top:0.5px solid var(--separator);}
+.row + .row{border-top:1px solid var(--separator);}
 .row-main{flex:1;}
-.row-label{font-size:12px; color:var(--content-2);}
-.row-value{font-size:15px; font-weight:500; margin-top:1px; overflow-wrap:break-word;}
-.chev{color:var(--content-2); font-size:17px;}
+.row-value{font-size:15px; font-weight:500; margin-top:2px; overflow-wrap:break-word;}
+.chev{color:var(--content-2); font-size:17px; transition:transform .2s var(--ease);}
 .note{
   padding:10px 16px 14px; font-size:12px; color:var(--content-2);
-  border-top:0.5px solid var(--separator);
+  border-top:1px solid var(--separator);
+}
+
+/* Alles wat je kunt aantikken reageert: een vlak bij hover, een tik terug
+   bij indrukken. Alleen achtergrond en transform, geen layout. */
+a.row,a.duel,button.duel,.lijst-rij,.record,.album-rij,.rank-item,.meer-knop,
+.laatste,.solo,.buren a{
+  transition:background-color .2s var(--ease);
+}
+a.row:active,a.duel:active,button.duel:active,a.lijst-rij:active,button.lijst-rij:active,
+.record:active,.album-rij:active,.rank-item:active,.meer-knop:active,.laatste:active,
+.solo:active,.buren a:active{background:var(--card-sunken);}
+@media (hover:hover){
+  a.row:hover,a.duel:hover,button.duel:hover,a.lijst-rij:hover,button.lijst-rij:hover,
+  .record:hover,.album-rij:hover,.meer-knop:hover,.laatste:hover,.solo:hover,
+  .buren a:hover{background:var(--card-sunken);}
+  a:hover > .chev,button:hover > .chev{transform:translateX(2px);}
 }
 
 /* ── Beeld ─────────────────────────────────────────────────────────────── */
 .crest{width:52px; height:52px; object-fit:contain; flex-shrink:0;}
 .crest-mini{width:22px; height:22px; object-fit:contain; flex-shrink:0;}
+/* Portretten en terugvallen als afgeronde vierkanten, geen cirkels: het
+   leest als een pasfoto in een programmaboekje. */
 .avatar{
-  width:34px; height:34px; border-radius:50%; object-fit:cover;
+  width:34px; height:34px; border-radius:var(--radius-in); object-fit:cover;
+  object-position:50% 15%;
   background:var(--card-sunken); flex-shrink:0;
 }
 .crest-fallback,.avatar-fallback{
-  border-radius:50%; flex-shrink:0;
+  border-radius:var(--radius-in); flex-shrink:0;
   background:var(--card-sunken); color:var(--content-2);
+  box-shadow:inset 0 0 0 1px var(--separator);
   display:flex; align-items:center; justify-content:center;
-  font-family:var(--display); font-weight:700;
+  font-family:var(--mono); font-weight:500; letter-spacing:0.02em;
 }
-.crest-fallback{width:52px; height:52px; font-size:15px;}
-.crest-fallback.mini{width:22px; height:22px; font-size:9px; letter-spacing:-0.02em;}
-.avatar-fallback{width:34px; height:34px; font-size:12px;}
+.crest-fallback{width:52px; height:52px; font-size:14px; border-radius:var(--radius);}
+.crest-fallback.mini{width:22px; height:22px; font-size:8px; letter-spacing:-0.02em;
+  border-radius:5px;}
+.avatar-fallback{width:34px; height:34px; font-size:11px;}
 /* Emoji-vlaggen worden door het systeem getekend; iets groter dan de tekst
    ernaast omdat ze optisch kleiner ogen. */
 .vlag{font-size:13px; line-height:1;}
@@ -174,14 +241,14 @@ main > *{width:100%; max-width:428px; flex:none;}
   text-decoration:none;
 }
 button.duel{cursor:pointer;}
-.duel + .duel{border-top:0.5px solid var(--separator);}
+.duel + .duel{border-top:1px solid var(--separator);}
 .duel-crests{display:flex; gap:2px;}
 .duel-main{min-width:0;}
 .duel-teams{display:block; font-size:15px; font-weight:500; overflow-wrap:break-word;}
 .duel-meta{display:block; font-size:12px; color:var(--content-2); margin-top:1px;}
 .duel-score{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:15px; font-weight:700; white-space:nowrap;
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:15px; font-weight:500; white-space:nowrap;
 }
 
 /* ── Bovenbalk: titel links, één actie rechts ─────────────────────────── */
@@ -199,35 +266,46 @@ button.duel{cursor:pointer;}
 body:has(.bar.met-zoek){--bar-h:calc(102px + env(safe-area-inset-top,0px));}
 .zoekveld{position:relative; margin:0 16px 10px;}
 .zoekveld input{
-  width:100%; height:40px; border:0; border-radius:11px; padding:0 38px;
-  background:var(--card-sunken); color:var(--content);
+  width:100%; height:40px; border:1px solid var(--separator); border-radius:var(--radius-in);
+  padding:0 38px;
+  background:var(--card); color:var(--content);
+  transition:border-color .2s var(--ease);
   font:inherit; font-size:16px;   /* onder 16px zoomt iOS bij focus in */
   -webkit-appearance:none; appearance:none;
 }
 .zoekveld input::-webkit-search-decoration,
 .zoekveld input::-webkit-search-cancel-button{-webkit-appearance:none;}
 .zoekveld input::placeholder{color:var(--content-2);}
+.zoekveld input:focus{outline:none; border-color:var(--content-2);}
 .zoekveld .loep{
   position:absolute; left:12px; top:11px; width:18px; height:18px; pointer-events:none;
   fill:none; stroke:var(--content-2); stroke-width:2; stroke-linecap:round;
 }
 .zoekveld .wis{
   position:absolute; right:4px; top:50%; transform:translateY(-50%);
-  width:32px; height:32px; border:0; border-radius:50%; cursor:pointer;
+  width:32px; height:32px; border:0; border-radius:6px; cursor:pointer;
   background:none; color:var(--content-2); font:inherit; font-size:17px; line-height:1;
 }
 
 /* ── Schuivende keuzerij, voor seizoenen en filters ────────────────────── */
-.chips{display:flex; gap:2px; margin:12px 16px; padding:2px;
-  background:var(--card-sunken); border-radius:9px;
+/* De gekozen knop is inkt op papier; de rest blijft licht. */
+.chips{display:flex; gap:4px; margin:12px 16px;
   overflow-x:auto; scrollbar-width:none;}
 .chips::-webkit-scrollbar{display:none;}
 .chips button{
-  flex:none; min-height:32px; padding:0 12px; border:0; border-radius:7px; cursor:pointer;
-  background:none; color:var(--content); font:inherit; font-size:13px; font-weight:600;
+  flex:none; min-height:32px; padding:0 12px; cursor:pointer;
+  border:1px solid var(--separator); border-radius:6px;
+  background:var(--card); color:var(--content);
+  font-family:var(--mono); font-size:12px; font-weight:500;
   font-variant-numeric:tabular-nums; white-space:nowrap;
+  transition:background-color .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
 }
-.chips button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+.chips button:active,.seg button:active{transform:scale(0.97);}
+.chips button[aria-pressed="true"]{background:var(--content); border-color:var(--content);
+  color:var(--card);}
+@media (hover:hover){
+  .chips button:not([aria-pressed="true"]):hover{background:var(--card-sunken);}
+}
 
 /* ── Seizoensreeks ─────────────────────────────────────────────────────── */
 .chart{padding:14px 16px 4px;}
@@ -236,19 +314,19 @@ body:has(.bar.met-zoek){--bar-h:calc(102px + env(safe-area-inset-top,0px));}
   gap:2px; align-items:end; height:84px;
 }
 .bars > div{display:flex; flex-direction:column; justify-content:flex-end; height:100%; gap:4px;}
-.bar-fill{background:var(--accent); border-radius:4px 4px 0 0; min-height:2px;}
+.bar-fill{background:var(--accent); border-radius:2px 2px 0 0; min-height:2px;}
 .bar-fill.leeg{background:var(--separator);}
 .bar-top{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:11px; font-weight:700; color:var(--content); text-align:center; height:14px;
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:10px; font-weight:500; color:var(--content); text-align:center; height:14px;
 }
 .bar-axis{
   display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr); gap:2px;
-  border-top:0.5px solid var(--separator); padding-top:5px; margin-top:4px;
+  border-top:1px solid var(--content); padding-top:5px; margin-top:4px;
 }
 .bar-axis span{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:10px; color:var(--content-2); text-align:center; white-space:nowrap;
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:9.5px; color:var(--content-2); text-align:center; white-space:nowrap;
   overflow:visible; min-width:0;
 }
 
@@ -258,98 +336,123 @@ body:has(.bar.met-zoek){--bar-h:calc(102px + env(safe-area-inset-top,0px));}
 .rank-row{display:flex; align-items:center; gap:8px; padding:6px 0;}
 .rank-row .naam{flex:1; font-size:14px; min-width:0; overflow-wrap:break-word;}
 .aantal{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:14px; font-weight:600; color:var(--content-2);
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:13px; font-weight:500; color:var(--content-2);
 }
-.rank-bar{height:4px; border-radius:2px; background:var(--accent-soft); margin:2px 0 10px;}
-.rank-bar i{display:block; height:100%; border-radius:2px; background:var(--accent);}
+.rank-bar{height:3px; border-radius:0; background:var(--accent-soft); margin:2px 0 10px;}
+.rank-bar i{display:block; height:100%; border-radius:0; background:var(--accent);}
 
 /* ── Rij met een aantal: groen, want het telt jouw bezoeken ────────────── */
 .badge{
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:13px; font-weight:600; color:var(--accent);
-  background:var(--accent-soft); border-radius:7px; padding:3px 7px; white-space:nowrap;
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:12px; font-weight:500; color:var(--accent);
+  background:var(--accent-soft); border-radius:4px; padding:2px 6px; white-space:nowrap;
 }
 /* Een bedrag is geen geschiedenis van jou: dezelfde vorm, zonder groen. */
 .badge.neutraal{color:var(--content); background:var(--card-sunken);}
 .lijst-rij{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
   width:100%; border:0; background:none; color:inherit; font:inherit; text-align:left;
   text-decoration:none;}
-.lijst-rij + .lijst-rij{border-top:0.5px solid var(--separator);}
-.lijst-rij .crest-mini,.lijst-rij .crest-fallback.mini{width:30px; height:30px; font-size:11px;}
+.lijst-rij + .lijst-rij{border-top:1px solid var(--separator);}
+.lijst-rij .crest-mini,.lijst-rij .crest-fallback.mini{width:30px; height:30px; font-size:10px;
+  border-radius:6px;}
 .lijst-main{flex:1; min-width:0;}
 .lijst-naam{display:block; font-size:15px; font-weight:500; overflow-wrap:break-word;}
 .lijst-sub{display:block; font-size:12px; color:var(--content-2); margin-top:1px;}
-.meer-knop{display:block; width:100%; padding:12px 16px; border:0;
-  border-top:0.5px solid var(--separator); background:none; cursor:pointer;
-  color:var(--accent); font:inherit; font-size:15px; text-align:left; text-decoration:none;}
+/* Een vervolglink is inkt, met een pijl die meeloopt. Geen groen: het is
+   navigatie, geen geschiedenis. */
+.meer-knop{display:flex; align-items:center; justify-content:space-between; width:100%;
+  padding:13px 16px; border:0;
+  border-top:1px solid var(--separator); background:none; cursor:pointer;
+  color:var(--content); font:inherit; font-size:14px; font-weight:500;
+  text-align:left; text-decoration:none;}
+.meer-knop::after{content:"→"; font-family:var(--mono); color:var(--content-2);
+  transition:transform .2s var(--ease);}
+@media (hover:hover){ .meer-knop:hover::after{transform:translateX(3px);} }
 
 /* ── Collecties ────────────────────────────────────────────────────────── */
-.meter{height:6px; border-radius:3px; background:var(--accent-soft); overflow:hidden;}
-.meter i{display:block; height:100%; border-radius:3px; background:var(--accent);}
-.album-rij{display:block; padding:10px 16px 12px; color:inherit; text-decoration:none;}
-.album-rij + .album-rij{border-top:0.5px solid var(--separator);}
+.meter{height:4px; border-radius:0; background:var(--accent-soft); overflow:hidden;}
+.meter i{display:block; height:100%; border-radius:0; background:var(--accent);}
+.album-rij{display:block; padding:12px 16px 14px; color:inherit; text-decoration:none;}
+.album-rij + .album-rij{border-top:1px solid var(--separator);}
 .album-kop{display:flex; align-items:baseline; justify-content:space-between; gap:12px;
-  margin-bottom:7px;}
+  margin-bottom:8px;}
 .album-titel{font-size:15px; font-weight:500; min-width:0;}
-.album-tal{font-family:var(--display); font-variant-numeric:tabular-nums; font-size:14px;
-  font-weight:600; color:var(--content); white-space:nowrap;}
-.album-tal span{color:var(--content-2); font-weight:500;}
+.album-tal{font-family:var(--mono); font-variant-numeric:tabular-nums; font-size:13px;
+  font-weight:500; color:var(--content); white-space:nowrap;}
+.album-tal span{color:var(--content-2); font-weight:400;}
 
 /* ── De tellerband. Groen, want dit gaat over jou. ──────────────────────── */
 .tally{
   display:grid; grid-template-columns:repeat(3,1fr);
-  border-top:0.5px solid var(--separator);
+  border-top:1px solid var(--separator);
 }
 .tally > div{
-  padding:14px 8px; text-align:center; min-width:0;
-  border-right:0.5px solid var(--separator);
+  padding:16px 8px 14px; text-align:center; min-width:0;
+  border-right:1px solid var(--separator);
 }
 .tally > div:last-child{border-right:0;}
 .tally b{
   display:block;
-  font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:26px; font-weight:700; line-height:1;
+  font-family:var(--serif); font-variant-numeric:lining-nums tabular-nums;
+  font-size:34px; font-weight:400; line-height:1; letter-spacing:-0.02em;
   color:var(--accent);
 }
-.tally b sup{font-size:13px; font-weight:600; vertical-align:super;}
+.tally b sup{font-size:15px; font-weight:400; vertical-align:super;}
 .tally span{
-  display:block; margin-top:5px;
-  font-size:12px; color:var(--content-2); line-height:1.3;
+  display:block; margin-top:6px;
+  font-family:var(--mono); font-size:10.5px; letter-spacing:0.02em;
+  color:var(--content-2); line-height:1.3;
   overflow-wrap:break-word;
 }
 
 /* ── Keuzeschakelaar ───────────────────────────────────────────────────── */
 .seg{
   display:flex; gap:2px; margin:12px 16px 0; padding:2px;
-  background:var(--card-sunken); border-radius:9px;
+  border:1px solid var(--separator); border-radius:var(--radius-in);
 }
 .seg button{
-  flex:1; min-height:32px; border:0; border-radius:7px; cursor:pointer;
-  background:none; color:var(--content); font:inherit; font-size:13px; font-weight:600;
+  flex:1; min-height:32px; border:0; border-radius:6px; cursor:pointer;
+  background:none; color:var(--content-2); font:inherit; font-size:13px; font-weight:500;
+  transition:background-color .2s var(--ease), color .2s var(--ease), transform .2s var(--ease);
 }
-.seg button[aria-pressed="true"]{background:var(--card); box-shadow:0 1px 3px rgba(0,0,0,0.12);}
+.seg button[aria-pressed="true"]{background:var(--content); color:var(--card);}
+@media (hover:hover){
+  .seg button:not([aria-pressed="true"]):hover{color:var(--content);}
+}
 
-/* ── Tabbalk: functionele laag, dus glas ───────────────────────────────── */
+/* ── Tabbalk: functionele laag, dus glas ───────────────────────────────────
+   Vastgezet aan de onderrand met een haarlijn, als de voet van een pagina.
+   De actieve tab is inkt met een streep erboven; groen blijft voor jou. */
 .tabbar{
-  position:fixed; left:50%; transform:translateX(-50%);
-  bottom:calc(10px + env(safe-area-inset-bottom,0px));
-  width:calc(100% - 24px); max-width:436px;
-  display:flex; padding:5px; border-radius:26px;
+  position:fixed; left:0; right:0; bottom:0; z-index:10;
+  height:var(--tab-h);
+  display:flex;
+  padding:0 max(4px, calc((100% - 436px) / 2)) env(safe-area-inset-bottom,0px);
   background:var(--glass);
   backdrop-filter:var(--glass-filter);
   -webkit-backdrop-filter:var(--glass-filter);
-  border:0.5px solid var(--glass-border);
-  box-shadow:0 8px 32px rgba(0,0,0,0.16);
+  border-top:1px solid var(--glass-border);
 }
 .tabbar a{
+  position:relative;
   flex:1; min-height:44px; text-decoration:none;
-  font:inherit; font-size:11px; font-weight:600; color:var(--content-2);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:3px;
+  font:inherit; font-size:10.5px; font-weight:500; letter-spacing:0.01em;
+  color:var(--content-2);
+  display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px;
+  transition:color .2s var(--ease);
 }
-.tabbar a[aria-current="page"]{color:var(--accent);}
-.tabbar svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:1.8;
-  stroke-linecap:round; stroke-linejoin:round;}
+.tabbar a::before{
+  content:""; position:absolute; top:-1px; left:50%; width:22px; height:2px;
+  background:var(--content); transform:translateX(-50%) scaleX(0);
+  transition:transform .3s var(--ease);
+}
+.tabbar a[aria-current="page"]{color:var(--content);}
+.tabbar a[aria-current="page"]::before{transform:translateX(-50%) scaleX(1);}
+.tabbar a:active svg{transform:scale(0.92);}
+@media (hover:hover){ .tabbar a:hover{color:var(--content);} }
+.tabbar svg{width:22px; height:22px; fill:none; stroke:currentColor; stroke-width:2;
+  stroke-linecap:round; stroke-linejoin:round; transition:transform .2s var(--ease);}
 
 /* ── Toegankelijkheidsstanden ──────────────────────────────────────────── */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))){
@@ -360,10 +463,10 @@ body:has(.bar.met-zoek){--bar-h:calc(102px + env(safe-area-inset-top,0px));}
   main{-webkit-mask-image:none; mask-image:none;}
 }
 @media (prefers-contrast: more){
-  :root{--separator:rgba(0,0,0,0.3); --content-2:#41484f;}
+  :root{--separator:rgba(0,0,0,0.3); --content-2:#4a4945;}
   .bar,.tabbar{background:var(--surface); backdrop-filter:none; -webkit-backdrop-filter:none;}
   .card{border:1px solid var(--separator);}
   main{-webkit-mask-image:none; mask-image:none;}
 }
 @media (prefers-reduced-motion: reduce){*{animation:none!important; transition:none!important;}}
-:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:6px;}
+:focus-visible{outline:2px solid var(--content); outline-offset:2px; border-radius:6px;}
