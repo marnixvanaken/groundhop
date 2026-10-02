@@ -387,12 +387,17 @@ def main():
     }
 
     # ── Spelers ─────────────────────────────────────────────────────────────
+    def leeftijd_gezien(a):
+        """Jongste of oudste leeftijd waarop je hem zag spelen: [jaren, dagen, datum]."""
+        return [a["age_years"], a["age_days"], a.get("date")] if a else None
+
+    WEGLATEN = {"bas", "inv", "bank", "ge", "ro", "jo", "ou", "caps", "capg", "cm"}
     spelers = {}
     for p in d["players"]:
         md = p.get("matches_detail") or []
         if not md:
             continue
-        spelers[p["id"]] = {
+        sp = {
             "n": p.get("name"),
             "s": p.get("short_name") or p.get("name"),
             "c": landcode(p),
@@ -404,7 +409,22 @@ def main():
             "as": p.get("assists") or 0,
             # Minuten die je hem zag spelen, opgeteld over je wedstrijden.
             "min": p.get("minutes_played") or sum(x.get("minutes") or 0 for x in md),
-            "teams": p.get("teams_seen_for") or [],
+            # In de basis, ingevallen, op de bank gebleven. De export telt dat
+            # per rol; uit de minuten is het niet af te leiden, want wie in de
+            # blessuretijd invalt staat er met 0 minuten in.
+            "bas": p.get("starter_appearances") or 0,
+            "inv": p.get("sub_appearances") or 0,
+            "bank": p.get("bench_appearances") or 0,
+            "ge": p.get("yellow_cards") or 0,
+            "ro": p.get("red_cards") or 0,
+            # Leeftijd de eerste en laatste keer dat je hem zag spelen (de bank
+            # telt niet mee).
+            "jo": leeftijd_gezien(p.get("youngest_age_seen")),
+            "ou": leeftijd_gezien(p.get("oldest_age_seen")),
+            # Van Transfermarkt, over zijn hele loopbaan: geen geschiedenis van jou.
+            "caps": p.get("national_team_caps") or 0,
+            "capg": p.get("national_team_goals") or 0,
+            "cm": p.get("height_cm"),
             # Marktwaarde volgens Transfermarkt: nu (met datum) en de hoogste ooit.
             "mv": p.get("market_value"), "mvd": p.get("market_value_date"),
             "mx": p.get("max_market_value"), "mxd": p.get("max_market_value_date"),
@@ -412,6 +432,9 @@ def main():
                    x.get("assists") or 0, 1 if x.get("starter") else 0, x.get("rating")]
                   for x in md],
         }
+        # Wat hier leeg is, blijft weg: de meeste spelers zag je nooit met een
+        # kaart of op de bank, en drieduizend keer tien nullen tikt aan.
+        spelers[p["id"]] = {k: v for k, v in sp.items() if v or k not in WEGLATEN}
 
     def schrijf(naam, var, data):
         pad = DEMO / naam

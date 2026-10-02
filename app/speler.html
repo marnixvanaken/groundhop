@@ -32,6 +32,10 @@
 .waarde b{display:block; font-family:var(--display); font-size:22px; font-weight:700;
   letter-spacing:-0.01em; margin:2px 0 1px;}
 .drie > div{padding:12px 16px; min-width:0;}
+/* Zat hij ook op de bank, dan een vierde kolom; smaller, zodat het past. */
+.drie.vier{grid-template-columns:repeat(4,1fr);}
+.drie.vier > div{padding:12px 4px 12px 12px;}
+.drie.vier > div:first-child{padding-left:16px;}
 </style>
 </head>
 <body>
@@ -64,6 +68,8 @@ function render(){
   const perClub = {};
   rijen.forEach(x => perClub[x.team] = (perClub[x.team] || 0) + 1);
   const basis = rijen.filter(x => x.basis).length;
+  // Ingevallen en op de bank telt de export per rol; leeg betekent nul.
+  const ingevallen = p.inv || 0, bank = p.bank || 0;
   const minuten = rijen.reduce((s, x) => s + (x.min || 0), 0);
   const eersteGoal = [...rijen].reverse().find(x => x.g > 0);
   const jaar = leeftijd(p.dob);
@@ -116,9 +122,10 @@ function render(){
       const c = clubOpNaam(naam);
       return {name: esc(naam), count: n, beeld: logo(c?.crest, naam, true), href: c ? clubHref(c.id) : null};
     }))}
-    <div class="drie" style="border-top:0.5px solid var(--separator)">
+    <div class="drie${bank ? ' vier' : ''}" style="border-top:0.5px solid var(--separator)">
       <div><div class="row-label">In de basis</div><div class="row-value">${basis}×</div></div>
-      <div><div class="row-label">Ingevallen</div><div class="row-value">${rijen.length - basis}×</div></div>
+      <div><div class="row-label">Ingevallen</div><div class="row-value">${ingevallen}×</div></div>
+      ${bank ? `<div><div class="row-label">Op de bank</div><div class="row-value">${bank}×</div></div>` : ''}
       <div><div class="row-label">Minuten</div><div class="row-value">${getal(minuten)}</div></div>
     </div>
   </section>

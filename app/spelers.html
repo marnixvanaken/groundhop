@@ -18,10 +18,11 @@
    zoekveld vindt de rest. */
 .speler .avatar,.speler .avatar-fallback{width:40px; height:40px;}
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
-/* Onder Waarde: een tweede, kleinere keuze. Alleen daar nodig, dus geen
-   vijfde tab. */
-.seg.klein{width:max-content; margin:0 auto 8px;}
-.seg.klein button{min-height:28px; padding:0 16px; font-size:12px;}
+/* Onder elke tab een tweede, kleinere keuze: wat er precies geteld wordt.
+   Breed genoeg vult hij de rij; op een heel smal scherm schuift hij. */
+.seg.klein{margin:6px 16px 8px; overflow-x:auto; scrollbar-width:none;}
+.seg.klein::-webkit-scrollbar{display:none;}
+.seg.klein button{flex:1 0 auto; min-height:28px; padding:0 6px; font-size:12px;}
 </style>
 </head>
 <body>
@@ -49,28 +50,94 @@ const app = document.getElementById('app');
 tabbalk('spelers');
 
 const TOON = 50;
-const S = {vraag: '', sorteer: 'seen', waarde: 'mv', land: null};
-/* Waarde sorteert op de huidige (mv) of de hoogste ooit (mx). */
-const sleutel = () => S.sorteer === 'mv' ? S.waarde : S.sorteer;
-const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => ({id, ...p, zoek: plat(p.n)})) : [];
 
-/* De club waarvoor je hem het vaakst zag, niet de eerste in de lijst. */
-function hoofdclub(p){
-  const t = {};
-  p.m.forEach(r => t[r[1]] = (t[r[1]] || 0) + 1);
-  return Object.entries(t).sort((a, b) => b[1] - a[1])[0]?.[0] || '';
+/* Vier tabs met elk een paar lijsten eronder. Per lijst: waarop hij sorteert
+   (w), wat de badge zegt, wat er onder de naam staat en een voetnoot. Groen
+   telt wat jij zag; neutraal is wat Transfermarkt over de speler weet. Wie in
+   een lijst niets heeft (geen goal, geen kaart, geen waarde), staat er niet in. */
+const meer = (n, een, veel) => `${getal(n)} ${n === 1 ? een : veel}`;
+const jaar = iso => iso ? ` (${iso.slice(0, 4)})` : '';
+const leeftijdOp = a => a[0] * 366 + a[1];
+const opLeeftijd = a => `${a[0]} jaar en ${meer(a[1], 'dag', 'dagen')} · ${datum(a[2]).replace(/ /g, '&nbsp;')}`;
+
+const TABS_SPELERS = [
+  {id: 'wedstrijd', label: 'Wedstrijd', lijsten: [
+    {id: 'seen', label: 'Gezien', w: p => p.seen, badge: p => `${p.seen}×`},
+    {id: 'min', label: 'Minuten', w: p => p.min, badge: p => `${getal(p.min)} min`,
+     noot: 'Minuten die jij hem zag spelen, opgeteld over je duels.'},
+    {id: 'bas', label: 'Basis', w: p => p.bas, badge: p => `${p.bas}×`,
+     noot: 'Duels waarin je hem in de basis zag beginnen.'},
+    {id: 'inv', label: 'Invaller', w: p => p.inv, badge: p => `${p.inv}×`,
+     noot: 'Duels waarin je hem zag invallen.'},
+    {id: 'bank', label: 'Bank', w: p => p.bank, badge: p => `${p.bank}×`,
+     noot: 'Duels waarin hij op de bank zat en niet inviel.'},
+  ]},
+  {id: 'prestaties', label: 'Prestaties', lijsten: [
+    {id: 'g', label: 'Goals', w: p => p.g, badge: p => meer(p.g, 'goal', 'goals'),
+     noot: 'Goals die jij zag, niet zijn carrièretotaal.'},
+    {id: 'as', label: 'Assists', w: p => p.as, badge: p => meer(p.as, 'assist', 'assists'),
+     noot: 'Assists die jij zag, niet zijn carrièretotaal.'},
+    {id: 'ge', label: 'Geel', w: p => p.ge, badge: p => `${p.ge}× geel`,
+     noot: 'Gele kaarten die jij zag.'},
+    {id: 'ro', label: 'Rood', w: p => p.ro, badge: p => `${p.ro}× rood`,
+     noot: 'Rode kaarten die jij zag, ook die na twee keer geel.'},
+  ]},
+  {id: 'waarde', label: 'Waarde', lijsten: [
+    {id: 'mv', label: 'Nu', neutraal: true, w: p => p.mv, badge: p => euro(p.mv),
+     sub: p => p.mx > p.mv ? `hoogste ${euro(p.mx)}${jaar(p.mxd)}` : '',
+     noot: 'Huidige marktwaarde volgens Transfermarkt.'},
+    {id: 'mx', label: 'Hoogste', neutraal: true, w: p => p.mx, badge: p => euro(p.mx),
+     sub: p => [p.mxd ? datum(p.mxd) : '', !p.mv ? '' : p.mv === p.mx ? 'nu ook' : `nu ${euro(p.mv)}`]
+       .filter(Boolean).join(' · '),
+     noot: 'Hoogste marktwaarde ooit volgens Transfermarkt, met de datum waarop hij die voor het eerst bereikte.'},
+    {id: 'zak', label: 'Gezakt', neutraal: true, w: p => p.mv && p.mx > p.mv ? p.mx - p.mv : 0,
+     badge: p => `− ${euro(p.mx - p.mv)}`,
+     sub: p => `${euro(p.mx)}${p.mxd ? ' in ' + p.mxd.slice(0, 4) : ''} · nu ${euro(p.mv)}`,
+     noot: 'Hoeveel zijn marktwaarde nu onder zijn hoogste ooit ligt, volgens Transfermarkt.'},
+  ]},
+  {id: 'overig', label: 'Overig', lijsten: [
+    {id: 'teams', label: 'Teams', w: p => p.teams.length, badge: p => meer(p.teams.length, 'team', 'teams'),
+     sub: p => p.teams.map(esc).join(' · '),
+     noot: 'Teams waarvoor je hem zag, ook jeugd- en nationale elftallen.'},
+    {id: 'jo', label: 'Jongste', oplopend: true, w: p => p.jo && leeftijdOp(p.jo),
+     badge: p => `${p.jo[0]} jaar`, sub: p => opLeeftijd(p.jo),
+     noot: 'Zijn leeftijd de eerste keer dat je hem zag spelen; de bank telt niet mee.'},
+    {id: 'ou', label: 'Oudste', w: p => p.ou && leeftijdOp(p.ou),
+     badge: p => `${p.ou[0]} jaar`, sub: p => opLeeftijd(p.ou),
+     noot: 'Zijn leeftijd de laatste keer dat je hem zag spelen; de bank telt niet mee.'},
+    {id: 'caps', label: 'Interlands', neutraal: true, w: p => p.caps, badge: p => `${p.caps}×`,
+     sub: p => p.capg ? meer(p.capg, 'interlandgoal', 'interlandgoals') : '',
+     noot: 'Interlands in zijn hele loopbaan volgens Transfermarkt, niet alleen wat jij zag.'},
+    {id: 'cm', label: 'Lengte', neutraal: true, w: p => p.cm, badge: p => `${p.cm} cm`,
+     noot: 'Lengte volgens Transfermarkt.'},
+  ]},
+];
+
+/* Welke tab en welke lijst eronder, ook als je terugkomt van een speler. */
+const S = {vraag: '', land: null, tab: 'wedstrijd',
+           lijst: Object.fromEntries(TABS_SPELERS.map(t => [t.id, t.lijsten[0].id]))};
+try {
+  const o = JSON.parse(sessionStorage.getItem('gh-spelers')) || {};
+  if (typeof o.tab === 'string') S.tab = o.tab;
+  Object.assign(S.lijst, o.lijst);
+} catch {}
+const gekozenTab = () => TABS_SPELERS.find(t => t.id === S.tab) || TABS_SPELERS[0];
+const gekozen = () => { const t = gekozenTab(); return t.lijsten.find(l => l.id === S.lijst[t.id]) || t.lijsten[0]; };
+function onthoud(){
+  try { sessionStorage.setItem('gh-spelers', JSON.stringify({tab: S.tab, lijst: S.lijst})); } catch {}
 }
 
+/* De teams waarvoor je hem zag, het vaakst eerst. */
+function teams(p){
+  const t = {};
+  p.m.forEach(r => { if (r[1]) t[r[1]] = (t[r[1]] || 0) + 1; });
+  return Object.entries(t).sort((a, b) => b[1] - a[1]).map(([naam]) => naam);
+}
+const ALLE = window.SPELERS ? Object.entries(SPELERS).map(([id, p]) => ({id, ...p, zoek: plat(p.n), teams: teams(p)})) : [];
+
 function rij(p){
-  const k = sleutel();
-  const waarde = k === 'g' ? `${p.g} ${p.g === 1 ? 'goal' : 'goals'}`
-               : k === 'min' ? `${getal(p.min)} min`
-               : k === 'mv' || k === 'mx' ? euro(p[k]) : `${p.seen}×`;
-  const sub = k === 'mx'
-    ? [p.mxd ? datum(p.mxd) : '', !p.mv ? '' : p.mv === p.mx ? 'nu ook' : `nu ${euro(p.mv)}`].filter(Boolean).join(' · ')
-    : k === 'mv' && p.mx && p.mx > (p.mv || 0)
-    ? `hoogste ${euro(p.mx)}${p.mxd ? ' (' + p.mxd.slice(0, 4) + ')' : ''}`
-    : [POSITIE[p.pos], esc(hoofdclub(p))].filter(Boolean).join(' · ');
+  const l = gekozen();
+  const sub = (l.sub && l.sub(p)) || [POSITIE[p.pos], esc(p.teams[0])].filter(Boolean).join(' · ');
   return `
     <a class="lijst-rij speler" href="${spelerHref(p.id)}">
       ${portret(p.img, p.n)}
@@ -79,17 +146,21 @@ function rij(p){
         <span class="lijst-sub"><span class="vlag">${vlag(p.c)}</span>
           ${sub}</span>
       </span>
-      <span class="badge${S.sorteer === 'mv' ? ' neutraal' : ''}">${waarde}</span>
+      <span class="badge${l.neutraal ? ' neutraal' : ''}">${l.badge(p)}</span>
       <span class="chev" aria-hidden="true">›</span>
     </a>`;
 }
 
 function render(){
-  const q = plat(S.vraag), k = sleutel();
-  const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land)
-                              && (S.sorteer !== 'mv' || p[k]))
-    .sort((a, b) => (b[k] - a[k]) || (b.seen - a.seen));
+  const q = plat(S.vraag), t = gekozenTab(), l = gekozen();
+  const lijst = ALLE.filter(p => (!q || p.zoek.includes(q)) && (!S.land || p.c === S.land) && l.w(p))
+    .sort((a, b) => (l.oplopend ? l.w(a) - l.w(b) : l.w(b) - l.w(a)) || (b.seen - a.seen));
   const toon = lijst.slice(0, TOON);
+  const knoppen = (soort, items, actief, label) => `
+    <div class="seg${soort === 'lijst' ? ' klein' : ''}" role="group" aria-label="${label}">
+      ${items.map(x => `<button type="button" data-${soort}="${x.id}" aria-pressed="${x.id === actief}">${x.label}</button>`).join('')}
+    </div>`;
+  const metMx = ALLE.filter(p => p.mx).length, metMv = ALLE.filter(p => p.mv).length;
 
   app.innerHTML = `
   ${S.land ? `<section class="card"><div class="lijst-rij">
@@ -97,35 +168,25 @@ function render(){
       <span class="lijst-main"><span class="lijst-naam">Spelers uit ${esc(landNaam(S.land))}</span></span>
       <a class="back" href="spelers.html" aria-label="Filter wissen">✕</a></div></section>` : ''}
   <section class="card">
-    <div class="seg" role="group" aria-label="Sorteer op" style="margin-bottom:8px">
-      <button type="button" data-sorteer="seen" aria-pressed="${S.sorteer === 'seen'}">Gezien</button>
-      <button type="button" data-sorteer="g" aria-pressed="${S.sorteer === 'g'}">Goals</button>
-      <button type="button" data-sorteer="min" aria-pressed="${S.sorteer === 'min'}">Minuten</button>
-      <button type="button" data-sorteer="mv" aria-pressed="${S.sorteer === 'mv'}">Waarde</button>
-    </div>
-    ${S.sorteer === 'mv' ? `<div class="seg klein" role="group" aria-label="Welke waarde">
-      <button type="button" data-waarde="mv" aria-pressed="${S.waarde === 'mv'}">Nu</button>
-      <button type="button" data-waarde="mx" aria-pressed="${S.waarde === 'mx'}">Hoogste</button>
-    </div>` : ''}
-    ${toon.length ? toon.map(rij).join('') : `<div class="leeg">Geen speler gevonden voor
-      “${esc(S.vraag)}”.</div>`}
+    ${knoppen('tab', TABS_SPELERS, t.id, 'Soort lijst')}
+    ${knoppen('lijst', t.lijsten, l.id, 'Sorteer op')}
+    ${toon.length ? toon.map(rij).join('') : `<div class="leeg">${q
+      ? `Geen speler gevonden voor “${esc(S.vraag)}”${ALLE.some(p => p.zoek.includes(q)) ? ' in deze lijst' : ''}.`
+      : 'Nog niemand in deze lijst.'}</div>`}
     <div class="note">${lijst.length > TOON
       ? `${TOON} van ${getal(lijst.length)} getoond. Zoek om de rest te vinden.`
       : `${getal(lijst.length)} ${lijst.length === 1 ? 'speler' : 'spelers'}.`}
-      ${S.sorteer === 'g' ? 'Goals die jij zag, niet zijn carrièretotaal.' : ''}
-      ${S.sorteer === 'min' ? 'Minuten die jij hem zag spelen, opgeteld over je duels.' : ''}
-      ${k === 'mv' ? 'Huidige marktwaarde volgens Transfermarkt.' : ''}
-      ${k === 'mx' ? 'Hoogste marktwaarde ooit volgens Transfermarkt, met de datum waarop hij die voor het eerst bereikte.' : ''}
-      ${S.sorteer === 'mv' && ALLE.filter(p => p.mx).length < ALLE.filter(p => p.mv).length
-        ? `Hoogste waarde bekend bij ${getal(ALLE.filter(p => p.mx).length)} van ${getal(ALLE.filter(p => p.mv).length)} spelers; de rest vult zich 's nachts aan.` : ''}</div>
+      ${l.noot || ''}
+      ${t.id === 'waarde' && metMx < metMv
+        ? `Hoogste waarde bekend bij ${getal(metMx)} van ${getal(metMv)} spelers; de rest vult zich 's nachts aan.` : ''}</div>
   </section>`;
 }
 
 app.addEventListener('click', e => {
-  const b = e.target.closest('[data-sorteer]');
-  if (b){ S.sorteer = b.dataset.sorteer; render(); }
-  const w = e.target.closest('[data-waarde]');
-  if (w){ S.waarde = w.dataset.waarde; render(); }
+  const t = e.target.closest('[data-tab]');
+  if (t){ S.tab = t.dataset.tab; onthoud(); render(); }
+  const l = e.target.closest('[data-lijst]');
+  if (l){ S.lijst[S.tab] = l.dataset.lijst; onthoud(); render(); }
 });
 
 if (window.APP && window.SPELERS){
