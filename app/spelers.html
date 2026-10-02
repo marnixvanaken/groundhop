@@ -100,7 +100,7 @@ const TABS_SPELERS = [
        .filter(Boolean).join(' · '),
      noot: 'Hoogste marktwaarde ooit volgens Transfermarkt, met de datum waarop hij die voor het eerst bereikte.'},
   ]},
-  {id: 'overig', label: 'Overig', lijsten: [
+  {id: 'bijzonder', label: 'Bijzonder', lijsten: [
     {id: 'teams', label: 'Teams', w: p => p.teams.length, badge: p => meer(p.teams.length, 'team', 'teams'),
      sub: p => p.teams.map(esc).join(' · '),
      noot: 'Teams waarvoor je hem zag, ook jeugd- en nationale elftallen.'},
