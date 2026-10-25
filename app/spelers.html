@@ -57,6 +57,11 @@ const kort = iso => datum(iso).replace(/ /g, '&nbsp;');
 const opLeeftijd = a => `${a[0]} jaar en ${meer(a[1], 'dag', 'dagen')} · ${kort(a[2])}`;
 const duur = d => d >= 365 ? `${Math.floor(d / 365.25)} jaar`
                 : d >= 31 ? `${Math.round(d / 30.44)} mnd` : meer(d, 'dag', 'dagen');
+const duelNaam = id => { const m = wedstrijd(id);
+  return m ? `${esc(club(m.hid).name)}&nbsp;–&nbsp;${esc(club(m.aid).name)}` : ''; };
+// Gezien voor € 500.000, later € 40 mln: 80×. Onder de 2 met twee decimalen,
+// anders zegt een stijging van 4% '1×'.
+const keer = f => `${f.toLocaleString('nl-NL', {maximumFractionDigits: f < 2 ? 2 : f < 10 ? 1 : 0})}×`;
 
 const TABS_SPELERS = [
   {id: 'wedstrijd', label: 'Wedstrijd', lijsten: [
@@ -99,6 +104,15 @@ const TABS_SPELERS = [
      sub: p => [p.mxd ? datum(p.mxd) : '', !p.mv ? '' : p.mv === p.mx ? 'nu ook' : `nu ${euro(p.mv)}`]
        .filter(Boolean).join(' · '),
      noot: 'Hoogste marktwaarde ooit volgens Transfermarkt, met de datum waarop hij die voor het eerst bereikte.'},
+    {id: 'mt', label: 'Toen', neutraal: true, w: p => p.mt?.[0], badge: p => euro(p.mt[0]),
+     sub: p => [kort(p.mt[1]), duelNaam(p.mt[2])].filter(Boolean).join(' · '),
+     noot: 'Zijn hoogste marktwaarde op een dag dat jij hem zag spelen; de bank telt niet mee. '
+         + 'Het is de waardering die toen gold. Zag je hem vóór zijn eerste waardering, dan telt die eerste.'},
+    {id: 'vo', label: 'Vroeg ontdekt', neutraal: true, w: p => p.vo && p.vo[3] / p.vo[0],
+     badge: p => keer(p.vo[3] / p.vo[0]),
+     sub: p => `${euro(p.vo[0])} → ${euro(p.vo[3])} · ${kort(p.vo[1])}`,
+     noot: 'Hoeveel keer zo veel hij waard werd nadat jij hem zag: zijn laagste marktwaarde op een dag '
+         + 'dat je hem zag spelen, tegen de hoogste daarna. Een piek van vóór die dag telt niet.'},
   ]},
   {id: 'bijzonder', label: 'Bijzonder', lijsten: [
     {id: 'teams', label: 'Teams', w: p => p.teams.length, badge: p => meer(p.teams.length, 'team', 'teams'),
@@ -203,6 +217,7 @@ function render(){
       ${items.map(x => `<button type="button" data-${soort}="${x.id}" aria-pressed="${x.id === actief}">${x.label}</button>`).join('')}
     </div>`;
   const metMx = ALLE.filter(p => p.mx).length, metMv = ALLE.filter(p => p.mv).length;
+  const verloop = APP.totals.verloop || 0, toen = l.id === 'mt' || l.id === 'vo';
 
   app.innerHTML = `
   ${S.land ? `<section class="card"><div class="lijst-rij">
@@ -219,7 +234,9 @@ function render(){
       ? `${TOON} van ${getal(lijst.length)} getoond. Zoek om de rest te vinden.`
       : `${getal(lijst.length)} ${lijst.length === 1 ? 'speler' : 'spelers'}.`}
       ${l.noot || ''}
-      ${t.id === 'waarde' && metMx < metMv
+      ${t.id === 'waarde' && toen && verloop < metMx
+        ? `Waarde op de dag van het duel bekend bij ${getal(verloop)} van ${getal(metMx)} spelers; de rest vult zich 's nachts aan.`
+        : t.id === 'waarde' && !toen && metMx < metMv
         ? `Hoogste waarde bekend bij ${getal(metMx)} van ${getal(metMv)} spelers; de rest vult zich 's nachts aan.` : ''}</div>
   </section>`;
   schuifrij(app.querySelector('.chips.klein'), vorige);

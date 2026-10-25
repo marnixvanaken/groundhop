@@ -209,7 +209,7 @@ def nachtelijke_marktwaarde(aantal: int = 400):
 
 
 def marktwaarde_stand() -> dict:
-    """Bij hoeveel spelers de marktwaarde (met de hoogste ooit) vers binnen is."""
+    """Bij hoeveel spelers de marktwaarde (met de hoogste ooit en het verloop) vers binnen is."""
     import transfermarkt_profiles as tp
     if not tp.SPELERS.exists():
         return {"totaal": 0, "te_doen": 0}

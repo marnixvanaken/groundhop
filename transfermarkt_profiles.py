@@ -20,7 +20,7 @@ Gebruik
     python3 transfermarkt_profiles.py                # alles, uren werk
     python3 transfermarkt_profiles.py --volledig 150 # top 150 ook transfers
     python3 transfermarkt_profiles.py --rapport      # alleen de stand
-    python3 transfermarkt_profiles.py --marktwaarde 400  # waarde + hoogste waarde
+    python3 transfermarkt_profiles.py --marktwaarde 400  # waarde, hoogste en verloop
 """
 
 from __future__ import annotations
@@ -103,18 +103,24 @@ def haal_profiel(pid: int, volledig: bool, force: bool = False) -> dict | None:
 # Transfermarkt (een ceapi-endpoint, één verzoek per speler) heeft elke
 # waardering met datum, en daarmee ook de hoogste. Een marktwaarde verandert
 # een paar keer per jaar; na MV_VERS_DAGEN mag hij opnieuw.
+#
+# Het verloop zelf gaat ook de cache in: daaruit rekent het dashboard de
+# waarde op de dag dat je hem zag (Spelers › Waarde › Toen). Wie werd opgehaald
+# voordat de cache dat bewaarde, mist het en moet opnieuw; `_mv_verloop` zegt
+# dat het er is, ook als de grafiek leeg was.
 
 MV_VERS_DAGEN = 120
 
 
 def vat_marktwaarde_samen(data: dict | None) -> dict:
-    """Huidige waarde met datum, en de hoogste met de datum waarop die voor
-    het eerst werd bereikt."""
+    """Huidige waarde met datum, de hoogste met de datum waarop die voor het
+    eerst werd bereikt, en elke waardering met datum."""
     huidig, historie = parse_marktwaarde_ceapi(data or {}, Diag())
     met = [h for h in historie if h.get("value")]
     uit = {"market_value": huidig,
            "market_value_date": met[-1]["date"] if met else None,
-           "max_market_value": None, "max_market_value_date": None}
+           "max_market_value": None, "max_market_value_date": None,
+           "market_value_history": [{"date": h["date"], "value": h["value"]} for h in met]}
     if met:
         top = max(h["value"] for h in met)
         eerste = next(h for h in met if h["value"] == top)
@@ -137,6 +143,7 @@ def haal_marktwaarde(pid: int) -> dict | None:
         if v is not None or k != "market_value":
             record[k] = v
     record["_mv_opgehaald"] = date.today().isoformat()
+    record["_mv_verloop"] = True
     pad.write_text(json.dumps(record, ensure_ascii=False, indent=2), "utf-8")
     return record
 
@@ -168,8 +175,10 @@ def mv_te_doen(spelers: list[dict], vandaag: date | None = None) -> list[dict]:
         pad = CACHE / f"{s['id']}.json"
         if not pad.exists():
             continue
-        wanneer = json.loads(pad.read_text("utf-8")).get("_mv_opgehaald")
-        if not wanneer or (vandaag - date.fromisoformat(wanneer)).days > MV_VERS_DAGEN:
+        record = json.loads(pad.read_text("utf-8"))
+        wanneer = record.get("_mv_opgehaald")
+        if not wanneer or not record.get("_mv_verloop") \
+                or (vandaag - date.fromisoformat(wanneer)).days > MV_VERS_DAGEN:
             uit.append(s)
     return sorted(uit, key=lambda s: -(s.get("matches_seen") or 0))
 
