@@ -62,10 +62,16 @@ const duelNaam = id => { const m = wedstrijd(id);
 // Gezien voor € 500.000, later € 40 mln: 80×. Onder de 2 met twee decimalen,
 // anders zegt een stijging van 4% '1×'.
 const keer = f => `${f.toLocaleString('nl-NL', {maximumFractionDigits: f < 2 ? 2 : f < 10 ? 1 : 0})}×`;
+// Gezien min de bank. Een invaller in de blessuretijd staat er met 0 minuten,
+// dus tellen op rol, niet op minuten. Een 0 laat de app weg, vandaar || 0.
+const gespeeld = p => (p.bas || 0) + (p.inv || 0);
 
 const TABS_SPELERS = [
   {id: 'wedstrijd', label: 'Wedstrijd', lijsten: [
     {id: 'seen', label: 'Gezien', w: p => p.seen, badge: p => `${p.seen}×`},
+    {id: 'gesp', label: 'Gespeeld', w: gespeeld, badge: p => `${gespeeld(p)}×`,
+     sub: p => p.bank ? `${p.seen}× gezien · ${p.bank}× bank` : '',
+     noot: 'Duels waarin je hem echt op het veld zag staan: in de basis of ingevallen. De bank telt niet mee.'},
     {id: 'min', label: 'Minuten', w: p => p.min, badge: p => `${getal(p.min)} min`,
      noot: 'Minuten die jij hem zag spelen, opgeteld over je duels.'},
     {id: 'bas', label: 'Basis', w: p => p.bas, badge: p => `${p.bas}×`,
