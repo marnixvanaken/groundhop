@@ -31,7 +31,7 @@ if [ "$1" != "--bijgewerkt" ]; then
   # ("would be overwritten"). Even opzij, en daarna de eigen versie terug:
   # die van deze laptop is de nieuwste.
   opzij=""
-  for f in data/dashboard_data.json data/collecties_ids.json data/collecties_seizoen.json; do
+  for f in data/dashboard_data.json data/collecties_ids.json data/collecties_seizoen.json data/tm_selectie.json; do
     if [ -f "$f" ] && ! git ls-files --error-unmatch "$f" >/dev/null 2>&1; then
       mv "$f" "$f.lokaal" && opzij="$opzij $f"
     fi

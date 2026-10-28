@@ -1,0 +1,6 @@
+# Een .bat hoort CRLF te hebben, ook als git op Windows anders is ingesteld.
+*.bat text eol=crlf
+
+# publiceer.py vergelijkt de data byte voor byte met GitHub. Zet git op Windows
+# hier CRLF in, dan lijkt alles veranderd en gaat het meteen opnieuw live.
+data/*.json -text

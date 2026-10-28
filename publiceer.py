@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """
-Zet data/dashboard_data.json (en de clubnummers van de albums) live: rechtstreeks op GitHub, zonder git.
+Zet data/dashboard_data.json (en de clubnummers van de albums en je lijst
+gezien wedstrijden) live: rechtstreeks op GitHub, zonder git.
 
 Vercel bouwt de site opnieuw bij elke commit op main. Pushen vanaf de laptop
 liep vast op inloggen, en uploaden via de website is een handeling die je
@@ -38,9 +39,12 @@ from pathlib import Path
 
 MAP = Path.home() / ".groundhop"
 SLEUTEL = MAP / "github_token"
-# Wat de laptop maakt en de live site nodig heeft. Alleen wat veranderd is gaat
-# mee, en alles samen in één commit.
-BESTANDEN = ["data/dashboard_data.json", "data/collecties_ids.json", "data/collecties_seizoen.json"]
+# Wat de laptop maakt en de live site of een volgende laptop nodig heeft. De
+# selectie leest de site niet, maar zonder hem kan een verse clone geen
+# wedstrijd meer toevoegen. Alleen wat veranderd is gaat mee, en alles samen in
+# één commit.
+BESTANDEN = ["data/dashboard_data.json", "data/collecties_ids.json",
+             "data/collecties_seizoen.json", "data/tm_selectie.json"]
 TAK = "main"
 API = "https://api.github.com"
 

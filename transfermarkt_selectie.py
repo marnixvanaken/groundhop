@@ -19,9 +19,15 @@ komen blijft het sofascore_id als `sofascore_id` staan. Dat is herkomst, geen
 sleutel — het zoektabblad gebruikt het om te zien wat je al hebt, en zodra dat
 tabblad ook bij Transfermarkt zoekt is het alleen nog geschiedenis.
 
+De selectie staat in git en gaat met publiceer.py mee naar GitHub: het is het
+enige dat je niet opnieuw kunt ophalen. Een clone op een nieuwe laptop mist dan
+alleen de caches, en die zijn terug te halen (al kost dat uren). Ontbreekt hij
+toch, dan bouwt --seed hem uit de koppeling, en anders uit het dashboard; dan
+zonder Sofascore-herkomst, want die staat daar niet in.
+
 Gebruik
 -------
-    python3 transfermarkt_selectie.py --seed        # vul hem uit de bestaande koppeling
+    python3 transfermarkt_selectie.py --seed        # vul hem uit koppeling of dashboard
     python3 transfermarkt_selectie.py --lijst       # toon wat erin staat
     python3 transfermarkt_selectie.py --toevoegen 4361105
     python3 transfermarkt_selectie.py --verwijderen 4361105
@@ -38,6 +44,7 @@ from pathlib import Path
 SELECTIE = Path("data/tm_selectie.json")
 MATCH_MAP = Path("data/tm_match_map.json")
 CACHE = Path("data/tm_match_cache")
+DASHBOARD = Path("data/dashboard_data.json")
 
 
 def lees(pad: Path = SELECTIE) -> list[dict]:
@@ -105,12 +112,52 @@ def uit_koppeling(mapping: dict, records: dict[int, dict]) -> list[dict]:
         })
     # Dezelfde TM-wedstrijd kan in theorie aan twee Sofascore-ID's hangen; dan
     # wint de eerste en verdwijnt de dubbel, want dubbel tellen is erger.
+    return _ontdubbeld(uit)
+
+
+def uit_dashboard(data: dict) -> list[dict]:
+    """Bouwt de selectie uit de export die het dashboard toont.
+
+    Voor een kopie zonder selectie en zonder koppeling: elke wedstrijd in een
+    Transfermarkt-export is er een die je zag, en draagt zijn Transfermarkt-id
+    al. Een Sofascore-export heeft andere id's; daaruit komt niets.
+    """
+    if data.get("source") != "transfermarkt":
+        return []
+    uit = []
+    for m in data.get("matches") or []:
+        if m.get("id_source") != "transfermarkt" or not m.get("id"):
+            continue
+        thuis = (m.get("home_team") or {}).get("name")
+        uit_ = (m.get("away_team") or {}).get("name")
+        uit.append({
+            "match_id": int(m["id"]),
+            "label": f"{thuis} - {uit_}" if thuis and uit_ else "",
+            "date": m.get("date") or "",
+            "bron": "dashboard",
+            "toegevoegd": date.today().isoformat(),
+        })
+    return _ontdubbeld(uit)
+
+
+def _ontdubbeld(selectie: list[dict]) -> list[dict]:
     gezien, schoon = set(), []
-    for s in sorted(uit, key=lambda s: (s.get("date") or "", s["match_id"])):
+    for s in sorted(selectie, key=lambda s: (s.get("date") or "", s["match_id"])):
         if s["match_id"] not in gezien:
             gezien.add(s["match_id"])
             schoon.append(s)
     return schoon
+
+
+def opgebouwd() -> list[dict] | None:
+    """Een selectie uit wat er wel is, voor als data/tm_selectie.json ontbreekt:
+    de koppeling, en anders het dashboard. None als geen van beide iets geeft."""
+    if MATCH_MAP.exists():
+        mapping = json.loads(MATCH_MAP.read_text("utf-8"))
+        return uit_koppeling(mapping, gecachete_records())
+    if DASHBOARD.exists():
+        return uit_dashboard(json.loads(DASHBOARD.read_text("utf-8"))) or None
+    return None
 
 
 def gecachete_records(cache: Path = CACHE) -> dict[int, dict]:
@@ -188,6 +235,22 @@ def zelftest() -> int:
     toets("twee koppelingen naar één wedstrijd geven één regel",
           len(uit_koppeling(dubbel, {})), 1)
 
+    print("\n── uit het dashboard ──")
+    export = {"source": "transfermarkt", "matches": [
+        {"id": 4361106, "id_source": "transfermarkt", "date": "2025-02-05",
+         "home_team": {"name": "PSV"}, "away_team": {"name": "Feyenoord"}},
+        {"id": 4361105, "id_source": "transfermarkt", "date": "2024-03-30",
+         "home_team": {"name": "NEC"}, "away_team": {"name": "PSV"}},
+        {"id": 4361105, "id_source": "transfermarkt", "date": "2024-03-30",
+         "home_team": {"name": "NEC"}, "away_team": {"name": "PSV"}}]}
+    sel = uit_dashboard(export)
+    toets("elke wedstrijd in de export wordt een selectieregel, zonder dubbel",
+          ids(sel), [4361105, 4361106])
+    toets("met de clubs als label", sel[0]["label"], "NEC - PSV")
+    toets("en het dashboard als bron", sel[0]["bron"], "dashboard")
+    toets("een Sofascore-export levert niets op",
+          uit_dashboard({"source": "sofascore", "matches": export["matches"]}), [])
+
     print("\n── bewaren en teruglezen ──")
     import tempfile
     with tempfile.TemporaryDirectory() as d:
@@ -207,7 +270,7 @@ def main():
     p = argparse.ArgumentParser(
         description="Beheer de Transfermarkt-lijst van geziene wedstrijden")
     p.add_argument("--seed", action="store_true",
-                   help="vul de selectie uit data/tm_match_map.json")
+                   help="vul de selectie uit de koppeling, of anders uit het dashboard")
     p.add_argument("--lijst", action="store_true", help="toon de selectie")
     p.add_argument("--toevoegen", type=int, metavar="TM_ID")
     p.add_argument("--verwijderen", type=int, metavar="TM_ID")
@@ -218,20 +281,21 @@ def main():
         raise SystemExit(zelftest())
 
     if args.seed:
-        if not MATCH_MAP.exists():
-            raise SystemExit(f"  {MATCH_MAP} ontbreekt — draai eerst "
-                             f"transfermarkt_map.py --map")
         if SELECTIE.exists():
             raise SystemExit(f"  {SELECTIE} bestaat al ({len(lees())} wedstrijden) — "
                              f"seeden zou je eigen toevoegingen overschrijven.\n"
                              f"  Verwijder hem eerst met de hand als dat de bedoeling is.")
-        mapping = json.loads(MATCH_MAP.read_text("utf-8"))
-        sel = uit_koppeling(mapping, gecachete_records())
+        sel = opgebouwd()
+        if not sel:
+            raise SystemExit(f"  {MATCH_MAP} ontbreekt en {DASHBOARD} heeft geen "
+                             f"Transfermarkt-wedstrijden — draai eerst "
+                             f"transfermarkt_map.py --map")
         schrijf(sel)
         met_label = sum(1 for s in sel if s["label"])
         print(f"  ✓ {SELECTIE} geschreven ({len(sel)} wedstrijden, "
               f"{met_label} met een naam uit Transfermarkt)")
-        print(f"    Vanaf nu is dit de bron. {MATCH_MAP} is nog slechts herkomst.")
+        bron = MATCH_MAP if MATCH_MAP.exists() else DASHBOARD
+        print(f"    Vanaf nu is dit de bron. {bron} is nog slechts herkomst.")
         raise SystemExit(0)
 
     if args.toevoegen or args.verwijderen:

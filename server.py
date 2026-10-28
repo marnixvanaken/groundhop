@@ -55,19 +55,13 @@ def tm_selectie():
     """De Transfermarkt-selectie, of None als die niet veilig te bepalen is.
 
     Bestaat data/tm_selectie.json nog niet, dan komt de verzameling uit de
-    oude koppeling (tm_match_map.json). Een eerste toevoeging zou anders een
-    selectie van één wedstrijd schrijven, en de sync exporteert daarna alleen
-    die ene: je verzameling krimpt stilletjes tot één duel. Daarom wordt de
-    selectie dan eerst uit de koppeling opgebouwd, zoals --seed doet.
+    oude koppeling (tm_match_map.json), en anders uit het dashboard. Een eerste
+    toevoeging zou anders een selectie van één wedstrijd schrijven, en de sync
+    exporteert daarna alleen die ene: je verzameling krimpt stilletjes tot één
+    duel. Daarom wordt de selectie dan eerst opgebouwd, zoals --seed doet.
     """
     import transfermarkt_selectie as tsel
-    selectie = tsel.lees()
-    if selectie:
-        return selectie
-    if tsel.MATCH_MAP.exists():
-        mapping = json.loads(tsel.MATCH_MAP.read_text("utf-8"))
-        return tsel.uit_koppeling(mapping, tsel.gecachete_records())
-    return None
+    return tsel.lees() or tsel.opgebouwd()
 
 
 def huidige_bron():
