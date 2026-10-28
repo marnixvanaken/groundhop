@@ -9,7 +9,7 @@ module doet hetzelfde uit de Transfermarkt-keten, en heeft die cache niet nodig:
 transfermarkt_sync.py en transfermarkt_players.py hebben het rekenwerk al
 gedaan. Wat hier gebeurt is optellen — stadions, clubs, toernooien, records —
 en het aanvullen van de spelers met wat alleen uit de combinatie volgt: hun
-leeftijd op de dag van elke wedstrijd.
+leeftijd en marktwaarde op de dag van elke wedstrijd.
 
 Het schrijft naar data/dashboard_data_tm.json en laat data/dashboard_data.json
 met rust, net zoals de sync selected_matches.json met rust laat. Vergelijk eerst,
@@ -168,6 +168,60 @@ def leeftijd_op(geboren: str, datum: str) -> tuple[int, int] | None:
     if verjaardag(d.year) > d:
         jaren -= 1
     return jaren, (d - verjaardag(g.year + jaren)).days
+
+
+# ─── Marktwaarde op de wedstrijddag ──────────────────────────────────────────
+
+ISO_DATUM = re.compile(r"\d{4}-\d{2}-\d{2}$")
+
+
+def waarde_op(verloop: list[tuple[str, int]], datum: str) -> int | None:
+    """
+    De marktwaarde die gold op een wedstrijddag: de laatste waardering op of
+    vóór die dag. Transfermarkt waardeert een paar keer per jaar, dus dat is
+    wat er toen stond. Zag je hem vóór zijn eerste waardering (een jonge
+    speler die nog niets waard was volgens Transfermarkt), dan telt die eerste.
+    """
+    if not verloop:
+        return None
+    eerder = [w for d, w in verloop if d <= datum]
+    return eerder[-1] if eerder else verloop[0][1]
+
+
+def waarde_gezien(historie: list[dict] | None, duels: list[dict]) -> dict | None:
+    """
+    Zijn marktwaarde op de dagen dat je hem zag spelen. De bank telt niet mee,
+    net als bij de leeftijd.
+
+    - highest:    de hoogste waarde op zo'n dag (Spelers › Waarde › Toen)
+    - lowest:     de laagste waarde op zo'n dag
+    - peak_after: de hoogste waarde ná die laagste dag, als hij daarna steeg
+                  (Vroeg ontdekt). Een piek van vóór je hem zag telt niet:
+                  wie je na zijn beste jaren zag, ontdekte je niet vroeg.
+
+    Bij gelijke waarden telt de eerste keer. None als er geen verloop is.
+    """
+    verloop = sorted((h["date"], h["value"]) for h in historie or []
+                     if h.get("value") and ISO_DATUM.match(str(h.get("date") or "")))
+    if not verloop:
+        return None
+    hoogste = laagste = None
+    for d in sorted(duels, key=lambda d: d.get("date") or ""):
+        if not (d.get("minutes") or 0) > 0 or not ISO_DATUM.match(str(d.get("date") or "")):
+            continue
+        item = {"value": waarde_op(verloop, d["date"]), "date": d["date"],
+                "match_id": d.get("match_id"), "match": d.get("match_label", "")}
+        if hoogste is None or item["value"] > hoogste["value"]:
+            hoogste = item
+        if laagste is None or item["value"] < laagste["value"]:
+            laagste = item
+    piek = None
+    if laagste:
+        na = [(d, w) for d, w in verloop if d > laagste["date"]]
+        top = max((w for _, w in na), default=0)
+        if top > laagste["value"]:
+            piek = {"value": top, "date": next(d for d, w in na if w == top)}
+    return {"highest": hoogste, "lowest": laagste, "peak_after": piek}
 
 
 # ─── Optellingen over de wedstrijden ─────────────────────────────────────────
@@ -440,8 +494,8 @@ def bereken_records(wedstrijden: list[dict], spelers: list[dict]) -> dict:
 def verrijk_spelers(spelers: list[dict], tabel: dict[str, str]) -> tuple[list[dict], dict]:
     """
     Vult per speler aan wat alleen uit de combinatie van profiel en wedstrijden
-    volgt: de positieletter, de landcode, en de leeftijd op de jongste en oudste
-    dag dat je hem hebt zien spelen.
+    volgt: de positieletter, de landcode, de leeftijd op de jongste en oudste
+    dag dat je hem hebt zien spelen, en zijn marktwaarde op die dagen.
 
     Geeft (spelers, ongewoon) terug, waarbij `ongewoon` de posities en
     nationaliteiten telt die niet te herleiden waren. Dat is geen foutmelding
@@ -502,6 +556,12 @@ def verrijk_spelers(spelers: list[dict], tabel: dict[str, str]) -> tuple[list[di
                     bank_oudste = staat
         s["youngest_age_seen"] = jongste
         s["oldest_age_seen"] = oudste
+
+        # Het verloop zelf blijft uit de export: een paar dozijn waarderingen
+        # bij drieduizend spelers maakt dashboard_data.json megabytes groter,
+        # en de app heeft alleen de waarde op de dagen dat je hem zag nodig.
+        s["value_seen"] = waarde_gezien(s.pop("market_value_history", None),
+                                        s.get("matches_detail") or [])
         uit.append(s)
     return uit, {"posities": dict(posities), "landen": dict(landen),
                  "bank_jongste": bank_jongste, "bank_oudste": bank_oudste}
@@ -604,12 +664,14 @@ def rapporteer(export: dict, ongewoon: dict):
     met_positie = sum(1 for s in p if s.get("position"))
     met_vlag = sum(1 for s in p if s.get("nationality_alpha2"))
     met_leeftijd = sum(1 for s in p if s.get("youngest_age_seen"))
+    met_verloop = sum(1 for s in p if s.get("value_seen"))
     clubs = export["teams_visited"]
     met_foto = sum(1 for s in p if s.get("photo_url"))
     met_wapen = sum(1 for c in clubs if c.get("logo_url"))
     print(f"\n  {met_positie} van {len(p)} spelers in een linie (nodig voor de XI)")
     print(f"  {met_vlag} van {len(p)} met een landcode")
     print(f"  {met_leeftijd} van {len(p)} met een leeftijd op de wedstrijddag")
+    print(f"  {met_verloop} van {len(p)} met een marktwaardeverloop (waarde op de wedstrijddag)")
     print(f"  {met_foto} van {len(p)} met een portretfoto")
     print(f"  {met_wapen} van {len(clubs)} clubs met een wapen")
 
@@ -882,10 +944,42 @@ def zelftest() -> int:
     toets("gemiddelde per wedstrijd", refs["Higler"]["avg_yellows_per_match"], 1.0)
     toets("wedstrijden staan erbij", sorted(refs["Higler"]["matches"]), [1, 2])
 
+    print("\n── marktwaarde op de wedstrijddag ──")
+    verloop = [{"date": "2020-01-01", "value": 500_000},
+               {"date": "2022-06-01", "value": 5_000_000},
+               {"date": "2024-01-01", "value": 40_000_000},
+               {"date": "2025-06-01", "value": 25_000_000},
+               {"date": "01.01.2026", "value": 1}]          # geen ISO-datum: telt niet
+    rij = [(w["date"], w["value"]) for w in verloop[:4]]
+    toets("waardering op de dag zelf telt", waarde_op(rij, "2022-06-01"), 5_000_000)
+    toets("daarna de laatste ervoor", waarde_op(rij, "2023-12-31"), 5_000_000)
+    toets("vóór de eerste waardering: de eerste", waarde_op(rij, "2019-05-01"), 500_000)
+    toets("geen verloop, geen waarde", waarde_op([], "2024-01-01"), None)
+    vs = waarde_gezien(verloop, [
+        {"date": "2019-05-01", "minutes": 90, "match_id": 1},
+        {"date": "2022-06-01", "minutes": 0, "match_id": 2},    # bank
+        {"date": "2023-03-01", "minutes": 45, "match_id": 3},
+        {"date": "2025-08-01", "minutes": 90, "match_id": 4}])
+    toets("hoogste toen", (vs["highest"]["value"], vs["highest"]["match_id"]), (25_000_000, 4))
+    toets("laagste toen", (vs["lowest"]["value"], vs["lowest"]["date"]), (500_000, "2019-05-01"))
+    toets("piek erna", vs["peak_after"], {"value": 40_000_000, "date": "2024-01-01"})
+    toets("gelijke waarde: de eerste keer telt",
+          waarde_gezien(verloop, [{"date": "2023-05-01", "minutes": 90, "match_id": 5},
+                                  {"date": "2023-03-01", "minutes": 90, "match_id": 6}]
+                        )["highest"]["match_id"], 6)
+    toets("een piek van vóór je hem zag telt niet",
+          waarde_gezien([{"date": "2019-01-01", "value": 100_000_000},
+                         {"date": "2024-01-01", "value": 20_000_000}],
+                        [{"date": "2024-06-01", "minutes": 90}])["peak_after"], None)
+    toets("alleen op de bank: verloop bekend, geen waarde",
+          waarde_gezien(verloop, [{"date": "2023-03-01", "minutes": 0}]),
+          {"highest": None, "lowest": None, "peak_after": None})
+    toets("zonder verloop: niets", waarde_gezien([], [{"date": "2023-03-01", "minutes": 90}]), None)
+
     print("\n── records ──")
     ps = [
         {"id": 1, "name": "Jong", "date_of_birth": "2007-01-01", "position": "Spits",
-         "nationality": "Nederland",
+         "nationality": "Nederland", "market_value_history": verloop,
          "matches_detail": [{"date": "2024-01-10", "minutes": 90, "match_label": "PSV 2-1 Ajax"}]},
         {"id": 2, "name": "Oud", "date_of_birth": "1983-01-01", "position": "Doelman",
          "nationality": "Duitsland",
@@ -916,6 +1010,9 @@ def zelftest() -> int:
     toets("laatste datum", export["date_range"]["last"], "2024-02-20")
     toets("nieuwste wedstrijd bovenaan", export["matches"][0]["id"], 2)
     toets("bron staat erbij", export["source"], "transfermarkt")
+    toets("waarde toen in de export", export["players"][0]["value_seen"]["highest"]["value"],
+          40_000_000)
+    toets("het verloop zelf niet", "market_value_history" in export["players"][0], False)
 
     leeg, _ = bouw([], [], tabel)
     toets("een lege bron geeft een lege export, geen fout",

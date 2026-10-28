@@ -395,6 +395,11 @@ def main():
             "clubs": len(clubs),
             "countries": len({v["country"] for v in venues if v["country"]}),
             "players": len(d["players"]),
+            # Bij hoeveel spelers met een hoogste waarde ook het verloop binnen
+            # is; tot de laptop iedereen opnieuw heeft opgehaald, zegt Spelers
+            # dat erbij.
+            "verloop": sum(1 for p in d["players"] if p.get("matches_detail")
+                           and p.get("max_market_value") and p.get("value_seen") is not None),
             "first": matches[-1]["date"] if matches else None,
             "last": matches[0]["date"] if matches else None,
         },
@@ -405,7 +410,19 @@ def main():
         """Jongste of oudste leeftijd waarop je hem zag spelen: [jaren, dagen, datum]."""
         return [a["age_years"], a["age_days"], a.get("date")] if a else None
 
-    WEGLATEN = {"bas", "inv", "bank", "ge", "ro", "jo", "ou", "caps", "capg", "cm"}
+    def waarde_toen(v):
+        """Hoogste marktwaarde op een dag dat je hem zag spelen: [waarde, datum, duel]."""
+        a = (v or {}).get("highest")
+        return [a["value"], a["date"], a.get("match_id")] if a else None
+
+    def vroeg_ontdekt(v):
+        """Laagste marktwaarde op een dag dat je hem zag spelen, en de hoogste
+        daarna: [waarde, datum, duel, piek, piekdatum]. Alleen als hij steeg."""
+        a, top = (v or {}).get("lowest"), (v or {}).get("peak_after")
+        return [a["value"], a["date"], a.get("match_id"), top["value"], top["date"]] \
+            if a and top else None
+
+    WEGLATEN = {"bas", "inv", "bank", "ge", "ro", "jo", "ou", "caps", "capg", "cm", "mt", "vo"}
     spelers = {}
     for p in d["players"]:
         md = p.get("matches_detail") or []
@@ -442,6 +459,8 @@ def main():
             # Marktwaarde volgens Transfermarkt: nu (met datum) en de hoogste ooit.
             "mv": p.get("market_value"), "mvd": p.get("market_value_date"),
             "mx": p.get("max_market_value"), "mxd": p.get("max_market_value_date"),
+            # En op de dagen dat je hem zag spelen (Toen, Vroeg ontdekt).
+            "mt": waarde_toen(p.get("value_seen")), "vo": vroeg_ontdekt(p.get("value_seen")),
             "m": [[x["match_id"], x.get("team"), x.get("minutes"), x.get("goals") or 0,
                    x.get("assists") or 0, 1 if x.get("starter") else 0, x.get("rating")]
                   for x in md],
