@@ -262,12 +262,15 @@ def marktwaarde_alles():
 
 
 def nog_op_te_halen() -> int:
-    """Hoeveel wedstrijden in de selectie nog niet zijn opgehaald."""
+    """Hoeveel gespeelde wedstrijden in de selectie nog niet zijn opgehaald.
+    Wat nog gespeeld moet worden, telt niet: daar valt niets op te halen."""
+    import transfermarkt_selectie as tsel
     if huidige_bron() != "transfermarkt":
         return 0
     selectie = tm_selectie() or []
     cache = {p.stem for p in Path("data/tm_match_cache").glob("*.json")}
-    return sum(1 for s in selectie if str(s["match_id"]) not in cache)
+    return sum(1 for s in selectie
+               if str(s["match_id"]) not in cache and not tsel.nog_te_spelen(s))
 
 
 def zet_live():
