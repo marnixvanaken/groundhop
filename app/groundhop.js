@@ -338,3 +338,19 @@ function euro(n){
   }
   return `€ ${n.toLocaleString('nl-NL')}`;
 }
+
+/* ── Terugkomen ──────────────────────────────────────────────────────────
+   Wanneer je GroundHop op dit apparaat het laatst gebruikte. Elk scherm
+   schrijft het bij openen en bij weggaan; Home leest wat er vóór dit bezoek
+   stond, voor de intro na een lange afwezigheid. 0 betekent: nog nooit. Is
+   er geen opslag, dan telt het als net gebruikt, zodat de intro niet bij
+   elk bezoek speelt. */
+function laatstGebruikt(){
+  try { return Number(localStorage.getItem('gh-laatst')) || 0; } catch { return Date.now(); }
+}
+function gebruiktNu(){
+  try { localStorage.setItem('gh-laatst', String(Date.now())); } catch {}
+}
+const VORIG_GEBRUIK = laatstGebruikt();
+gebruiktNu();
+document.addEventListener('visibilitychange', () => { if (document.hidden) gebruiktNu(); });

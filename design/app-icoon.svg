@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180" width="180" height="180">
+  <!-- GroundHop-appicoon: het woordmerk uit de bovenbalk, in de donkere stand,
+       op de middenlijn en middencirkel van een veld. Vierkant en dekkend: iOS
+       rondt de hoeken zelf af. -->
+  <rect width="180" height="180" fill="#0e1013"/>
+  <g fill="none" stroke="#45d284" stroke-opacity="0.16" stroke-width="4.5">
+    <circle cx="90" cy="90" r="60"/>
+    <line x1="90" y1="0" x2="90" y2="180"/>
+  </g>
+  <g font-family="Outfit" font-weight="800" font-size="43" letter-spacing="-1.1" text-anchor="middle">
+    <text x="90" y="85" fill="#45d284">Ground</text>
+    <text x="90" y="127" fill="#f2f4f6">Hop</text>
+  </g>
+</svg>
