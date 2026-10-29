@@ -21,6 +21,8 @@
   --accent:         #0a7a3d;  /*  5.43:1 op kaart — jouw tellers          */
   --accent-strong:  #11a24f;  /*  3.33:1 met wit — alleen groot en vet    */
   --accent-soft:    rgba(10,122,61,0.10);
+  --destructive:    #c4281c;  /*  5.73:1 op kaart — alleen voor verwijderen */
+  --destructive-soft: rgba(196,40,28,0.10);
   --glass:          rgba(237,239,242,0.70);
   --glass-filter:   blur(30px) saturate(1.5) brightness(1.12);
   --glass-border:   rgba(255,255,255,0.7);
@@ -42,6 +44,8 @@
     --accent:        #45d284;  /*  8.52:1 op kaart                        */
     --accent-strong: #1c9a57;  /*  3.61:1 met wit                         */
     --accent-soft:   rgba(69,210,132,0.12);
+    --destructive:   #ff6b61;  /*  5.94:1 op kaart                        */
+    --destructive-soft: rgba(255,107,97,0.14);
     --glass:         rgba(14,16,19,0.74);
     --glass-filter:  blur(30px) saturate(1.5) brightness(0.6);
     --glass-border:  rgba(255,255,255,0.12);
