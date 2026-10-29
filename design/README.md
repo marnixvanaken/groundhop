@@ -308,5 +308,10 @@ De bron is `design/app-icoon.svg`. De tekst daarin is Outfit, dus render hem
 in een browser die dat lettertype geladen heeft, op 180 × 180, vierkant en
 dekkend: iOS rondt de hoeken zelf af.
 
-iOS onthoudt het icoon van het moment van toevoegen. Na een wijziging haal je
-het tegeltje weg en zet je het opnieuw op het beginscherm.
+`manifest.webmanifest` zegt dat de hele site (`scope: /`) bij de webapp hoort.
+Zonder manifest weet iOS dat niet, en opent hij elk ander scherm dan Home in
+een browservenster met adresbalk en kruisje. `icon-512.png` is hetzelfde
+icoon voor browsers die een groter formaat vragen.
+
+iOS onthoudt het icoon en het manifest van het moment van toevoegen. Na een
+wijziging haal je het tegeltje weg en zet je het opnieuw op het beginscherm.
