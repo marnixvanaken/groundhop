@@ -83,6 +83,18 @@ def verwijder(selectie: list[dict], match_id: int) -> tuple[list[dict], bool]:
     return over, len(over) != len(selectie)
 
 
+def nog_te_spelen(s: dict, vandaag: str = "") -> bool:
+    """Ligt de wedstrijd op vandaag of later? Dan valt er nog niets op te halen.
+
+    Een duel uit het speelschema staat al in de selectie voordat het gespeeld
+    is. Ophalen levert dan een voorbeschouwing op, en die mag de cache niet in
+    (transfermarkt_sync.nog_niet_definitief). Toch haalde elke sync zulke duels
+    opnieuw op, en zag elke start van de server ze als 'nog niet opgehaald'.
+    Op de dag zelf is het rapport ook nog niet af. Zonder datum: wel proberen.
+    """
+    return (s.get("date") or "") >= (vandaag or date.today().isoformat())
+
+
 def ids(selectie: list[dict]) -> list[int]:
     return [int(s["match_id"]) for s in selectie]
 
@@ -209,6 +221,15 @@ def zelftest() -> int:
     toets("en meldt dat het gelukt is", gelukt, True)
     _, mis = verwijder(s4, 999)
     toets("een onbekend id verwijderen is geen fout", mis, False)
+
+    print("\n── nog te spelen ──")
+    toets("morgen: nog niets op te halen",
+          nog_te_spelen({"date": "2026-10-30"}, "2026-10-29"), True)
+    toets("vandaag: het rapport is nog niet af",
+          nog_te_spelen({"date": "2026-10-29"}, "2026-10-29"), True)
+    toets("gisteren: ophalen",
+          nog_te_spelen({"date": "2026-10-28"}, "2026-10-29"), False)
+    toets("zonder datum: ophalen", nog_te_spelen({"date": ""}, "2026-10-29"), False)
 
     print("\n── uit de koppeling ──")
     mapping = {"1001": {"tm_match_id": 4361105, "date": "2024-03-30",

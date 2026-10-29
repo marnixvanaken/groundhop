@@ -33,7 +33,7 @@ from pathlib import Path
 
 from transfermarkt_poc import BASE, fetch, parse_match
 import transfermarkt_paden as paden
-from transfermarkt_selectie import SELECTIE, lees as lees_selectie
+from transfermarkt_selectie import SELECTIE, lees as lees_selectie, nog_te_spelen
 
 SELECTED = Path("data/selected_matches.json")
 MATCH_MAP = Path("data/tm_match_map.json")
@@ -215,9 +215,13 @@ def main():
 
     CACHE.mkdir(parents=True, exist_ok=True)
     gecachet = {p.stem for p in CACHE.glob("*.json")}
-    te_doen = [(k, v) for k, v in mapping.items()
-               if args.force or str(v["tm_match_id"]) not in gecachet]
+    open_ = [(k, v) for k, v in mapping.items()
+             if args.force or str(v["tm_match_id"]) not in gecachet]
+    te_doen = [(k, v) for k, v in open_ if not nog_te_spelen(v)]
     print(f"  {len(gecachet)} al gecachet, {len(te_doen)} te doen")
+    if len(open_) > len(te_doen):
+        print(f"  {len(open_) - len(te_doen)} op vandaag of later — "
+              f"die haalt de sync de dag na de wedstrijd op")
 
     if not args.rapport and te_doen:
         if args.limit:

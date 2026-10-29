@@ -448,6 +448,18 @@
     "Schauinsland-Reisen-Arena"
    ],
    "herkomst": "MSV Duisburg - SV Waldhof Mannheim 07, 07-11-2025"
+  },
+  {
+   "name": "M-Scores Stadion",
+   "city": "Dordrecht",
+   "country": "Nederland",
+   "lat": 51.8025,
+   "lon": 4.6892,
+   "status": "controleren",
+   "aliases": [
+    "Stadion Krommedijk"
+   ],
+   "herkomst": "FC Dordrecht - Almere City FC, 25-09-2026"
   }
  ]
 }
