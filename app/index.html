@@ -297,11 +297,11 @@ function render(){
 }
 
 /* ── Intro na een lange afwezigheid ──────────────────────────────────────
-   Ben je een week weg geweest, of is dit je eerste bezoek op dit apparaat,
+   Ben je een dag weg geweest, of is dit je eerste bezoek op dit apparaat,
    dan opent Home met een korte intro. Daarna komen de kaarten op en tellen
    de tellers op vanaf nul. Tik om hem over te slaan, tik op het logo om hem
    nog eens te zien. Met 'Verminder beweging' aan blijft hij weg. */
-const WEG_NA = 7 * 864e5;   // een week
+const WEG_NA = 864e5;   // een dag
 const rustig = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 const BAL = `<svg class="bal" viewBox="0 0 20 20" aria-hidden="true">
@@ -312,7 +312,7 @@ const BAL = `<svg class="bal" viewBox="0 0 20 20" aria-hidden="true">
 
 function hoeLang(ms){
   const d = Math.floor(ms / 864e5);
-  if (d < 14) return `${d} dagen`;
+  if (d < 14) return d === 1 ? '1 dag' : `${d} dagen`;
   if (d < 60) return `${Math.floor(d / 7)} weken`;
   if (d < 730) return `${Math.round(d / 30.44)} maanden`;
   return `${Math.round(d / 365.25)} jaar`;

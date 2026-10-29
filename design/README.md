@@ -160,7 +160,7 @@ python3 server.py                  # daarna localhost:4000/app/
 
 | Tab | Scherm | Wat |
 |---|---|---|
-| Home | `index.html` | Je verzameling in tellers, het laatste duel, duels per seizoen, vaakst gezien, records. Na een week weg, of bij je eerste bezoek op een apparaat, eerst een korte intro (tik op het logo om hem nog eens te zien) |
+| Home | `index.html` | Je verzameling in tellers, het laatste duel, duels per seizoen, vaakst gezien, records. Na een dag weg, of bij je eerste bezoek op een apparaat, eerst een korte intro (tik op het logo om hem nog eens te zien) |
 | Duels | `duels.html` | Alle duels per seizoen, zoeken op club, stadion of competitie |
 | | `wedstrijddetail.html#id=…` | Uitslag, jouw tellers, goals, opstelling, vorige en volgende |
 | Grounds | `grounds.html` | Kaart en lijst per land |
