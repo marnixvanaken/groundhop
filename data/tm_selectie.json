@@ -1478,5 +1478,124 @@
     "date": "2026-10-25",
     "bron": "handmatig",
     "toegevoegd": "2026-10-28"
+  },
+  {
+    "match_id": 4896396,
+    "label": "PSV - Willem II",
+    "date": "2026-10-31",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 5035925,
+    "label": "PSV - Club Brugge",
+    "date": "2026-11-04",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 5035861,
+    "label": "Real Madrid - PSV",
+    "date": "2026-11-24",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973784,
+    "label": "PSV - Go Ahead Eagles",
+    "date": "2026-11-28",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 5035924,
+    "label": "PSV - Atlético Madrid",
+    "date": "2026-12-09",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973837,
+    "label": "PSV - SC Telstar",
+    "date": "2026-12-13",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973792,
+    "label": "PSV - PEC Zwolle",
+    "date": "2026-12-20",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4911926,
+    "label": "RSC Anderlecht - Sint-Truidense VV",
+    "date": "2026-12-27",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973820,
+    "label": "PSV - ADO Den Haag",
+    "date": "2027-01-23",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 5035927,
+    "label": "PSV - VfB Stuttgart",
+    "date": "2027-01-27",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973845,
+    "label": "PSV - FC Twente",
+    "date": "2027-02-13",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973856,
+    "label": "PSV - SC Cambuur",
+    "date": "2027-02-20",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4973874,
+    "label": "PSV - FC Utrecht",
+    "date": "2027-03-06",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4898152,
+    "label": "PSV - AZ Alkmaar",
+    "date": "2027-04-03",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4898173,
+    "label": "PSV - AFC Ajax",
+    "date": "2027-04-24",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4898190,
+    "label": "PSV - Excelsior Rotterdam",
+    "date": "2027-05-08",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
+  },
+  {
+    "match_id": 4898201,
+    "label": "PSV - NEC Nijmegen",
+    "date": "2027-05-16",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-29"
   }
 ]
