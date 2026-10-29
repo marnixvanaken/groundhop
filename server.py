@@ -720,7 +720,7 @@ class Handler(SimpleHTTPRequestHandler):
                       ".css":"text/css", ".json":"application/json",
                       ".png":"image/png", ".ico":"image/x-icon",
                       ".svg":"image/svg+xml", ".webp":"image/webp",
-                      ".jpg":"image/jpeg"}.get(ext, "application/octet-stream")
+                      ".jpg":"image/jpeg", ".webmanifest":"application/manifest+json"}.get(ext, "application/octet-stream")
                 body = file_path.read_bytes()
                 self.send_response(200)
                 self.send_header("Content-Type", ct)
