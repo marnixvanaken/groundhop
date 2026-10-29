@@ -88,6 +88,22 @@
 .buren a + a{border-left:0.5px solid var(--separator); text-align:right;}
 .buren .row-label{margin-bottom:1px;}
 .buren .row-value{font-size:14px;}
+
+/* ── Verwijderen ───────────────────────────────────────────────────────────
+   Alleen op de laptop, waar server.py de selectie beheert. Rood, en altijd
+   met een tweede tik: het duel verdwijnt uit elke telling. Gaat het blok
+   open, dan schuift het helemaal in beeld, boven de tabbalk uit. */
+#beheer{scroll-margin-bottom:calc(var(--tab-h) + 16px);}
+.weg-knop{width:100%; justify-content:center; border:0; background:none; cursor:pointer;
+  font:inherit; font-size:15px; font-weight:500; color:var(--destructive);}
+.weg{padding:14px 16px; font-size:13px; color:var(--content-2);}
+.weg b{color:var(--content); font-weight:600;}
+.weg a{color:var(--accent);}
+.weg-rij{display:flex; gap:8px; margin-top:12px;}
+.knop{flex:1; height:40px; padding:0 16px; border:0; border-radius:11px; cursor:pointer;
+  background:var(--card-sunken); color:var(--content); font:inherit; font-size:15px; font-weight:600;}
+.knop.rood{background:var(--destructive); color:var(--card);}
+.knop:disabled{opacity:.5;}
 </style>
 </head>
 <body>
@@ -147,9 +163,10 @@ function opstelling(m){
 }
 
 let LINEUP = {};
+const huidig = () => wedstrijd(Number(param('id'))) || APP.matches[0];
 
 function render(){
-  const m = wedstrijd(Number(param('id'))) || APP.matches[0];
+  const m = huidig();
   const h = club(m.hid), a = club(m.aid);
   const v = m.venue ? stadion(m.venue) : null;
   const naamComp = comp(m.t);
@@ -267,8 +284,10 @@ function render(){
   if (eerder || later){
     html += `<section class="card buren">${buur(eerder, '‹ Eerder')}${buur(later, 'Later ›')}</section>`;
   }
+  html += '<section class="card" id="beheer" hidden></section>';
 
   app.innerHTML = html;
+  toonBeheer(m);
   app.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
     app.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
     toonPloeg(b.dataset.team);
@@ -304,9 +323,91 @@ function toonPloeg(team){
                  + blok('Ingevallen en bank', spelers.filter(p => !p.starter));
 }
 
+/* ── Verwijderen ─────────────────────────────────────────────────────────
+   Alleen met server.py en Transfermarkt als bron: die houdt de selectie bij.
+   De live site heeft geen /api/bron, en dan blijft de kaart weg. Na het
+   verwijderen haalt de server alles opnieuw door de keten en zet het live. */
+let BEHEER = false;
+let WEG = {id: null, fase: 'rust', tekst: ''};
+
+async function api(pad, opties){
+  try { const r = await fetch(pad, opties); return r.ok ? await r.json() : null; }
+  catch { return null; }
+}
+
+const duelNaam = m => `${esc(club(m.hid).name)} – ${esc(club(m.aid).name)}`;
+
+function toonBeheer(m){
+  const kaart = document.getElementById('beheer');
+  if (!kaart) return;
+  kaart.hidden = !BEHEER;
+  if (!BEHEER) return;
+  if (WEG.id !== m.id) WEG = {id: m.id, fase: 'rust', tekst: ''};
+  const bezig = WEG.fase === 'bezig' ? ' disabled' : '';
+  kaart.innerHTML = WEG.fase === 'rust'
+    ? '<button class="row weg-knop" type="button" data-weg="vraag">Verwijderen uit je verzameling</button>'
+    : WEG.fase === 'klaar' ? `<div class="weg" role="status">${WEG.tekst}</div>`
+    : `<div class="weg">
+        Niet bij geweest? Dan verdwijnt <b>${duelNaam(m)}</b> uit je duels, spelers en grounds.
+        Later toevoegen kan altijd weer.
+        ${WEG.tekst ? `<div role="alert" style="margin-top:8px;color:var(--destructive)">${esc(WEG.tekst)}</div>` : ''}
+        <div class="weg-rij">
+          <button class="knop" type="button" data-weg="rust"${bezig}>Annuleer</button>
+          <button class="knop rood" type="button" data-weg="ja"${bezig}>${bezig ? 'Verwijderen…' : 'Verwijder'}</button>
+        </div>
+      </div>`;
+}
+
+/* Wacht tot de server klaar is met ophalen en live zetten. */
+async function naSync(){
+  const s = await api('/api/sync-status');
+  if (s?.running){ await new Promise(r => setTimeout(r, 3000)); return naSync(); }
+  if (s?.error) return `Bijwerken stopte: ${esc(s.error)}`;
+  if (s?.live?.ok) return 'Klaar, en live gezet. De site is over een minuut bijgewerkt.';
+  if (s?.live?.gekoppeld) return `Klaar, maar live zetten lukte niet: ${esc(s.live.fout)}`;
+  return 'Klaar. Koppel GitHub in Meer om het ook live te zetten.';
+}
+
+app.addEventListener('click', async e => {
+  const knop = e.target.closest('[data-weg]');
+  if (!knop) return;
+  const m = wedstrijd(WEG.id), w = WEG;
+  if (knop.dataset.weg !== 'ja'){
+    w.fase = knop.dataset.weg; w.tekst = ''; toonBeheer(m);
+    if (w.fase === 'vraag') document.getElementById('beheer').scrollIntoView({block: 'nearest', behavior: 'smooth'});
+    return;
+  }
+  w.fase = 'bezig'; toonBeheer(m);
+  const res = await api('/api/tm/verwijderen', {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify([{match_id: m.id}]),
+  });
+  if (WEG !== w) return;          // intussen naar een ander duel gebladerd
+  if (!res || res.error){
+    w.fase = 'vraag';
+    w.tekst = res?.error || 'Verwijderen is niet gelukt. Draait server.py nog?';
+    toonBeheer(m);
+    return;
+  }
+  const kop = `<b>${duelNaam(m)}</b> is uit je verzameling.`;
+  w.fase = 'klaar';
+  w.tekst = res.removed ? `${kop} Spelers, grounds en tellers worden nu bijgewerkt…`
+                        : 'Dit duel stond al niet meer in je selectie.';
+  toonBeheer(m);
+  if (!res.fetching) return;
+  const klaar = await naSync();
+  if (WEG !== w) return;
+  w.tekst = `${kop} ${klaar} <a href="duels.html">Naar je duels</a>`;
+  toonBeheer(m);
+});
+
 if (window.APP && window.SPELERS){
   render();
   window.addEventListener('hashchange', () => { render(); app.scrollTop = 0; });
+  api('/api/bron').then(b => {
+    BEHEER = b?.bron === 'transfermarkt';
+    if (BEHEER) toonBeheer(huidig());
+  });
 } else {
   app.innerHTML = zonderData('wedstrijddetail.html');
 }

@@ -58,6 +58,8 @@
 .bol.leeg{border:1.5px solid var(--content-2); opacity:0.5;}
 .bol.aan{background:var(--content); color:var(--card);}
 .bol.mijn{background:var(--accent-soft); color:var(--accent);}
+/* Op de laptop kun je een duel uit je verzameling ook weer wegtikken. */
+.bol.weg{background:var(--destructive-soft); color:var(--destructive);}
 
 /* ── Demo-schakelaar ───────────────────────────────────────────────────── */
 .demo{display:flex; align-items:center; gap:10px; padding:10px 16px 12px;
@@ -76,6 +78,7 @@
   box-shadow:0 8px 24px rgba(0,0,0,0.22);
 }
 .cta[hidden]{display:none;}
+.cta.rood{background:var(--destructive); color:var(--card);}
 body.met-cta main{padding-bottom:calc(var(--tab-h) + 80px);}
 
 /* Een melding in plaats van een systeemdialoog: dit is een ontwerp, dus ook
@@ -129,7 +132,8 @@ body.met-cta main{padding-bottom:calc(var(--tab-h) + 80px);}
    Met server.py (je laptop) is dit het echte paneel: zoeken bij Transfermarkt
    terwijl je typt, het speelschema per seizoen, en opslaan via
    /api/tm/toevoegen. De server haalt daarna uitslag, opstelling en goals op en
-   bouwt de app-data opnieuw.
+   bouwt de app-data opnieuw. Een duel met een vinkje tik je er hier ook weer
+   uit (/api/tm/verwijderen), ook een gepland duel dat nog niet gespeeld is.
 
    Zonder server (de live site) kan dat niet: ophalen en opslaan draaien in
    Python op je laptop. Dan blader je door je eigen verzameling, en zegt het
@@ -163,6 +167,7 @@ const S = {
   schema: {sleutel: '', laden: false, fout: '', lijst: []},
   selectie: new Set(),  // Transfermarkt-id's die al in je selectie staan
   gekozen: new Set(),
+  weg: new Set(),       // in je selectie, aangetikt om te verwijderen
   bezig: false,
   voorbeeld: false,     // zonder server: laat zien hoe een nieuw duel eruitziet
 };
@@ -339,6 +344,17 @@ function seizoenen(){
 const opgeslagen = r => kanOpslaan() ? S.selectie.has(r.id) : !S.voorbeeld;
 
 function duelRij(r){
+  // Een geplande wedstrijd heeft nog geen eigen pagina; hier kan hij er dan
+  // ook weer uit, net als een gespeelde waar je toch niet bij was.
+  if (opgeslagen(r) && kanOpslaan()){
+    const weg = S.weg.has(r.id);
+    return duel(r, {
+      tag: 'button',
+      attrs: ` type="button" aria-pressed="${weg}" data-weg="${r.id}"`
+           + ` aria-label="${esc(r.home)} tegen ${esc(r.away)}, staat in je verzameling. Tik om te verwijderen"`,
+      eind: `<span class="bol ${weg ? 'weg' : 'mijn'}" aria-hidden="true">${weg ? '✕' : '✓'}</span>`,
+    });
+  }
   if (opgeslagen(r)) return duel(r, {
     tag: 'div',
     attrs: ` aria-label="${esc(r.home)} tegen ${esc(r.away)}, staat in je verzameling"`,
@@ -356,7 +372,8 @@ function lijst(){ return kanOpslaan() ? S.schema.lijst : eigenSchema(); }
 
 function kopTekst(){
   const l = lijst();
-  if (S.gekozen.size) return `${S.gekozen.size} gekozen`;
+  if (S.gekozen.size || S.weg.size) return [S.gekozen.size && `${S.gekozen.size} erbij`,
+    S.weg.size && `${S.weg.size} eruit`].filter(Boolean).join(', ');
   const binnen = l.filter(opgeslagen).length;
   return l.length ? `${binnen} van ${l.length} in je verzameling` : '';
 }
@@ -415,18 +432,22 @@ function render(){
 }
 
 function bijwerken(){
-  const n = S.gekozen.size;
-  cta.hidden = n === 0;
+  const n = S.gekozen.size, w = S.weg.size;
+  cta.hidden = n + w === 0;
   cta.disabled = S.bezig;
-  cta.textContent = S.bezig ? 'Opslaan…' : n === 1 ? '1 duel toevoegen' : `${n} duels toevoegen`;
-  document.body.classList.toggle('met-cta', n > 0);
+  cta.classList.toggle('rood', w > 0 && !n);
+  cta.textContent = S.bezig ? 'Opslaan…'
+    : n && w ? `${n} toevoegen, ${w} verwijderen`
+    : w ? (w === 1 ? '1 duel verwijderen' : `${w} duels verwijderen`)
+    : n === 1 ? '1 duel toevoegen' : `${n} duels toevoegen`;
+  document.body.classList.toggle('met-cta', n + w > 0);
   const tel = document.querySelector('.kop-tel');
   if (tel && S.club) tel.textContent = kopTekst();
 }
 
 function kiesClub(c){
   S.club = c;
-  S.gekozen.clear();
+  S.gekozen.clear(); S.weg.clear();
   S.seizoen = kanOpslaan() ? HUIDIG : (c.seasons?.[0] ?? HUIDIG);
   veld.value = ''; S.vraag = ''; veld.blur();
   if (kanOpslaan()) laadSchema(); else render();
@@ -435,7 +456,7 @@ function kiesClub(c){
 
 veld.addEventListener('input', () => {
   S.vraag = veld.value.trim();
-  if (S.vraag){ S.club = null; S.gekozen.clear(); }
+  if (S.vraag){ S.club = null; S.gekozen.clear(); S.weg.clear(); }
   zoekTransfermarkt(S.vraag);
   render();
   app.scrollTop = 0;
@@ -446,7 +467,7 @@ wis.addEventListener('click', leeg);
 
 terug.addEventListener('click', () => {
   // Kwam je vanaf een clubpagina, dan gaat terug daarheen en niet naar zoeken.
-  if (S.club && !param('club')){ S.club = null; S.gekozen.clear(); render(); }
+  if (S.club && !param('club')){ S.club = null; S.gekozen.clear(); S.weg.clear(); render(); }
   else if (vorigeScherm() && history.length > 1) history.back();
   else location.href = 'index.html';
 });
@@ -460,7 +481,7 @@ app.addEventListener('click', e => {
   }
   const jaar = e.target.closest('[data-seizoen]');
   if (jaar){
-    S.seizoen = Number(jaar.dataset.seizoen); S.gekozen.clear();
+    S.seizoen = Number(jaar.dataset.seizoen); S.gekozen.clear(); S.weg.clear();
     if (kanOpslaan()) laadSchema(); else render();
     return;
   }
@@ -476,8 +497,20 @@ app.addEventListener('click', e => {
     bijwerken();
     return;
   }
+  const eruit = e.target.closest('[data-weg]');
+  if (eruit){
+    const id = Number(eruit.dataset.weg);
+    const weg = !S.weg.has(id);
+    weg ? S.weg.add(id) : S.weg.delete(id);
+    eruit.setAttribute('aria-pressed', String(weg));
+    const bol = eruit.querySelector('.bol');
+    bol.className = 'bol ' + (weg ? 'weg' : 'mijn');
+    bol.textContent = weg ? '✕' : '✓';
+    bijwerken();
+    return;
+  }
   const vb = e.target.closest('[data-voorbeeld]');
-  if (vb){ S.voorbeeld = vb.dataset.voorbeeld === '1'; S.gekozen.clear(); render(); return; }
+  if (vb){ S.voorbeeld = vb.dataset.voorbeeld === '1'; S.gekozen.clear(); S.weg.clear(); render(); return; }
 
   if (e.target.closest('[data-handmatig]')){
     melding('Zelf invullen kan nog niet in dit scherm.');
@@ -485,31 +518,53 @@ app.addEventListener('click', e => {
 });
 
 /* Opslaan stuurt alleen het nummer, de datum en een naam om te herkennen. De
-   rest haalt de server zelf uit het wedstrijdrapport. */
+   rest haalt de server zelf uit het wedstrijdrapport. Wat eruit moet, gaat
+   daarna in een eigen verzoek; mislukt één van de twee, dan blijft alleen
+   die keuze staan. */
 cta.addEventListener('click', async () => {
   if (!kanOpslaan()){
     melding('Opslaan kan alleen op je laptop, met python3 server.py.', true);
     return;
   }
-  if (S.bezig || !S.gekozen.size) return;
+  if (S.bezig || !(S.gekozen.size || S.weg.size)) return;
   const keuze = S.schema.lijst.filter(r => S.gekozen.has(r.id));
+  const stuur = (pad, lijst) => api(pad, {
+    method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(lijst)});
+  const zinnen = [], fouten = [];
+  let ophalen = false;
   S.bezig = true; bijwerken();
-  const res = await api('/api/tm/toevoegen', {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify(keuze.map(r => ({match_id: r.id, date: r.date || '', label: r.label}))),
-  });
+
+  if (keuze.length){
+    const res = await stuur('/api/tm/toevoegen',
+      keuze.map(r => ({match_id: r.id, date: r.date || '', label: r.label})));
+    if (!res || res.error) fouten.push(res?.error || 'Opslaan is niet gelukt. Draait server.py nog?');
+    else {
+      S.gekozen.clear();
+      ophalen ||= res.fetching;
+      const nogTeSpelen = keuze.filter(r => !r.score).length;
+      zinnen.push(res.added
+        ? `${res.added} ${res.added === 1 ? 'duel' : 'duels'} toegevoegd. Uitslag en opstelling worden nu opgehaald.`
+          + (nogTeSpelen ? ' Een duel dat nog gespeeld moet worden, komt binnen zodra het gespeeld is.' : '')
+        : `${res.already === 1 ? 'Dat duel stond' : 'Die duels stonden'} er al in.`);
+    }
+  }
+  if (S.weg.size){
+    const res = await stuur('/api/tm/verwijderen', [...S.weg].map(id => ({match_id: id})));
+    if (!res || res.error) fouten.push(res?.error || 'Verwijderen is niet gelukt. Draait server.py nog?');
+    else {
+      S.weg.clear();
+      ophalen ||= res.fetching;
+      zinnen.push(res.removed
+        ? `${res.removed} ${res.removed === 1 ? 'duel' : 'duels'} verwijderd. Je verzameling wordt nu bijgewerkt.`
+        : 'Dat stond er al niet meer in.');
+    }
+  }
+
   S.bezig = false;
-  if (!res){ bijwerken(); melding('Opslaan is niet gelukt. Draait server.py nog?', true); return; }
-  if (res.error){ bijwerken(); melding(res.error, true); return; }
   await laadSelectie();
-  S.gekozen.clear();
   render();
-  const nogTeSpelen = keuze.filter(r => !r.score).length;
-  melding(res.added
-    ? `${res.added} ${res.added === 1 ? 'duel' : 'duels'} toegevoegd. Uitslag en opstelling worden nu opgehaald.`
-      + (nogTeSpelen ? ' Een duel dat nog gespeeld moet worden, komt binnen zodra het gespeeld is.' : '')
-    : `${res.already === 1 ? 'Dat duel stond' : 'Die duels stonden'} er al in.`, true);
-  if (res.fetching) volgOphalen();
+  melding((fouten.length ? fouten : zinnen).join(' '), true);
+  if (ophalen) volgOphalen();
 });
 
 /* Na het opslaan haalt de server de wedstrijden op en bouwt de app-data
@@ -520,7 +575,7 @@ async function volgOphalen(){
   if (s?.error) melding(`Ophalen stopte: ${s.error}`, true);
   else if (s?.live?.ok) melding('Klaar, en live gezet. De site is over een minuut bijgewerkt.', true);
   else if (s?.live?.gekoppeld) melding(`Klaar, maar live zetten lukte niet: ${s.live.fout}`, true);
-  else melding('Klaar: de nieuwe duels staan in je verzameling. Koppel GitHub in Meer om ze ook live te zetten.', true);
+  else melding('Klaar: je verzameling is bijgewerkt. Koppel GitHub in Meer om het ook live te zetten.', true);
 }
 
 async function start(){

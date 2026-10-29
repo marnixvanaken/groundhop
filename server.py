@@ -481,6 +481,48 @@ class Handler(SimpleHTTPRequestHandler):
                             "total": len(selectie),
                             "fetching": bool(toegevoegd)})
 
+        elif path == "/api/tm/verwijderen":
+            import transfermarkt_selectie as tsel
+
+            # Om dezelfde reden als bij toevoegen: de Sofascore-export hoort
+            # niet door de Transfermarkt-keten overschreven te worden.
+            if huidige_bron() != "transfermarkt":
+                self.send_json({"removed": 0, "total": 0, "fetching": False,
+                                "error": "Het dashboard leest nog uit Sofascore. "
+                                         "Verwijderen kan pas na de omwisseling."})
+                return
+            selectie = tm_selectie()
+            if selectie is None:
+                self.send_json({"removed": 0, "total": 0, "fetching": False,
+                                "error": "Geen selectie gevonden (data/tm_selectie.json)."})
+                return
+            weg = []
+            for m in (body if isinstance(body, list) else []):
+                try:
+                    tm_id = int(m.get("match_id"))
+                except (TypeError, ValueError, AttributeError):
+                    continue
+                selectie, gelukt = tsel.verwijder(selectie, tm_id)
+                if gelukt:
+                    weg.append(tm_id)
+            # Een lege selectie leest als 'er is er geen', en dan bouwt de keten
+            # hem opnieuw op uit de koppeling: alles zou terugkomen.
+            if weg and not selectie:
+                self.send_json({"removed": 0, "total": 0, "fetching": False,
+                                "error": "Dan blijft er geen duel over. "
+                                         "Voeg eerst een ander toe."})
+                return
+            if weg:
+                tsel.schrijf(selectie)
+                print(f"  − {len(weg)} wedstrijden uit {tsel.SELECTIE} "
+                      f"(totaal: {len(selectie)})")
+                # De sync en niet alleen de export: transfermarkt_sync.py schrijft
+                # de wedstrijdlijst opnieuw uit de selectie, en pas dan valt het
+                # duel uit spelers, stadions en tellers. Daarna gaat het live.
+                threading.Thread(target=run_sync, daemon=True).start()
+            self.send_json({"removed": len(weg), "total": len(selectie),
+                            "fetching": bool(weg)})
+
         elif path == "/api/sync":
             if not _sync_status["running"]:
                 threading.Thread(target=run_sync, daemon=True).start()
