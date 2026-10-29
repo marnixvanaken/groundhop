@@ -3,1316 +3,1480 @@
     "match_id": 1060179,
     "label": "Nederland - Wales",
     "date": "2008-06-01",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 99001060179,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 1039344,
     "label": "NEC Nijmegen - PSV",
     "date": "2011-03-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 1379364,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 1186275,
     "label": "Nederland - Noord-Ierland",
     "date": "2012-06-02",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 99002060212,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 2299197,
     "label": "PSV - AZ Alkmaar",
     "date": "2013-05-09",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 2349811,
     "label": "PSV - Zulte Waregem",
     "date": "2013-07-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 2360895,
     "label": "PSV - AC Milan",
     "date": "2013-08-20",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 2856376,
     "label": "Helmond Sport - Roda JC",
     "date": "2017-05-18",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 2865072,
     "label": "Willem II - FC Twente",
     "date": "2017-10-15",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 2867596,
     "label": "PSV - ADO Den Haag",
     "date": "2017-12-16",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 3035896,
     "label": "Nederland - Peru",
     "date": "2018-09-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 7936344,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3097997,
     "label": "PSV - Tottenham Hotspur",
     "date": "2018-10-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 7959253,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3141078,
     "label": "PSV - Fortuna Sittard",
     "date": "2019-02-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 7827023,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216041,
     "label": "PSV - ADO Den Haag",
     "date": "2019-08-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246321,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3232988,
     "label": "PSV - FK Haugesund",
     "date": "2019-08-15",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8341628,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3244532,
     "label": "PSV - Apollon Limassol",
     "date": "2019-08-22",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8362543,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216075,
     "label": "PSV - Vitesse Arnhem",
     "date": "2019-09-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246347,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3252420,
     "label": "PSV - Sporting CP",
     "date": "2019-09-19",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8391598,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216089,
     "label": "PSV - AFC Ajax",
     "date": "2019-09-22",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246370,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216058,
     "label": "PSV - FC Groningen",
     "date": "2019-09-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8364606,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216104,
     "label": "PSV - VVV-Venlo",
     "date": "2019-10-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246382,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3252469,
     "label": "PSV - LASK",
     "date": "2019-10-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8391642,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216126,
     "label": "PSV - AZ Alkmaar",
     "date": "2019-10-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246395,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216147,
     "label": "PSV - sc Heerenveen",
     "date": "2019-11-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246424,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3252539,
     "label": "PSV - Rosenborg BK",
     "date": "2019-12-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8391682,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3216217,
     "label": "AFC Ajax - PSV",
     "date": "2020-02-02",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8246488,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450508,
     "label": "VVV-Venlo - FC Utrecht",
     "date": "2020-09-18",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805140,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450568,
     "label": "VVV-Venlo - ADO Den Haag",
     "date": "2020-10-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805161,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3170215,
     "label": "Nederland Onder 21 - Gibraltar U21",
     "date": "2020-10-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 3450515,
     "label": "VVV-Venlo - AFC Ajax",
     "date": "2020-10-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805187,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3462157,
     "label": "VVV-Venlo - FC Den Bosch",
     "date": "2020-10-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 9108412,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450550,
     "label": "VVV-Venlo - Heracles Almelo",
     "date": "2020-11-07",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805203,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450569,
     "label": "VVV-Venlo - PEC Zwolle",
     "date": "2020-11-28",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805220,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450623,
     "label": "VVV-Venlo - Feyenoord",
     "date": "2020-12-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805299,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450559,
     "label": "VVV-Venlo - FC Twente",
     "date": "2020-12-19",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805322,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450583,
     "label": "VVV-Venlo - Willem II",
     "date": "2021-01-10",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805263,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3450676,
     "label": "Fortuna Sittard - VVV-Venlo",
     "date": "2021-01-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 8805264,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3628810,
     "label": "PSV - FC Midtjylland",
     "date": "2021-08-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 9685257,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3596019,
     "label": "FC Emmen - VVV-Venlo",
     "date": "2021-10-29",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 9567705,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3596035,
     "label": "VVV-Venlo - Jong Ajax",
     "date": "2021-11-05",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 9567721,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3597933,
     "label": "PSV - AZ Alkmaar",
     "date": "2022-02-05",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 9564495,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3714107,
     "label": "PSV - Maccabi Tel Aviv",
     "date": "2022-02-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10012141,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3773691,
     "label": "PSV - Leicester City",
     "date": "2022-04-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10201514,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3761906,
     "label": "PSV - AFC Ajax",
     "date": "2022-04-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10173277,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3598045,
     "label": "PSV - NEC Nijmegen",
     "date": "2022-05-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 9564458,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3887498,
     "label": "SL Benfica - FC Midtjylland",
     "date": "2022-08-02",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10520885,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3836752,
     "label": "PSV - FC Emmen",
     "date": "2022-08-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10385076,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3887500,
     "label": "PSV - AS Monaco",
     "date": "2022-08-09",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10493690,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3898928,
     "label": "PSV - Rangers FC",
     "date": "2022-08-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10558690,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3837237,
     "label": "PSV - FC Volendam",
     "date": "2022-08-31",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10582149,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3912539,
     "label": "PSV - FK Bodø/Glimt",
     "date": "2022-09-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10642300,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3839702,
     "label": "PSV - RKC Waalwijk",
     "date": "2022-09-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382074,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3839713,
     "label": "PSV - Feyenoord",
     "date": "2022-09-18",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
-  },
-  {
-    "match_id": 3912546,
-    "label": "FC Zürich - PSV",
-    "date": "2022-10-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382093,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3912540,
     "label": "PSV - FC Zürich",
     "date": "2022-10-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10642303,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852590,
     "label": "PSV - FC Utrecht",
     "date": "2022-10-16",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382119,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3856805,
     "label": "Millwall FC - Watford FC",
     "date": "2022-10-19",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10405749,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3912535,
     "label": "Arsenal FC - PSV",
     "date": "2022-10-20",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10686588,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3912538,
     "label": "PSV - Arsenal FC",
     "date": "2022-10-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10642320,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852607,
     "label": "PSV - NEC Nijmegen",
     "date": "2022-10-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382135,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852625,
     "label": "PSV - AZ Alkmaar",
     "date": "2022-11-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382158,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852935,
     "label": "VVV-Venlo - Helmond Sport",
     "date": "2023-01-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382636,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852632,
     "label": "PSV - Sparta Rotterdam",
     "date": "2023-01-07",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382173,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852665,
     "label": "PSV - Go Ahead Eagles",
     "date": "2023-01-28",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382206,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4002935,
     "label": "PSV - FC Emmen",
     "date": "2023-02-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 3852678,
     "label": "PSV - FC Groningen",
     "date": "2023-02-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382222,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3956722,
     "label": "PSV - Sevilla FC",
     "date": "2023-02-23",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10865970,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852705,
     "label": "PSV - FC Twente",
     "date": "2023-02-26",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382249,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4025321,
     "label": "PSV - ADO Den Haag",
     "date": "2023-03-02",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11061796,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852724,
     "label": "PSV - SC Cambuur Leeuwarden",
     "date": "2023-03-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382258,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3845460,
     "label": "Rot-Weiss Essen - SV Wehen Wiesbaden",
     "date": "2023-03-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10465252,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852741,
     "label": "NEC Nijmegen - PSV",
     "date": "2023-04-01",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382273,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852751,
     "label": "PSV - Excelsior Rotterdam",
     "date": "2023-04-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382287,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852769,
     "label": "PSV - AFC Ajax",
     "date": "2023-04-23",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10381989,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3853066,
     "label": "Jong FC Utrecht - Jong Ajax",
     "date": "2023-04-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382626,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4056454,
     "label": "AFC Ajax - PSV",
     "date": "2023-04-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11193617,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3853109,
     "label": "FC Den Bosch - Almere City FC",
     "date": "2023-05-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382670,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852784,
     "label": "FC Utrecht - RKC Waalwijk",
     "date": "2023-05-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382033,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3860994,
     "label": "VV IJsselmeervogels - VV Noordwijk",
     "date": "2023-05-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10491110,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 3852795,
     "label": "PSV - sc Heerenveen",
     "date": "2023-05-21",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 10382043,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4087914,
     "label": "Nederland - Italië",
     "date": "2023-06-18",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11353240,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4082955,
     "label": "Feyenoord - PSV",
     "date": "2023-08-04",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11340545,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4135635,
     "label": "PSV - SK Sturm Graz",
     "date": "2023-08-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11473307,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4113093,
     "label": "Sevilla FC - Girona FC",
     "date": "2023-08-26",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11368596,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4160975,
     "label": "PSV - Rangers FC",
     "date": "2023-08-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11542081,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4046388,
     "label": "Nederland Onder 21 - Moldavië U21",
     "date": "2023-09-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4097959,
     "label": "PSV - NEC Nijmegen",
     "date": "2023-09-16",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401855,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098327,
     "label": "Jong PSV - VVV-Venlo",
     "date": "2023-09-22",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388616,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4096327,
     "label": "Fortuna Düsseldorf - Hannover 96",
     "date": "2023-09-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11396119,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4097976,
     "label": "PSV - Go Ahead Eagles",
     "date": "2023-09-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11558910,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4097932,
     "label": "PSV - FC Volendam",
     "date": "2023-09-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401876,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4171234,
     "label": "PSV - Sevilla FC",
     "date": "2023-10-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11605841,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4175167,
     "label": "PSV UEFA U19 - Sevilla FC UEFA U19",
     "date": "2023-10-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11636544,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4097956,
     "label": "Sparta Rotterdam - PSV",
     "date": "2023-10-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401891,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4171239,
     "label": "RC Lens - PSV",
     "date": "2023-10-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11605855,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4175184,
     "label": "RC Lens UEFA U19 - PSV UEFA U19",
     "date": "2023-10-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11636577,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098009,
     "label": "PSV - AFC Ajax",
     "date": "2023-10-29",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401907,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4171236,
     "label": "PSV - RC Lens",
     "date": "2023-11-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11605845,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4113096,
     "label": "Real Madrid - Valencia CF",
     "date": "2023-11-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11369390,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4113105,
     "label": "Rayo Vallecano - Girona FC",
     "date": "2023-11-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11369394,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4113092,
     "label": "Atlético Madrid - Villarreal CF",
     "date": "2023-11-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11369389,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098051,
     "label": "AFC Ajax - Vitesse Arnhem",
     "date": "2023-11-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11399410,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098058,
     "label": "PSV - sc Heerenveen",
     "date": "2023-12-07",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401930,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4171235,
     "label": "PSV - Arsenal FC",
     "date": "2023-12-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11605961,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098901,
     "label": "Standard Luik - Sint-Truidense VV",
     "date": "2023-12-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11369945,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4225948,
     "label": "PSV - FC Twente",
     "date": "2024-01-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11915573,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098025,
     "label": "FC Utrecht - PSV",
     "date": "2024-01-21",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401962,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098094,
     "label": "PSV - Almere City FC",
     "date": "2024-01-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401968,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098015,
     "label": "PSV - Heracles Almelo",
     "date": "2024-02-16",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11401998,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4243692,
     "label": "PSV - Borussia Dortmund",
     "date": "2024-02-20",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11905260,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098192,
     "label": "PSV - Feyenoord",
     "date": "2024-03-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388477,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098539,
     "label": "Jong PSV - FC Groningen",
     "date": "2024-03-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388857,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4243700,
     "label": "Borussia Dortmund - PSV",
     "date": "2024-03-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11905287,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098215,
     "label": "PSV - FC Twente",
     "date": "2024-03-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388459,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098179,
     "label": "NEC Nijmegen - PSV",
     "date": "2024-03-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388448,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098132,
     "label": "PSV - AZ Alkmaar",
     "date": "2024-04-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388432,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098148,
     "label": "PSV - Vitesse Arnhem",
     "date": "2024-04-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388425,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098563,
     "label": "VVV-Venlo - FC Groningen",
     "date": "2024-04-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388900,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098185,
     "label": "PSV - Sparta Rotterdam",
     "date": "2024-05-05",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388388,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098568,
     "label": "FC Groningen - Roda JC",
     "date": "2024-05-10",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388938,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4098161,
     "label": "PSV - RKC Waalwijk",
     "date": "2024-05-19",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 11388392,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4314816,
     "label": "KAA Gent - Sint-Truidense VV",
     "date": "2024-05-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12192468,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4314794,
     "label": "R Antwerp FC - RSC Anderlecht",
     "date": "2024-05-26",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12192379,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4235810,
     "label": "Italië - Albanië",
     "date": "2024-06-15",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-23"
   },
   {
     "match_id": 4371294,
     "label": "Vitesse Arnhem - SC Telstar",
     "date": "2024-08-09",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12445164,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367826,
     "label": "PSV - RKC Waalwijk",
     "date": "2024-08-10",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12449872,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367844,
     "label": "PSV - NEC Nijmegen",
     "date": "2024-09-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448345,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4371333,
     "label": "VVV-Venlo - Jong PSV",
     "date": "2024-09-20",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12445104,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4445114,
     "label": "PSV - Sporting CP",
     "date": "2024-10-01",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12764410,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367861,
     "label": "PSV - Sparta Rotterdam",
     "date": "2024-10-05",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448373,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4371386,
     "label": "VVV-Venlo - FC Den Bosch",
     "date": "2024-10-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12445052,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367879,
     "label": "PSV - PEC Zwolle",
     "date": "2024-10-26",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448391,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4445115,
     "label": "PSV - Girona FC",
     "date": "2024-11-05",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12764396,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367903,
     "label": "PSV - FC Groningen",
     "date": "2024-11-23",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448415,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4445113,
     "label": "PSV - Shakhtar Donetsk",
     "date": "2024-11-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12764404,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367890,
     "label": "PSV - FC Twente",
     "date": "2024-12-06",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448250,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4371492,
     "label": "FC Den Bosch - Jong PSV",
     "date": "2024-12-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12444985,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4498203,
     "label": "Floriana FC - Sliema Wanderers",
     "date": "2024-12-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13115423,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367989,
     "label": "PSV - Feyenoord",
     "date": "2024-12-22",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448280,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4370084,
     "label": "Sint-Truidense VV - Cercle Brugge",
     "date": "2024-12-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12421174,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4517187,
     "label": "PSV - Excelsior Rotterdam",
     "date": "2025-01-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13269057,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367964,
     "label": "PSV - NAC Breda",
     "date": "2025-01-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448322,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4445112,
     "label": "PSV - Liverpool FC",
     "date": "2025-01-29",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12764399,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4367978,
     "label": "NEC Nijmegen - PSV",
     "date": "2025-02-01",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448329,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4542365,
     "label": "PSV - Feyenoord",
     "date": "2025-02-05",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13354791,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4368009,
     "label": "PSV - FC Utrecht",
     "date": "2025-02-15",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12448341,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4547624,
     "label": "PSV - Juventus FC",
     "date": "2025-02-19",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13412181,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4559305,
     "label": "PSV - Go Ahead Eagles",
     "date": "2025-02-26",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13447488,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4547631,
     "label": "PSV - Arsenal FC",
     "date": "2025-03-04",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13511927,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4371543,
     "label": "Helmond Sport - MVV Maastricht",
     "date": "2025-03-07",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12441882,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4368062,
     "label": "PSV - Almere City FC",
     "date": "2025-04-12",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12441663,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4368097,
     "label": "PSV - Fortuna Sittard",
     "date": "2025-05-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12441691,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4368094,
     "label": "Go Ahead Eagles - AZ Alkmaar",
     "date": "2025-05-04",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12441681,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4368090,
     "label": "PSV - Heracles Almelo",
     "date": "2025-05-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 12441711,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4696822,
     "label": "PSV - Go Ahead Eagles",
     "date": "2025-08-03",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14004887,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641443,
     "label": "PSV - FC Groningen",
     "date": "2025-08-23",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053615,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4582265,
     "label": "CR Flamengo - Grêmio FBPA",
     "date": "2025-08-31",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 13472686,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4716779,
     "label": "PSV - Union Saint-Gilloise",
     "date": "2025-09-16",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14566894,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641450,
     "label": "Feyenoord - Fortuna Sittard",
     "date": "2025-09-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053685,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641475,
     "label": "PSV - AFC Ajax",
     "date": "2025-09-21",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053705,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4715020,
     "label": "Bayer Leverkusen - PSV",
     "date": "2025-10-01",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14566706,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641486,
     "label": "PSV - Go Ahead Eagles",
     "date": "2025-10-18",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053765,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4715062,
     "label": "PSV - SSC Napoli",
     "date": "2025-10-21",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14566893,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641619,
     "label": "PSV - Fortuna Sittard",
     "date": "2025-10-31",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053808,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4644143,
     "label": "MSV Duisburg - SV Waldhof Mannheim 07",
     "date": "2025-11-07",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4641671,
     "label": "PSV - FC Volendam",
     "date": "2025-11-30",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053639,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4714988,
     "label": "PSV - Atlético Madrid",
     "date": "2025-12-09",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14566892,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4761062,
     "label": "PSV - GVVV Veenendaal",
     "date": "2025-12-16",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 15003762,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641350,
     "label": "KV Mechelen - FCV Dender EH",
     "date": "2025-12-27",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14035974,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641534,
     "label": "PSV - Excelsior Rotterdam",
     "date": "2026-01-10",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053745,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4787472,
     "label": "FC Den Bosch - PSV",
     "date": "2026-01-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 15253788,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641608,
     "label": "PSV - NAC Breda",
     "date": "2026-01-24",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053802,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4714989,
     "label": "PSV - FC Bayern München",
     "date": "2026-01-28",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14566891,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641581,
     "label": "PSV - AZ Alkmaar",
     "date": "2026-03-07",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053691,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641545,
     "label": "PSV - NEC Nijmegen",
     "date": "2026-03-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053716,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4641571,
     "label": "PSV - FC Utrecht",
     "date": "2026-04-04",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14053764,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4642806,
     "label": "VVV-Venlo - De Graafschap",
     "date": "2026-04-11",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "sofascore-migratie",
+    "sofascore_id": 14056590,
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4642459,
     "label": "PSV - PEC Zwolle",
     "date": "2026-04-23",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4850155,
     "label": "Club Brugge - Sint-Truidense VV",
     "date": "2026-05-09",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4642432,
     "label": "PSV - FC Twente",
     "date": "2026-05-17",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4938881,
     "label": "PSV - AZ Alkmaar",
     "date": "2026-08-02",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4894510,
     "label": "PSV - Fortuna Sittard",
     "date": "2026-08-08",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4913012,
     "label": "NAC Breda - VVV-Venlo",
     "date": "2026-08-14",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4894677,
     "label": "Excelsior Rotterdam - PSV",
     "date": "2026-08-15",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4894688,
     "label": "PSV - FC Groningen",
     "date": "2026-08-23",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 5035926,
     "label": "PSV - Shakhtar Donetsk",
     "date": "2026-09-10",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4894734,
     "label": "PSV - Sparta Rotterdam",
     "date": "2026-09-13",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-17"
   },
   {
     "match_id": 4913059,
     "label": "FC Dordrecht - Almere City FC",
     "date": "2026-09-25",
-    "bron": "dashboard",
-    "toegevoegd": "2026-10-28"
+    "bron": "handmatig",
+    "toegevoegd": "2026-09-25"
   },
   {
     "match_id": 4895351,
     "label": "PSV - sc Heerenveen",
     "date": "2026-10-09",
-    "bron": "dashboard",
+    "bron": "handmatig",
+    "toegevoegd": "2026-10-09"
+  },
+  {
+    "match_id": 4895375,
+    "label": "PSV - Feyenoord",
+    "date": "2026-10-25",
+    "bron": "handmatig",
     "toegevoegd": "2026-10-28"
   }
 ]
