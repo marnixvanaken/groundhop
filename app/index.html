@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="GroundHop">
 <title>GroundHop</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -39,6 +41,81 @@
 .record + .record{border-top:0.5px solid var(--separator);}
 .record-waarde{font-family:var(--display); font-variant-numeric:tabular-nums;
   font-size:20px; font-weight:700; min-width:56px;}
+
+/* ── Intro na een lange afwezigheid ──────────────────────────────────────
+   Het veld tekent zich in het groen, een bal hopt in drie sprongen naar de
+   middenstip, en het logo landt erbij: Ground komt op, Hop hopt. Het veld is
+   240 × 150 en de bal rust op de middenstip (120, 75). */
+.intro{position:fixed; inset:0; z-index:50; background:var(--surface);
+  display:flex; align-items:center; justify-content:center; padding-bottom:8vh;
+  transition:opacity .45s ease;}
+.intro.weg{opacity:0; pointer-events:none;}
+.intro-inhoud{display:flex; flex-direction:column; align-items:center; gap:24px;
+  transition:transform .45s ease;}
+.intro.weg .intro-inhoud{transform:scale(1.04);}
+.veld{position:relative; width:240px; height:150px;}
+.lijnen{display:block; width:100%; height:100%; overflow:visible;
+  fill:none; stroke:var(--accent); stroke-width:2.5; stroke-linecap:round; stroke-linejoin:round;}
+/* pathLength="1" op elke lijn: een streep van 1 met een gat van 2 erachter,
+   0,05 voorbij het begin, dekt de hele lijn af zonder een rond puntje te
+   laten staan. */
+.lijnen path{stroke-dasharray:1 2; stroke-dashoffset:1.05;
+  animation:teken .8s cubic-bezier(.45,0,.2,1) forwards;}
+@keyframes teken{to{stroke-dashoffset:0;}}
+
+.bal-x{position:absolute; left:111px; top:66px; width:18px; height:18px;
+  animation:bal-x 1.2s linear .35s both, verschijn .15s ease .35s both;}
+@keyframes bal-x{from{transform:translateX(-96px);} to{transform:none;}}
+@keyframes verschijn{from{opacity:0;}}
+/* Drie sprongen, elke lager en korter, zoals een bal die uitstuitert:
+   omhoog vertraagt hij, omlaag versnelt hij. */
+.bal-y{animation:bal-y 1.2s .35s both;}
+@keyframes bal-y{
+  0%   {transform:translateY(0);     animation-timing-function:cubic-bezier(.33,.66,.66,1);}
+  22.5%{transform:translateY(-34px); animation-timing-function:cubic-bezier(.33,0,.66,.33);}
+  45%  {transform:translateY(0);     animation-timing-function:cubic-bezier(.33,.66,.66,1);}
+  61.5%{transform:translateY(-18px); animation-timing-function:cubic-bezier(.33,0,.66,.33);}
+  78%  {transform:translateY(0);     animation-timing-function:cubic-bezier(.33,.66,.66,1);}
+  89%  {transform:translateY(-8px);  animation-timing-function:cubic-bezier(.33,0,.66,.33);}
+  100% {transform:translateY(0);}
+}
+.schaduw{position:absolute; left:2px; top:15px; width:14px; height:5px; border-radius:50%;
+  background:var(--content); opacity:.2; animation:schaduw 1.2s .35s both;}
+@keyframes schaduw{
+  0%,45%,78%,100%{transform:scale(1);   opacity:.2;}
+  22.5%          {transform:scale(.55); opacity:.08;}
+  61.5%          {transform:scale(.7);  opacity:.12;}
+  89%            {transform:scale(.85); opacity:.16;}
+}
+/* Een bal is een ding, geen interface: wit met zwart, in beide standen. */
+.bal{display:block; width:18px; height:18px; transform-origin:50% 100%;
+  animation:plof .35s ease-out 1.55s;}
+.bal circle{fill:#fff; stroke:#14171a; stroke-width:1.4;}
+.bal path{fill:none; stroke:#14171a; stroke-width:1.2; stroke-linejoin:round;}
+.bal path:first-of-type{fill:#14171a;}
+@keyframes plof{from{transform:scale(1.2,.8);}}
+.golf{position:absolute; left:98px; top:53px; width:44px; height:44px; border-radius:50%;
+  border:2.5px solid var(--accent); opacity:0; animation:golf .7s ease-out 1.55s;}
+@keyframes golf{from{opacity:.7; transform:scale(1);} to{opacity:0; transform:scale(2.6);}}
+
+.intro-merk{font-family:var(--display); font-size:36px; font-weight:800;
+  letter-spacing:-0.02em; line-height:1;}
+.intro-merk span,.intro-merk b{display:inline-block; font-weight:inherit;}
+.intro-merk span{color:var(--accent); animation:opkomen .5s cubic-bezier(.2,.8,.2,1) 1.45s both;}
+.intro-merk b{animation:hop .6s 1.7s both;}
+@keyframes hop{
+  0%  {opacity:0; transform:translateY(-22px); animation-timing-function:cubic-bezier(.33,0,.66,.33);}
+  45% {opacity:1; transform:none;              animation-timing-function:cubic-bezier(.33,.66,.66,1);}
+  70% {transform:translateY(-7px);             animation-timing-function:cubic-bezier(.33,0,.66,.33);}
+  100%{transform:none;}
+}
+.intro-sub{margin-top:-10px; font-size:13px; color:var(--content-2);
+  animation:opkomen .5s ease 2s both;}
+@keyframes opkomen{from{opacity:0; transform:translateY(10px);} to{opacity:1; transform:none;}}
+
+/* Daarna komen de kaarten een voor een op. */
+main.binnen > *{animation:opkomen .55s cubic-bezier(.2,.8,.2,1) both;
+  animation-delay:calc(var(--i) * 70ms);}
 </style>
 </head>
 <body>
@@ -70,14 +147,14 @@ function verzameling(){
       <span class="sinds">sinds ${KORT[+m - 1]} ${j}</span></div>
     <div style="height:10px"></div>
     <div class="tally">
-      <div><b class="num">${getal(t.matches)}</b><span>duels</span></div>
-      <div><b class="num">${getal(t.venues)}</b><span>grounds</span></div>
-      <div><b class="num">${getal(t.goals)}</b><span>goals gezien</span></div>
+      <div><b class="num" data-tel="${t.matches}">${getal(t.matches)}</b><span>duels</span></div>
+      <div><b class="num" data-tel="${t.venues}">${getal(t.venues)}</b><span>grounds</span></div>
+      <div><b class="num" data-tel="${t.goals}">${getal(t.goals)}</b><span>goals gezien</span></div>
     </div>
     <div class="tally">
-      <div><b class="num">${getal(t.clubs)}</b><span>clubs</span></div>
-      <div><b class="num">${getal(t.countries)}</b><span>landen</span></div>
-      <div><b class="num">${getal(Object.keys(SPELERS).length)}</b><span>spelers</span></div>
+      <div><b class="num" data-tel="${t.clubs}">${getal(t.clubs)}</b><span>clubs</span></div>
+      <div><b class="num" data-tel="${t.countries}">${getal(t.countries)}</b><span>landen</span></div>
+      <div><b class="num" data-tel="${Object.keys(SPELERS).length}">${getal(Object.keys(SPELERS).length)}</b><span>spelers</span></div>
     </div>
   </section>`;
 }
@@ -219,7 +296,92 @@ function render(){
   });
 }
 
-if (window.APP && window.SPELERS) render();
+/* ── Intro na een lange afwezigheid ──────────────────────────────────────
+   Ben je een week weg geweest, of is dit je eerste bezoek op dit apparaat,
+   dan opent Home met een korte intro. Daarna komen de kaarten op en tellen
+   de tellers op vanaf nul. Tik om hem over te slaan, tik op het logo om hem
+   nog eens te zien. Met 'Verminder beweging' aan blijft hij weg. */
+const WEG_NA = 7 * 864e5;   // een week
+const rustig = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+const BAL = `<svg class="bal" viewBox="0 0 20 20" aria-hidden="true">
+  <circle cx="10" cy="10" r="9"/>
+  <path d="M10 6.2 13.61 8.83 12.23 13.07H7.77L6.39 8.83z"/>
+  <path d="M10 6.2V1M13.61 8.83l4.95-1.61M12.23 13.07l3.06 4.21M7.77 13.07l-3.06 4.21M6.39 8.83l-4.95-1.61"/>
+</svg>`;
+
+function hoeLang(ms){
+  const d = Math.floor(ms / 864e5);
+  if (d < 14) return `${d} dagen`;
+  if (d < 60) return `${Math.floor(d / 7)} weken`;
+  if (d < 730) return `${Math.round(d / 30.44)} maanden`;
+  return `${Math.round(d / 365.25)} jaar`;
+}
+
+const samenvatting = () => `${getal(APP.totals.matches)} duels · ${getal(APP.totals.venues)} grounds`;
+
+let introLoopt = false;
+function intro(tekst){
+  if (rustig || introLoopt) return;
+  introLoopt = true;
+  app.querySelectorAll('[data-tel]').forEach(b => b.textContent = '0');
+  const el = document.createElement('div');
+  el.className = 'intro';
+  el.setAttribute('aria-hidden', 'true');
+  el.innerHTML = `
+    <div class="intro-inhoud">
+      <div class="veld">
+        <svg class="lijnen" viewBox="0 0 240 150">
+          <path pathLength="1" d="M120 4H10a6 6 0 0 0-6 6v130a6 6 0 0 0 6 6h110"/>
+          <path pathLength="1" d="M120 4h110a6 6 0 0 1 6 6v130a6 6 0 0 1-6 6H120"/>
+          <path pathLength="1" d="M120 4v142" style="animation-delay:.15s; animation-duration:.6s"/>
+          <path pathLength="1" d="M120 53a22 22 0 1 1 0 44a22 22 0 1 1 0-44" style="animation-delay:.3s; animation-duration:.6s"/>
+          <path pathLength="1" d="M4 43h30v64H4" style="animation-delay:.45s; animation-duration:.5s"/>
+          <path pathLength="1" d="M236 43h-30v64h30" style="animation-delay:.45s; animation-duration:.5s"/>
+        </svg>
+        <i class="golf"></i>
+        <div class="bal-x"><i class="schaduw"></i><div class="bal-y">${BAL}</div></div>
+      </div>
+      <div class="intro-merk"><span>Ground</span><b>Hop</b></div>
+      <div class="intro-sub">${esc(tekst)}</div>
+    </div>`;
+  document.body.append(el);
+  const klaar = () => {
+    if (el.classList.contains('weg')) return;
+    el.classList.add('weg');
+    binnenkomst();
+    setTimeout(() => { el.remove(); introLoopt = false; }, 450);
+  };
+  el.addEventListener('click', klaar);
+  setTimeout(klaar, 2750);
+}
+
+function binnenkomst(){
+  [...app.children].forEach((kaart, i) => kaart.style.setProperty('--i', i));
+  app.classList.add('binnen');
+  setTimeout(() => app.classList.remove('binnen'), 1400);
+  const tellers = app.querySelectorAll('[data-tel]'), start = performance.now();
+  const stap = nu => {
+    const p = Math.min(1, (nu - start) / 900), e = 1 - (1 - p) ** 3;
+    tellers.forEach(b => b.textContent = getal(Math.round(b.dataset.tel * e)));
+    if (p < 1) requestAnimationFrame(stap);
+  };
+  requestAnimationFrame(stap);
+}
+
+function welkom(vorig){
+  if (!vorig) intro(samenvatting());
+  else if (Date.now() - vorig > WEG_NA) intro(`Welkom terug · ${hoeLang(Date.now() - vorig)} weg`);
+}
+
+if (window.APP && window.SPELERS){
+  render();
+  welkom(VORIG_GEBRUIK);
+  // Een app op het beginscherm blijft soms dagen in het geheugen staan en
+  // laadt dan niet opnieuw; terugkomen telt dan ook.
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) welkom(laatstGebruikt()); });
+  document.querySelector('.merk').addEventListener('click', () => intro(samenvatting()));
+}
 else app.innerHTML = zonderData('index.html');
 </script>
 </body>
