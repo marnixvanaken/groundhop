@@ -86,6 +86,13 @@ const TABS_SPELERS = [
      noot: 'Goals die jij zag, niet zijn carrièretotaal.'},
     {id: 'as', label: 'Assists', w: p => p.as, badge: p => meer(p.as, 'assist', 'assists'),
      noot: 'Assists die jij zag, niet zijn carrièretotaal.'},
+    // Bij evenveel hattricks gaat de grootste voor: vijf goals boven drie.
+    {id: 'hat', label: 'Hattricks', w: p => p.hat.length && p.hat.length + p.hat[0][1] / 100,
+     badge: p => meer(p.hat.length, 'hattrick', 'hattricks'),
+     sub: p => { const [id, n, d] = p.hat[0];
+       return [n > 3 ? `${n} goals` : '', kort(d), duelNaam(id)].filter(Boolean).join(' · ')
+         + (p.hat.length > 1 ? ` +${p.hat.length - 1}` : ''); },
+     noot: 'Duels waarin jij hem drie keer of vaker zag scoren; eigen goals tellen niet mee.'},
     {id: 'pen', label: "Penalty's", w: p => p.pen, badge: p => meer(p.pen, 'penalty', "penalty's"),
      sub: p => `${meer(p.g, 'goal', 'goals')} in totaal`,
      noot: "Penalty's die jij hem zag benutten."},
@@ -95,12 +102,6 @@ const TABS_SPELERS = [
     {id: 'laat', label: 'Laat raak', w: p => p.laat, badge: p => meer(p.laat, 'goal', 'goals'),
      sub: p => `${meer(p.g, 'goal', 'goals')} in totaal`,
      noot: 'Goals in de 90e minuut of later die jij zag, met blessuretijd en verlenging.'},
-    {id: 'eg', label: 'Eigen goals', w: p => p.eg, badge: p => meer(p.eg, 'eigen goal', 'eigen goals'),
-     noot: 'Eigen goals die jij hem zag maken.'},
-    {id: 'ge', label: 'Geel', w: p => p.ge, badge: p => `${p.ge}× geel`,
-     noot: 'Gele kaarten die jij zag.'},
-    {id: 'ro', label: 'Rood', w: p => p.ro, badge: p => `${p.ro}× rood`,
-     noot: 'Rode kaarten die jij zag, ook die na twee keer geel.'},
   ]},
   {id: 'waarde', label: 'Waarde', lijsten: [
     {id: 'mv', label: 'Nu', neutraal: true, w: p => p.mv, badge: p => euro(p.mv),
@@ -137,10 +138,18 @@ const TABS_SPELERS = [
     {id: 'ou', label: 'Oudste', w: p => p.ou && leeftijdOp(p.ou),
      badge: p => `${p.ou[0]} jaar`, sub: p => opLeeftijd(p.ou),
      noot: 'Zijn leeftijd de laatste keer dat je hem zag spelen; de bank telt niet mee.'},
+    {id: 'eg', label: 'Eigen goals', w: p => p.eg, badge: p => meer(p.eg, 'eigen goal', 'eigen goals'),
+     noot: 'Eigen goals die jij hem zag maken.'},
+    {id: 'ge', label: 'Geel', w: p => p.ge, badge: p => `${p.ge}× geel`,
+     noot: 'Gele kaarten die jij zag.'},
+    {id: 'ro', label: 'Rood', w: p => p.ro, badge: p => `${p.ro}× rood`,
+     noot: 'Rode kaarten die jij zag, ook die na twee keer geel.'},
     {id: 'caps', label: 'Interlands', neutraal: true, w: p => p.caps, badge: p => `${p.caps}×`,
      sub: p => p.capg ? meer(p.capg, 'interlandgoal', 'interlandgoals') : '',
      noot: 'Interlands in zijn hele loopbaan volgens Transfermarkt, niet alleen wat jij zag.'},
-    {id: 'cm', label: 'Lengte', neutraal: true, w: p => p.cm, badge: p => `${p.cm} cm`,
+    {id: 'cm', label: 'Grootste', neutraal: true, w: p => p.cm, badge: p => `${p.cm} cm`,
+     noot: 'Lengte volgens Transfermarkt.'},
+    {id: 'klein', label: 'Kleinste', neutraal: true, oplopend: true, w: p => p.cm, badge: p => `${p.cm} cm`,
      noot: 'Lengte volgens Transfermarkt.'},
   ]},
 ];
@@ -165,17 +174,25 @@ function teams(p){
   p.m.forEach(r => { if (r[1]) t[r[1]] = (t[r[1]] || 0) + 1; });
   return Object.entries(t).sort((a, b) => b[1] - a[1]).map(([naam]) => naam);
 }
-/* Wat de goals zelf vertellen (penalty, eigen goal, minuut). Per speler staat
-   alleen het aantal; de wedstrijden hebben elke goal. Sofascore noemt een
-   eigen goal 'ownGoal', Transfermarkt 'own'. */
+/* Wat de goals zelf vertellen (penalty, eigen goal, minuut, hattrick). Per
+   speler staat alleen het aantal; de wedstrijden hebben elke goal. Sofascore
+   noemt een eigen goal 'ownGoal', Transfermarkt 'own'. */
 const GOALS = {};
-(window.APP?.matches || []).forEach(m => m.goals.forEach(g => {
-  if (!g.pid) return;
-  const t = GOALS[g.pid] ||= {pen: 0, eg: 0, laat: 0};
-  if (g.type === 'own' || g.type === 'ownGoal'){ t.eg++; return; }
-  if (g.type === 'penalty') t.pen++;
-  if (g.min >= 90) t.laat++;
-}));
+(window.APP?.matches || []).forEach(m => {
+  const inDuel = {};
+  m.goals.forEach(g => {
+    if (!g.pid) return;
+    const t = GOALS[g.pid] ||= {pen: 0, eg: 0, laat: 0, hat: []};
+    if (g.type === 'own' || g.type === 'ownGoal'){ t.eg++; return; }
+    if (g.type === 'penalty') t.pen++;
+    if (g.min >= 90) t.laat++;
+    inDuel[g.pid] = (inDuel[g.pid] || 0) + 1;
+  });
+  // Drie of meer in één duel: [duel, goals, datum].
+  Object.entries(inDuel).forEach(([pid, n]) => { if (n >= 3) GOALS[pid].hat.push([m.id, n, m.date]); });
+});
+// De grootste hattrick eerst: de meeste goals, dan de laatste.
+Object.values(GOALS).forEach(t => t.hat.sort((a, b) => b[1] - a[1] || b[2].localeCompare(a[2])));
 
 function verrijk(id, p){
   const duels = p.m.map(r => wedstrijd(r[0])).filter(Boolean);
@@ -184,7 +201,7 @@ function verrijk(id, p){
   duels.forEach(m => { if (m.venue) perStadion[m.venue] = (perStadion[m.venue] || 0) + 1; });
   const g = GOALS[id] || {};
   return {id, ...p, zoek: plat(p.n), teams: teams(p),
-    pen: g.pen || 0, eg: g.eg || 0, laat: g.laat || 0,
+    pen: g.pen || 0, eg: g.eg || 0, laat: g.laat || 0, hat: g.hat || [],
     // Wie niet in de basis begon en toch scoorde, viel in.
     sup: p.m.reduce((n, r) => n + (r[5] ? 0 : r[3] || 0), 0),
     stad: Object.entries(perStadion).sort((a, b) => b[1] - a[1]).map(([k]) => k),
