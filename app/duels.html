@@ -20,10 +20,21 @@
    blijft in de bovenbalk staan en zoekt terwijl je typt, op club, stadion en
    competitie tegelijk. Bij Seizoenen springt de chiprij naar een seizoen in
    plaats van de rest te verbergen: zo blijft de lijst één doorlopende reeks.
-   Bijzonder filtert op één soort duel; Stats zet de duels op volgorde van
-   één getal en toont de top tien. Per competitie kijken kan via Meer. */
+   Bijzonder filtert op één soort duel. Stats heeft een laag meer: eerst
+   Goals, Kaarten, Spelers of Publiek, dan de lijst; die zet de duels op
+   volgorde van één getal en toont de top tien. Per competitie kijken kan
+   via Meer. */
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
-.duel-meta b{color:var(--content); font-weight:600; white-space:nowrap;}
+/* Het getal waar een toplijst om draait, op een eigen regel onder de datum. */
+.duel-meta b{display:block; margin-top:1px; color:var(--content); font-weight:600;}
+/* De tweede laag in Stats: tekst met een streep, zodat hij niet leest als
+   nog een schakelaar tussen de schakelaar erboven en de chips eronder. */
+.soort{display:flex; gap:20px; margin:12px 16px 0; padding:0 4px;}
+.soort button{position:relative; padding:4px 0 7px; border:0; background:none; cursor:pointer;
+  font:inherit; font-size:15px; font-weight:600; color:var(--content-2);}
+.soort button[aria-pressed="true"]{color:var(--content);}
+.soort button[aria-pressed="true"]::after{content:""; position:absolute; left:0; right:0; bottom:0;
+  height:2px; border-radius:1px; background:var(--content);}
 .kop-tel{font-size:12px; color:var(--content-2);}
 .chips-kaart{padding:2px 0;}
 </style>
@@ -83,80 +94,139 @@ const BIJZONDER = [
    noot: 'Achter bij rust, en toch gewonnen.'},
   {id: 'goals', label: '7+ goals', in: m => goals(m) >= 7, extra: m => `${goals(m)} goals`,
    volgorde: (a, b) => goals(b) - goals(a), noot: 'Duels met zeven goals of meer, de meeste bovenaan.'},
-  {id: 'rood', label: 'Rode kaart', in: m => m.cards.length > 0,
-   extra: m => m.cards.length === 1 ? `rood voor ${esc(m.cards[0].p)}` : `${m.cards.length}× rood`,
-   noot: 'Duels met minstens één rode kaart, ook na twee keer geel.'},
   {id: 'buiten', label: 'Buitenland', in: m => !!land(m) && land(m) !== 'Nederland', extra: m => esc(land(m)),
    noot: 'Duels in een stadion buiten Nederland.'},
   {id: '50k', label: '50k+', in: m => m.att >= 50000, extra: m => `${getal(m.att)} toeschouwers`,
    volgorde: (a, b) => b.att - a.att, noot: 'Duels met 50.000 toeschouwers of meer, de volste bovenaan.'},
 ];
 /* ── Stats ───────────────────────────────────────────────────────────────
-   Per lijst één getal per duel (waarde); de tien hoogste staan erin, bij een
-   gelijke stand de nieuwste eerst. Een duel zonder waarde (geen goal, geen
-   publiekscijfer) doet niet mee. Bij laag telt de laagste waarde het meest.
-   Eigen goals tellen niet als doelpunt van een speler. */
+   Vier soorten, per soort een paar lijsten. Elke lijst geeft één getal per
+   duel (waarde); de tien hoogste staan erin, bij een gelijke stand de
+   nieuwste eerst. Een duel zonder waarde (geen goal, geen publiekscijfer)
+   doet niet mee. Bij laag telt de laagste waarde het meest, bij alles staan
+   alle duels met een waarde erin. Eigen goals tellen niet als doelpunt van
+   een speler. */
 const TOP = 10;
 const eigen = g => g.type === 'own';
 const minuut = g => g.add ? `${g.min}+${g.add}'` : `${g.min}'`;
 const getimed = m => m.goals.filter(g => g.min != null);
 const wie = g => `${minuut(g)} ${esc(g.p)}${eigen(g) ? ' (e.d.)' : ''}`;
-function perSpeler(m){
+const geel = m => m.cards.filter(k => k.type === 'geel');
+const rood = m => m.cards.filter(k => k.type !== 'geel');
+const jaar = n => `${n.toLocaleString('nl-NL', {minimumFractionDigits: 1, maximumFractionDigits: 1})} jaar`;
+const meervoud = (n, een, meer) => `${n} ${n === 1 ? een : meer}`;
+/* Wie of wat het vaakst voorkomt: [[naam, aantal], ...], meeste eerst. Bij
+   een gelijke stand blijft de volgorde van de lijst, dus wie het eerst was. */
+function telling(lijst, sleutel){
   const n = {};
-  m.goals.filter(g => !eigen(g) && g.p).forEach(g => n[g.p] = (n[g.p] || 0) + 1);
+  lijst.forEach(x => n[sleutel(x)] = (n[sleutel(x)] || 0) + 1);
   return Object.entries(n).sort((a, b) => b[1] - a[1]);
 }
-const STATS = [
-  {id: 'makers', label: 'Doelpuntenmakers', titel: 'Meeste doelpuntenmakers',
-   waarde: m => perSpeler(m).length, extra: v => `${v} doelpuntenmakers`,
-   noot: 'Hoeveel verschillende spelers scoorden. Eigen goals tellen niet mee.'},
-  {id: 'goals', label: 'Goals', titel: 'Meeste goals',
-   waarde: goals, extra: v => `${v} goals`,
-   noot: 'Alle goals in het duel, eigen goals meegeteld; strafschoppenseries niet.'},
-  {id: 'rust', label: 'Na rust', titel: 'Meeste goals na rust',
-   waarde: m => getimed(m).filter(g => g.min > 45).length, extra: v => `${v} na rust`,
-   noot: 'Goals in de tweede helft, en in de verlenging als die er was.'},
-  {id: 'zege', label: 'Grootste zege', titel: 'Grootste zege',
-   waarde: m => Math.abs((m.hs || 0) - (m.as || 0)),
-   extra: (v, m) => `${esc(club(m.hs > m.as ? m.hid : m.aid).name)} +${v}`,
-   noot: 'Het grootste doelpuntenverschil.'},
-  {id: 'een', label: 'Eén speler', titel: 'Meeste goals van één speler',
-   waarde: m => perSpeler(m)[0]?.[1] || 0,
-   extra: (v, m) => `${v}× ${esc(perSpeler(m)[0][0])}`,
-   noot: 'De meeste goals die één speler in een duel maakte. Bij een gelijke stand staat de eerste die scoorde erbij.'},
-  {id: 'snel', label: 'Snelste goal', titel: 'Snelste goal', laag: true,
-   waarde: m => getimed(m)[0]?.min, extra: (v, m) => wie(getimed(m)[0]),
-   noot: 'De eerste goal van het duel, de vroegste bovenaan. e.d. is een eigen doelpunt.'},
-  {id: 'landen', label: 'Nationaliteiten', titel: 'Meeste nationaliteiten',
-   waarde: m => m.nat, extra: v => `${v} nationaliteiten`,
-   noot: 'Hoeveel landen er op het veld stonden: de basis en de invallers met speelminuten.'},
-  {id: 'publiek', label: 'Publiek', titel: 'Meeste publiek',
-   waarde: m => m.att, extra: v => `${getal(v)} toeschouwers`,
-   noot: 'Het opgegeven aantal toeschouwers.'},
-].filter(s => (window.APP?.matches || []).some(m => s.waarde(m)));
+const perSpeler = m => telling(m.goals.filter(g => !eigen(g) && g.p), g => g.p);
+const perPloeg  = m => telling(m.cards.filter(k => k.team), k => k.team);
+// De basiself met de laagste of hoogste gemiddelde leeftijd: [ploeg, leeftijd].
+const elf = (m, oudste) => (m.elf || []).reduce((x, y) => !x || (oudste ? y[1] > x[1] : y[1] < x[1]) ? y : x, null);
+
+const SOORTEN = [
+  {id: 'goals', label: 'Goals', lijsten: [
+    {id: 'totaal', label: 'Totaal', titel: 'Meeste goals',
+     waarde: goals, extra: v => `${v} goals`,
+     noot: 'Alle goals in het duel, eigen goals meegeteld; strafschoppenseries niet.'},
+    {id: 'voor', label: 'Voor rust', titel: 'Meeste goals voor rust',
+     waarde: m => getimed(m).filter(g => g.min <= 45).length, extra: v => `${v} voor rust`,
+     noot: 'Goals in de eerste helft, de blessuretijd meegeteld.'},
+    {id: 'na', label: 'Na rust', titel: 'Meeste goals na rust',
+     waarde: m => getimed(m).filter(g => g.min > 45).length, extra: v => `${v} na rust`,
+     noot: 'Goals in de tweede helft, en in de verlenging als die er was.'},
+    {id: 'verschil', label: 'Verschil', titel: 'Grootste verschil',
+     waarde: m => Math.abs((m.hs || 0) - (m.as || 0)),
+     extra: (v, m) => `${esc(club(m.hs > m.as ? m.hid : m.aid).name)} +${v}`,
+     noot: 'Het grootste doelpuntenverschil.'},
+    {id: 'speler', label: 'Per speler', titel: 'Meeste goals van één speler',
+     waarde: m => perSpeler(m)[0]?.[1] || 0,
+     extra: (v, m) => `${v}× ${esc(perSpeler(m)[0][0])}`,
+     noot: 'De meeste goals die één speler in een duel maakte. Bij een gelijke stand staat de eerste die scoorde erbij.'},
+    {id: 'makers', label: 'Doelpuntenmakers', titel: 'Meeste doelpuntenmakers',
+     waarde: m => perSpeler(m).length, extra: v => `${v} doelpuntenmakers`,
+     noot: 'Hoeveel verschillende spelers scoorden. Eigen goals tellen niet mee.'},
+    {id: 'snelste', label: 'Snelste', titel: 'Snelste goal', laag: true,
+     waarde: m => getimed(m)[0]?.min, extra: (v, m) => wie(getimed(m)[0]),
+     noot: 'De eerste goal van het duel, de vroegste bovenaan. e.d. is een eigen doelpunt.'},
+  ]},
+  {id: 'kaarten', label: 'Kaarten', lijsten: [
+    {id: 'totaal', label: 'Totaal', titel: 'Meeste kaarten',
+     waarde: m => m.cards.length, extra: v => `${v} kaarten`,
+     noot: 'Gele en rode kaarten samen; twee keer geel telt als twee kaarten.'},
+    {id: 'geel', label: 'Geel', titel: 'Meeste gele kaarten',
+     waarde: m => geel(m).length, extra: v => `${v}× geel`,
+     noot: 'Gele kaarten. De tweede gele van een speler telt hier niet, die staat bij Rood.'},
+    {id: 'rood', label: 'Rood', titel: 'Rode kaarten', alles: true,
+     waarde: m => rood(m).length,
+     extra: (v, m) => v === 1 ? `rood voor ${esc(rood(m)[0].p)}` : `${v}× rood`,
+     noot: 'Alle duels met een rode kaart, ook na twee keer geel; de meeste bovenaan.'},
+    {id: 'ploeg', label: 'Per ploeg', titel: 'Meeste kaarten voor één ploeg',
+     waarde: m => perPloeg(m)[0]?.[1] || 0,
+     extra: (v, m) => `${v} voor ${esc(perPloeg(m)[0][0])}`,
+     noot: 'De meeste kaarten die één ploeg in een duel kreeg, geel en rood samen.'},
+    {id: 'snelgeel', label: 'Snelste geel', titel: 'Snelste gele kaart', laag: true,
+     waarde: m => geel(m)[0]?.min, extra: (v, m) => `${minuut(geel(m)[0])} ${esc(geel(m)[0].p)}`,
+     noot: 'De eerste gele kaart van het duel, de vroegste bovenaan.'},
+    {id: 'snelrood', label: 'Snelste rood', titel: 'Snelste rode kaart', laag: true,
+     waarde: m => rood(m)[0]?.min,
+     extra: (v, m) => `${minuut(rood(m)[0])} ${esc(rood(m)[0].p)}${rood(m)[0].type === 'geelrood' ? ', twee keer geel' : ''}`,
+     noot: 'De eerste rode kaart van het duel, de vroegste bovenaan.'},
+  ]},
+  {id: 'spelers', label: 'Spelers', lijsten: [
+    {id: 'landen', label: 'Nationaliteiten', titel: 'Meeste nationaliteiten',
+     waarde: m => m.nat, extra: v => `${v} nationaliteiten`,
+     noot: 'Hoeveel landen er op het veld stonden: de basis en de invallers met speelminuten.'},
+    {id: 'jong', label: 'Jongste elf', titel: 'Jongste basiself', laag: true,
+     waarde: m => elf(m)?.[1], extra: (v, m) => `${esc(elf(m)[0])}, gemiddeld ${jaar(v)}`,
+     noot: 'De gemiddelde leeftijd van een basiself op de dag van het duel; per duel telt de jongste van de twee.'},
+    {id: 'oud', label: 'Oudste elf', titel: 'Oudste basiself',
+     waarde: m => elf(m, true)?.[1], extra: (v, m) => `${esc(elf(m, true)[0])}, gemiddeld ${jaar(v)}`,
+     noot: 'De gemiddelde leeftijd van een basiself op de dag van het duel; per duel telt de oudste van de twee.'},
+    {id: 'wissel', label: 'Snelste wissel', titel: 'Snelste wissel', laag: true,
+     waarde: m => m.wis?.min,
+     extra: (v, m) => `${minuut(m.wis)} ${esc(m.wis.in)} voor ${esc(m.wis.uit)}`,
+     noot: 'De eerste wissel van het duel, de vroegste bovenaan. Vaak een blessure.'},
+  ]},
+  {id: 'publiek', label: 'Publiek', lijsten: [
+    {id: 'meeste', label: 'Meeste', titel: 'Meeste publiek',
+     waarde: m => m.att || null, extra: v => `${getal(v)} toeschouwers`,
+     noot: 'Het opgegeven aantal toeschouwers.'},
+    {id: 'minste', label: 'Minste', titel: 'Minste publiek', laag: true,
+     waarde: m => m.att || null, extra: v => `${getal(v)} toeschouwers`,
+     noot: 'Het opgegeven aantal toeschouwers, het kleinste bovenaan. Duels zonder publiekscijfer doen niet mee.'},
+  ]},
+].map(s => ({...s, lijsten: s.lijsten.filter(l => (window.APP?.matches || []).some(m => l.waarde(m)))}))
+ .filter(s => s.lijsten.length);
 
 const TABS_DUELS = [{id: 'seizoenen', label: 'Seizoenen'}, {id: 'bijzonder', label: 'Bijzonder'},
-                    {id: 'stats', label: 'Stats'}].filter(t => t.id !== 'stats' || STATS.length);
+                    {id: 'stats', label: 'Stats'}].filter(t => t.id !== 'stats' || SOORTEN.length);
 
-/* Welke tab en welke lijst, ook als je terugkomt van een wedstrijd. */
-const S = {tab: 'seizoenen', bijzonder: BIJZONDER[0].id, stat: STATS[0]?.id, vraag: ''};
+/* Welke tab en welke lijst, ook als je terugkomt van een wedstrijd. Per
+   soort onthoudt Stats de laatst gekozen lijst. */
+const S = {tab: 'seizoenen', bijzonder: BIJZONDER[0].id, soort: SOORTEN[0]?.id,
+           lijst: Object.fromEntries(SOORTEN.map(s => [s.id, s.lijsten[0].id])), vraag: ''};
 try {
   const o = JSON.parse(sessionStorage.getItem('gh-duels')) || {};
   if (TABS_DUELS.some(t => t.id === o.tab)) S.tab = o.tab;
   if (BIJZONDER.some(b => b.id === o.bijzonder)) S.bijzonder = o.bijzonder;
-  if (STATS.some(s => s.id === o.stat)) S.stat = o.stat;
+  if (SOORTEN.some(s => s.id === o.soort)) S.soort = o.soort;
+  SOORTEN.forEach(s => { if (s.lijsten.some(l => l.id === o.lijst?.[s.id])) S.lijst[s.id] = o.lijst[s.id]; });
 } catch {}
 function onthoud(){
   try { sessionStorage.setItem('gh-duels', JSON.stringify({tab: S.tab, bijzonder: S.bijzonder,
-                                                           stat: S.stat})); } catch {}
+                                                           soort: S.soort, lijst: S.lijst})); } catch {}
 }
 
-/* De top tien van één stat, uit de duels die bij de zoekvraag passen. */
+/* De top tien van één lijst, uit de duels die bij de zoekvraag passen. */
 function toplijst(s, lijst){
   const v = new Map(lijst.map(m => [m, s.waarde(m)]));
-  return lijst.filter(m => v.get(m) != null && (s.laag || v.get(m) > 0))
-    .sort((a, b) => (s.laag ? v.get(a) - v.get(b) : v.get(b) - v.get(a)) || b.date.localeCompare(a.date))
-    .slice(0, TOP);
+  const hier = lijst.filter(m => v.get(m) != null && (s.laag || v.get(m) > 0))
+    .sort((a, b) => (s.laag ? v.get(a) - v.get(b) : v.get(b) - v.get(a)) || b.date.localeCompare(a.date));
+  return s.alles ? hier : hier.slice(0, TOP);
 }
 
 function past(m, q){
@@ -211,14 +281,21 @@ function render(){
   }
 
   if (S.tab === 'stats'){
-    const s = STATS.find(x => x.id === S.stat);
+    const soort = SOORTEN.find(x => x.id === S.soort);
+    const s = soort.lijsten.find(x => x.id === S.lijst[soort.id]);
     const hier = toplijst(s, lijst);
-    // Het getal vet achter de competitie: daar draait deze lijst om.
-    app.innerHTML = filterlijst(kop, 'stat', STATS.map(x => [x.id, x.label]), s.id, s.titel,
-                                hier, m => `${m.t} · <b>${s.extra(s.waarde(m), m)}</b>`,
+    const soorten = `
+    <div class="soort" role="group" aria-label="Soort stat">
+      ${SOORTEN.map(x => `<button type="button" data-soort="${x.id}" aria-pressed="${x.id === soort.id}">${x.label}</button>`).join('')}
+    </div>`;
+    // Het getal vet onder de datum: daar draait deze lijst om. Een andere
+    // soort heeft een andere chiprij, dus dan begint die links.
+    app.innerHTML = filterlijst(kop + soorten, 'lijst', soort.lijsten.map(x => [x.id, x.label]), s.id,
+                                s.titel, hier, m => `${m.t}<b>${s.extra(s.waarde(m), m)}</b>`,
                                 `<div class="note">${s.noot}</div>`,
-                                hier.length === TOP ? `top ${TOP}` : aantal(hier.length));
-    schuifrij(app.querySelector('.chips.klein'), vorige);
+                                !s.alles && hier.length === TOP ? `top ${TOP}` : aantal(hier.length));
+    schuifrij(app.querySelector('.chips.klein'), S.vorigeSoort === soort.id ? vorige : 0);
+    S.vorigeSoort = soort.id;
     return;
   }
 
@@ -250,8 +327,10 @@ app.addEventListener('click', e => {
   if (t){ S.tab = t.dataset.tab; onthoud(); render(); app.scrollTop = 0; return; }
   const b = e.target.closest('[data-bijzonder]');
   if (b){ S.bijzonder = b.dataset.bijzonder; onthoud(); render(); return; }
-  const st = e.target.closest('[data-stat]');
-  if (st){ S.stat = st.dataset.stat; onthoud(); render(); return; }
+  const so = e.target.closest('[data-soort]');
+  if (so){ S.soort = so.dataset.soort; onthoud(); render(); return; }
+  const l = e.target.closest('[data-lijst]');
+  if (l){ S.lijst[S.soort] = l.dataset.lijst; onthoud(); render(); return; }
   const s = e.target.closest('[data-spring]');
   if (!s) return;
   const doel = document.getElementById(s.dataset.spring);

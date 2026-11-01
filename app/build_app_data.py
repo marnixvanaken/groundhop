@@ -22,6 +22,7 @@ Gebruik:  python3 app/build_app_data.py
 
 import collections
 from collections import defaultdict
+from datetime import date
 import json
 import re
 import shutil
@@ -294,12 +295,43 @@ def main():
     # minuten maakte. Wie pas in de blessuretijd invalt staat er met 0 minuten
     # in en telt dus niet mee; de bank ook niet.
     landen_op_veld = defaultdict(set)
+    # En hoe oud elke basiself gemiddeld was, op de dag van het duel.
+    basis = defaultdict(list)
     for p in d["players"]:
-        if not landcode(p):
-            continue
         for x in p.get("matches_detail") or []:
-            if x.get("starter") or (x.get("minutes") or 0) > 0:
+            if landcode(p) and (x.get("starter") or (x.get("minutes") or 0) > 0):
                 landen_op_veld[x["match_id"]].add(landcode(p))
+            if x.get("starter") and p.get("date_of_birth") and x.get("date"):
+                try:
+                    dagen = (date.fromisoformat(x["date"])
+                             - date.fromisoformat(p["date_of_birth"][:10])).days
+                except ValueError:
+                    continue
+                basis[(x["match_id"], x.get("team"))].append(dagen / 365.25)
+
+    def basiself(m):
+        """[[ploeg, gemiddelde leeftijd], ...]; alleen als van minstens tien
+        basisspelers de geboortedatum bekend is."""
+        uit = []
+        for kant in ("home_team", "away_team"):
+            ploeg = m[kant]["name"]
+            leeftijden = basis.get((m["id"], ploeg), [])
+            if len(leeftijden) >= 10:
+                uit.append([ploeg, round(sum(leeftijden) / len(leeftijden), 2)])
+        return uit
+
+    def eerste_wissel(m):
+        wissels = sorted((w for w in m.get("substitutions") or [] if w.get("minute") is not None),
+                         key=lambda w: (w["minute"], w.get("added_time") or 0))
+        if not wissels:
+            return None
+        w = wissels[0]
+        return {"min": w["minute"], "add": w.get("added_time"), "in": w.get("player_in"),
+                "uit": w.get("player_out"), "team": w.get("team")}
+
+    # Twee keer geel heet bij Sofascore 'yellowRed', bij Transfermarkt
+    # 'second_yellow'; in de app heet het geelrood.
+    KAART = {"yellow": "geel", "red": "rood", "yellowRed": "geelrood", "second_yellow": "geelrood"}
 
     def wedstrijd(m):
         v = stadion_sleutel((m.get("venue") or {}).get("name"))
@@ -336,13 +368,17 @@ def main():
                 for g in sorted(m.get("goals") or [],
                                 key=lambda g: (g.get("minute") or 0, g.get("added_time") or 0))
             ],
+            # Alle kaarten: geel, rood en geelrood (twee keer geel).
             "cards": [
                 {"min": k.get("minute"), "p": k.get("player"), "team": k.get("team"),
-                 "type": k.get("type")}
-                # Twee keer geel heet bij Sofascore 'yellowRed', bij
-                # Transfermarkt 'second_yellow'.
-                for k in m.get("cards") or [] if k.get("type") in ("red", "yellowRed", "second_yellow")
+                 "type": KAART[k.get("type")]}
+                for k in sorted(m.get("cards") or [],
+                                key=lambda k: (k.get("minute") or 0, k.get("added_time") or 0))
+                if k.get("type") in KAART
             ],
+            # Voor Duels › Stats › Spelers.
+            "elf": basiself(m),
+            "wis": eerste_wissel(m),
         }
 
     # ── Stadions ────────────────────────────────────────────────────────────
