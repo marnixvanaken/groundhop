@@ -20,8 +20,10 @@
    blijft in de bovenbalk staan en zoekt terwijl je typt, op club, stadion en
    competitie tegelijk. Bij Seizoenen springt de chiprij naar een seizoen in
    plaats van de rest te verbergen: zo blijft de lijst één doorlopende reeks.
-   Competities en Bijzonder filteren: één competitie, of één soort duel. */
+   Bijzonder filtert op één soort duel; Stats zet de duels op volgorde van
+   één getal en toont de top tien. Per competitie kijken kan via Meer. */
 .leeg{padding:16px; font-size:13px; color:var(--content-2);}
+.duel-meta b{color:var(--content); font-weight:600; white-space:nowrap;}
 .kop-tel{font-size:12px; color:var(--content-2);}
 .chips-kaart{padding:2px 0;}
 </style>
@@ -89,27 +91,72 @@ const BIJZONDER = [
   {id: '50k', label: '50k+', in: m => m.att >= 50000, extra: m => `${getal(m.att)} toeschouwers`,
    volgorde: (a, b) => b.att - a.att, noot: 'Duels met 50.000 toeschouwers of meer, de volste bovenaan.'},
 ];
-const TABS_DUELS = [{id: 'seizoenen', label: 'Seizoenen'}, {id: 'competities', label: 'Competities'},
-                    {id: 'bijzonder', label: 'Bijzonder'}];
-
-/* De competities als filter, meeste duels eerst. */
-const COMPETITIES = (() => {
+/* ── Stats ───────────────────────────────────────────────────────────────
+   Per lijst één getal per duel (waarde); de tien hoogste staan erin, bij een
+   gelijke stand de nieuwste eerst. Een duel zonder waarde (geen goal, geen
+   publiekscijfer) doet niet mee. Bij laag telt de laagste waarde het meest.
+   Eigen goals tellen niet als doelpunt van een speler. */
+const TOP = 10;
+const eigen = g => g.type === 'own';
+const minuut = g => g.add ? `${g.min}+${g.add}'` : `${g.min}'`;
+const getimed = m => m.goals.filter(g => g.min != null);
+const wie = g => `${minuut(g)} ${esc(g.p)}${eigen(g) ? ' (e.d.)' : ''}`;
+function perSpeler(m){
   const n = {};
-  (window.APP?.matches || []).forEach(m => n[m.t] = (n[m.t] || 0) + 1);
-  return Object.keys(n).sort((a, b) => n[b] - n[a]);
-})();
+  m.goals.filter(g => !eigen(g) && g.p).forEach(g => n[g.p] = (n[g.p] || 0) + 1);
+  return Object.entries(n).sort((a, b) => b[1] - a[1]);
+}
+const STATS = [
+  {id: 'makers', label: 'Doelpuntenmakers', titel: 'Meeste doelpuntenmakers',
+   waarde: m => perSpeler(m).length, extra: v => `${v} doelpuntenmakers`,
+   noot: 'Hoeveel verschillende spelers scoorden. Eigen goals tellen niet mee.'},
+  {id: 'goals', label: 'Goals', titel: 'Meeste goals',
+   waarde: goals, extra: v => `${v} goals`,
+   noot: 'Alle goals in het duel, eigen goals meegeteld; strafschoppenseries niet.'},
+  {id: 'rust', label: 'Na rust', titel: 'Meeste goals na rust',
+   waarde: m => getimed(m).filter(g => g.min > 45).length, extra: v => `${v} na rust`,
+   noot: 'Goals in de tweede helft, en in de verlenging als die er was.'},
+  {id: 'zege', label: 'Grootste zege', titel: 'Grootste zege',
+   waarde: m => Math.abs((m.hs || 0) - (m.as || 0)),
+   extra: (v, m) => `${esc(club(m.hs > m.as ? m.hid : m.aid).name)} +${v}`,
+   noot: 'Het grootste doelpuntenverschil.'},
+  {id: 'een', label: 'Eén speler', titel: 'Meeste goals van één speler',
+   waarde: m => perSpeler(m)[0]?.[1] || 0,
+   extra: (v, m) => `${v}× ${esc(perSpeler(m)[0][0])}`,
+   noot: 'De meeste goals die één speler in een duel maakte. Bij een gelijke stand staat de eerste die scoorde erbij.'},
+  {id: 'snel', label: 'Snelste goal', titel: 'Snelste goal', laag: true,
+   waarde: m => getimed(m)[0]?.min, extra: (v, m) => wie(getimed(m)[0]),
+   noot: 'De eerste goal van het duel, de vroegste bovenaan. e.d. is een eigen doelpunt.'},
+  {id: 'landen', label: 'Nationaliteiten', titel: 'Meeste nationaliteiten',
+   waarde: m => m.nat, extra: v => `${v} nationaliteiten`,
+   noot: 'Hoeveel landen er op het veld stonden: de basis en de invallers met speelminuten.'},
+  {id: 'publiek', label: 'Publiek', titel: 'Meeste publiek',
+   waarde: m => m.att, extra: v => `${getal(v)} toeschouwers`,
+   noot: 'Het opgegeven aantal toeschouwers.'},
+].filter(s => (window.APP?.matches || []).some(m => s.waarde(m)));
+
+const TABS_DUELS = [{id: 'seizoenen', label: 'Seizoenen'}, {id: 'bijzonder', label: 'Bijzonder'},
+                    {id: 'stats', label: 'Stats'}].filter(t => t.id !== 'stats' || STATS.length);
 
 /* Welke tab en welke lijst, ook als je terugkomt van een wedstrijd. */
-const S = {tab: 'seizoenen', bijzonder: BIJZONDER[0].id, competitie: COMPETITIES[0], vraag: ''};
+const S = {tab: 'seizoenen', bijzonder: BIJZONDER[0].id, stat: STATS[0]?.id, vraag: ''};
 try {
   const o = JSON.parse(sessionStorage.getItem('gh-duels')) || {};
   if (TABS_DUELS.some(t => t.id === o.tab)) S.tab = o.tab;
   if (BIJZONDER.some(b => b.id === o.bijzonder)) S.bijzonder = o.bijzonder;
-  if (COMPETITIES.includes(o.competitie)) S.competitie = o.competitie;
+  if (STATS.some(s => s.id === o.stat)) S.stat = o.stat;
 } catch {}
 function onthoud(){
   try { sessionStorage.setItem('gh-duels', JSON.stringify({tab: S.tab, bijzonder: S.bijzonder,
-                                                           competitie: S.competitie})); } catch {}
+                                                           stat: S.stat})); } catch {}
+}
+
+/* De top tien van één stat, uit de duels die bij de zoekvraag passen. */
+function toplijst(s, lijst){
+  const v = new Map(lijst.map(m => [m, s.waarde(m)]));
+  return lijst.filter(m => v.get(m) != null && (s.laag || v.get(m) > 0))
+    .sort((a, b) => (s.laag ? v.get(a) - v.get(b) : v.get(b) - v.get(a)) || b.date.localeCompare(a.date))
+    .slice(0, TOP);
 }
 
 function past(m, q){
@@ -125,16 +172,16 @@ const rij = (m, tekst) => duel({...alsDuel(m), tournament: tekst || m.t},
 const aantal = n => `${n} ${n === 1 ? 'duel' : 'duels'}`;
 
 /* Eén kaart met de gefilterde duels, onder een chiprij om te kiezen. */
-function filterlijst(kop, soort, keuzes, actief, titel, hier, tekst, voet){
+function filterlijst(kop, soort, keuzes, actief, titel, hier, tekst, voet, tel = aantal(hier.length)){
   return `${kop}
-      <div class="chips klein" role="group" aria-label="${soort === 'bijzonder' ? 'Soort duel' : 'Competitie'}">
+      <div class="chips klein" role="group" aria-label="${soort === 'bijzonder' ? 'Soort duel' : 'Toplijst'}">
         ${keuzes.map(([id, label]) => `<button type="button" data-${soort}="${esc(id)}"
           aria-pressed="${id === actief}">${esc(label)}</button>`).join('')}
       </div>
     </section>
-    ${S.vraag ? `<div class="kop-tel" style="padding:0 4px">${aantal(hier.length)} voor “${esc(S.vraag)}”</div>` : ''}
+    ${S.vraag ? `<div class="kop-tel" style="padding:0 4px">${tel} voor “${esc(S.vraag)}”</div>` : ''}
     <section class="card">
-      <div class="card-head"><h2>${esc(titel)}</h2><span class="kop-tel">${aantal(hier.length)}</span></div>
+      <div class="card-head"><h2>${esc(titel)}</h2><span class="kop-tel">${tel}</span></div>
       <div style="height:8px"></div>
       ${hier.length ? hier.map(m => rij(m, tekst(m))).join('')
         : `<div class="leeg">${S.vraag ? `Geen duel gevonden voor “${esc(S.vraag)}” in deze lijst.` : 'Nog geen duel in deze lijst.'}</div>`}
@@ -163,13 +210,14 @@ function render(){
     return;
   }
 
-  if (S.tab === 'competities'){
-    const c = S.competitie;
-    // Achter de datum de ronde, want de competitie staat al boven de kaart.
-    const ronde = m => m.rn || (m.round ? `Ronde ${m.round}` : '');
-    app.innerHTML = filterlijst(kop, 'competitie', COMPETITIES.map(k => [k, comp(k)]), c, c,
-      lijst.filter(m => m.t === c), ronde,
-      `<a class="meer-knop" href="${compHref(c)}">Alles over ${esc(comp(c))}</a>`);
+  if (S.tab === 'stats'){
+    const s = STATS.find(x => x.id === S.stat);
+    const hier = toplijst(s, lijst);
+    // Het getal vet achter de competitie: daar draait deze lijst om.
+    app.innerHTML = filterlijst(kop, 'stat', STATS.map(x => [x.id, x.label]), s.id, s.titel,
+                                hier, m => `${m.t} · <b>${s.extra(s.waarde(m), m)}</b>`,
+                                `<div class="note">${s.noot}</div>`,
+                                hier.length === TOP ? `top ${TOP}` : aantal(hier.length));
     schuifrij(app.querySelector('.chips.klein'), vorige);
     return;
   }
@@ -202,8 +250,8 @@ app.addEventListener('click', e => {
   if (t){ S.tab = t.dataset.tab; onthoud(); render(); app.scrollTop = 0; return; }
   const b = e.target.closest('[data-bijzonder]');
   if (b){ S.bijzonder = b.dataset.bijzonder; onthoud(); render(); return; }
-  const c = e.target.closest('[data-competitie]');
-  if (c){ S.competitie = c.dataset.competitie; onthoud(); render(); return; }
+  const st = e.target.closest('[data-stat]');
+  if (st){ S.stat = st.dataset.stat; onthoud(); render(); return; }
   const s = e.target.closest('[data-spring]');
   if (!s) return;
   const doel = document.getElementById(s.dataset.spring);

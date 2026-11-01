@@ -290,6 +290,17 @@ def main():
         naam = re.split(r"\s{2,}", (m.get("round_name") or "").strip())[0]
         return naam or None
 
+    # Hoeveel landen er per duel op het veld stonden: basisspelers en wie
+    # minuten maakte. Wie pas in de blessuretijd invalt staat er met 0 minuten
+    # in en telt dus niet mee; de bank ook niet.
+    landen_op_veld = defaultdict(set)
+    for p in d["players"]:
+        if not landcode(p):
+            continue
+        for x in p.get("matches_detail") or []:
+            if x.get("starter") or (x.get("minutes") or 0) > 0:
+                landen_op_veld[x["match_id"]].add(landcode(p))
+
     def wedstrijd(m):
         v = stadion_sleutel((m.get("venue") or {}).get("name"))
         ref = m.get("referee") or {}
@@ -316,6 +327,8 @@ def main():
             "att": m.get("attendance"),
             "ref": ref.get("name"),
             "refc": ref.get("country"),
+            # Voor Duels › Stats; 0 als er geen opstelling bekend is.
+            "nat": len(landen_op_veld[m["id"]]),
             "goals": [
                 {"min": g.get("minute"), "add": g.get("added_time"), "p": g.get("player"),
                  "pid": g.get("player_id"), "a": g.get("assist"), "team": g.get("team"),
