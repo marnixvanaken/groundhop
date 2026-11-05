@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css. */
 .score > *, .goal > *, .player > *{min-width:0;}
@@ -120,6 +121,7 @@
 <script src="app-data.js"></script>
 <script src="speler-data.js"></script>
 <script src="groundhop.js"></script>
+<script src="nieuwtjes.js"></script>
 <script>
 const app = document.getElementById('app');
 tabbalk('duels');
@@ -166,6 +168,7 @@ function opstelling(m){
 }
 
 let LINEUP = {};
+let NIEUWS = null;
 const huidig = () => wedstrijd(Number(param('id'))) || APP.matches[0];
 
 function render(){
@@ -203,6 +206,17 @@ function render(){
       ${tellers.map(([n, t]) => `<div><b class="num">${n}<sup>e</sup></b><span>${t}</span></div>`).join('')}
     </div>
   </section>`;
+
+  // Wat dit duel jou opleverde, gerekend tegen alle duels die ervoor lagen.
+  const nieuw = (NIEUWS ||= Nieuwtjes.bereken(APP, SPELERS)).van(m.id);
+  if (nieuw.zinnen.length || nieuw.feitjes.length){
+    html += `
+    <section class="card" id="nieuw">
+      <div class="card-head"><h2>Nieuw voor jou</h2></div>
+      ${nieuw.zinnen.length ? '<div style="height:4px"></div>' + nieuw.zinnen.map(x => Nieuwtjes.rij(x)).join('') : ''}
+      ${Nieuwtjes.feitjes(nieuw.feitjes)}
+    </section>`;
+  }
 
   if (m.goals.length){
     html += `
@@ -290,6 +304,15 @@ function render(){
   html += '<section class="card" id="beheer" hidden></section>';
 
   app.innerHTML = html;
+  // Het scorebord en de uitslag dragen dezelfde namen als de rij waarop je
+  // tikte, zodat ze van de lijst hierheen vliegen (overgang.js).
+  const kanten = app.querySelectorAll('.score .side');
+  [kanten[0]?.querySelector('.crest, .crest-fallback'), kanten[1]?.querySelector('.crest, .crest-fallback'),
+   app.querySelector('.score .result')].forEach((el, i) => {
+    if (!el) return;
+    el.style.viewTransitionName = ['vt-thuis', 'vt-uit', 'vt-uitslag'][i];
+    el.classList.add('vt-gedeeld');
+  });
   toonBeheer(m);
   app.querySelectorAll('.seg button').forEach(b => b.addEventListener('click', () => {
     app.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));

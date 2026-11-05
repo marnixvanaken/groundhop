@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css. */
 
@@ -24,6 +25,14 @@
 .kaart{display:block; width:100%; height:auto; background:var(--card-sunken);}
 .land{fill:var(--card); stroke:var(--separator); stroke-width:0.4;}
 .stip{fill:var(--accent); stroke:var(--card); stroke-width:1;}
+.kaart-vak{position:relative;}
+.kaart-jaar{position:absolute; left:14px; top:10px; font-family:var(--display); font-size:24px; font-weight:800;
+  font-variant-numeric:tabular-nums; color:var(--accent); opacity:0; pointer-events:none; transition:opacity .4s ease;}
+.kaart-jaar.zien{opacity:1;}
+.vullen .stip{transform-box:fill-box; transform-origin:50% 100%;
+  animation:pin-val .5s var(--veer) both; animation-delay:var(--t);}
+@keyframes pin-val{0%{opacity:0; transform:translateY(-14px) scale(.5);}
+  60%{opacity:1; transform:scale(1.2,.85);} 100%{opacity:1; transform:none;}}
 .buiten{
   display:flex; align-items:center; gap:8px;
   padding:10px 16px; border-top:0.5px solid var(--separator);
@@ -83,6 +92,27 @@ tabbalk('grounds');
 
 const BREED = 396, HOOG = 300, RAND = 26;
 
+/* Is er sinds je vorige bezoek een ground bij (of is dit je eerste keer op
+   dit scherm), dan vult de kaart zich: de pins vallen in de volgorde van je
+   eerste bezoek, met het jaar linksboven. Daarna staat hij gewoon stil. */
+function vulKaart(){
+  let vorig = null;
+  try { vorig = localStorage.getItem('gh-grounds'); localStorage.setItem('gh-grounds', String(APP.totals.venues)); } catch {}
+  if (RUSTIG || (vorig !== null && Number(vorig) >= APP.totals.venues)) return;
+  const kaart = app.querySelector('.kaart'), jaar = app.querySelector('.kaart-jaar');
+  if (!kaart) return;
+  kaart.classList.add('vullen');
+  const van = Number(jaar.dataset.van), tot = Number(jaar.dataset.tot), start = performance.now();
+  jaar.classList.add('zien');
+  const stap = nu => {
+    const p = Math.min(1, (nu - start) / 1800);
+    jaar.textContent = Math.round(van + (tot - van) * p);
+    if (p < 1) requestAnimationFrame(stap);
+    else setTimeout(() => jaar.classList.remove('zien'), 900);
+  };
+  requestAnimationFrame(stap);
+}
+
 /* Mercator, de projectie die mensen van een kaart kennen: op deze
    breedtegraden rekt hij het noorden op en dat hoort zo.
 
@@ -127,13 +157,18 @@ function kaart(){
   // Oppervlak evenredig met het aantal bezoeken, dus de straal met de wortel:
   // anders lijkt Philips Stadion honderd keer zo groot als de rest.
   const meest = Math.max(...binnen.map(k => k.visits));
+  // Wanneer elke pin valt als de kaart zich vult: op volgorde van je eerste
+  // bezoek, 2008 tot nu in twee seconden.
+  const tijden = binnen.map(k => +new Date(k.first));
+  const t0 = Math.min(...tijden), t1 = Math.max(...tijden);
+  const valt = k => ((+new Date(k.first) - t0) / ((t1 - t0) || 1) * 1.8).toFixed(2);
   const stippen = binnen
     .slice()
     .sort((a, b) => a.visits - b.visits)   // drukste bovenop
     .map(k => {
       const [x, y] = p(k.lon, k.lat);
       const r = 2.5 + 6 * Math.sqrt(k.visits / meest);
-      return `<a href="${stadionHref(k.key)}"><circle class="stip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"><title>${esc(k.name)} — ${k.visits}×</title></circle></a>`;
+      return `<a href="${stadionHref(k.key)}"><circle class="stip" cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}" style="--t:${valt(k)}s"><title>${esc(k.name)} — ${k.visits}×</title></circle></a>`;
     }).join('');
 
   const buiten = APP.offmap.length ? `
@@ -145,11 +180,14 @@ function kaart(){
 
   return `
   <section class="card">
+    <div class="kaart-vak">
     <svg class="kaart" viewBox="0 0 ${BREED} ${HOOG}" role="img"
          aria-label="Kaart van Europa met ${punten.length} bezochte stadions">
       <path class="land" d="${landen}"/>
       ${stippen}
     </svg>
+    <div class="kaart-jaar" aria-hidden="true" data-van="${new Date(t0).getFullYear()}" data-tot="${new Date(t1).getFullYear()}"></div>
+    </div>
     ${buiten}
     <div class="tally">
       <div><b class="num">${APP.totals.venues}</b><span>grounds</span></div>
@@ -190,6 +228,9 @@ function lijst(){
 
 if (window.APP) {
   app.innerHTML = kaart() + lijst();
+  vulKaart();
+  trekOmTeVerversen();
+  if (VERVERST) toonMelding('Bijgewerkt');
 } else {
   app.innerHTML = zonderData('grounds.html');
 }

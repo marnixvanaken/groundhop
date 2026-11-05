@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
@@ -27,7 +28,7 @@
 .albumkop .stand{display:flex; align-items:baseline; gap:8px; margin-bottom:8px;}
 .albumkop .stand b{font-family:var(--display); font-size:34px; font-weight:700;
   letter-spacing:-0.02em; color:var(--accent); line-height:1;}
-.albumkop .stand span{font-size:15px; color:var(--content-2);}
+.albumkop .stand > span{font-size:15px; color:var(--content-2);}
 
 .tegels{display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:2px; padding:8px 8px 12px;}
 .tegels.landen{grid-template-columns:repeat(4,minmax(0,1fr));}
@@ -59,6 +60,15 @@ a.tegel:active{background:var(--card-sunken);}
 .wapens.twee .crest-mini,.wapens.twee .crest-fallback.mini{width:32px; height:32px; font-size:10px;}
 .wapens.twee > :last-child{margin-left:-6px;}
 .tegel.mist .wapens{filter:grayscale(1); opacity:.35;}
+/* Een vakje dat sinds je vorige bezoek gevuld is, draait om en krijgt een
+   glans, zoals een plaatje dat je net hebt ingeplakt. */
+.tegel.nieuw{position:relative; overflow:hidden; animation:vakje-draai .75s var(--veer) .25s both;}
+.tegel.nieuw::after{content:""; position:absolute; inset:0; pointer-events:none; transform:translateX(-120%);
+  background:linear-gradient(105deg, transparent 30%, rgba(255,255,255,0.55) 48%, transparent 66%);
+  animation:glans .6s ease .95s both;}
+@keyframes vakje-draai{0%{transform:perspective(500px) rotateY(-180deg); opacity:.35;}
+  50%{transform:perspective(500px) rotateY(-90deg) scale(1.15);} 100%{transform:none; opacity:1;}}
+@keyframes glans{to{transform:translateX(120%);}}
 </style>
 </head>
 <body>
@@ -77,12 +87,24 @@ tabbalk('meer', true);
 document.getElementById('bar').innerHTML = terugknop('Collecties', 'collecties.html') + '<h1>Album</h1>';
 
 let FILTER = 'alles';
+/* Wat dit apparaat de vorige keer in dit album zag. Wat er sindsdien bij
+   kwam, draait om; het getal rolt van de oude naar de nieuwe stand. */
+let NIEUW = new Set(), VORIGE_STAND = null;
+const sleutel = (a, i) => a.soort === 'landen' ? i.code : a.soort === 'stadions' ? (i.key || i.naam) : (i.club ?? i.naam);
+function vergelijk(a){
+  const nu = a.items.filter(i => i.gezien).map(i => String(sleutel(a, i)));
+  let vorig = null;
+  try { vorig = JSON.parse(localStorage.getItem('gh-album-' + a.id) || 'null');
+        localStorage.setItem('gh-album-' + a.id, JSON.stringify(nu)); } catch {}
+  NIEUW = new Set(vorig ? nu.filter(k => !vorig.includes(k)) : []);
+  VORIGE_STAND = NIEUW.size ? a.gezien - NIEUW.size : null;
+}
 
 function naamVan(a, i){ return a.soort === 'landen' ? landNaam(i.code) : i.naam; }
 
 function tegel(a, i){
   const naam = naamVan(a, i);
-  const klasse = `tegel${i.gezien ? '' : ' mist'}`;
+  const klasse = `tegel${i.gezien ? '' : ' mist'}${NIEUW.has(String(sleutel(a, i))) ? ' nieuw' : ''}`;
   if (a.soort === 'landen'){
     const beeld = vlag(i.code, 'vlag-tegel');
     const inhoud = `${beeld}<span class="tegel-naam">${esc(naam)}</span>
@@ -100,7 +122,7 @@ function tegel(a, i){
 
 /* Een stadion als tegel, net als een club: de clublogo's als beeld (twee
    kleinere bij een gedeeld stadion), de naam eronder. */
-function stadionTegel(i){
+function stadionTegel(i, a){
   const clubs = i.clubs || [];
   const inhoud = `
     <span class="wapens${clubs.length > 1 ? ' twee' : ''}" aria-hidden="true">
@@ -108,7 +130,7 @@ function stadionTegel(i){
     <span class="tegel-naam">${esc(i.naam)}</span>
     <span class="tegel-tal">${i.n}×</span>`;
   const label = `${esc(i.naam)} (${esc(i.sub)})${i.gezien ? '' : ', nog niet bezocht'}`;
-  return i.gezien ? `<a class="tegel" href="${stadionHref(i.key)}" aria-label="${label}">${inhoud}</a>`
+  return i.gezien ? `<a class="tegel${NIEUW.has(String(sleutel(a, i))) ? ' nieuw' : ''}" href="${stadionHref(i.key)}" aria-label="${label}">${inhoud}</a>`
                   : `<div class="tegel mist" aria-label="${label}">${inhoud}</div>`;
 }
 
@@ -123,14 +145,14 @@ function render(){
   if (!zichtbaar.length) lijst = `<div class="note" style="border-top:0">${FILTER === 'mist'
       ? 'Niets meer te gaan: dit album is vol.' : 'Nog niets in dit album.'}</div>`;
   else lijst = `<div class="tegels${a.soort === 'landen' ? ' landen' : ''}">${zichtbaar.map(i =>
-      a.soort === 'stadions' ? stadionTegel(i) : tegel(a, i)).join('')}</div>`;
+      a.soort === 'stadions' ? stadionTegel(i, a) : tegel(a, i)).join('')}</div>`;
 
   app.innerHTML = `
   <section class="card">
     <div class="albumkop">
       <div class="groep">${esc(a.groep)}</div>
       <h2>${esc(a.titel)}</h2>
-      <div class="stand"><b>${a.gezien}</b><span>van ${a.totaal}${rest ? ` · nog ${rest} te gaan` : ' · vol'}</span></div>
+      <div class="stand"><b>${VORIGE_STAND != null ? rol(VORIGE_STAND, a.gezien) : a.gezien}</b><span>van ${a.totaal}${rest ? ` · nog ${rest} te gaan` : ' · vol'}</span></div>
       ${meter(a.gezien, a.totaal)}
     </div>
   </section>
@@ -149,12 +171,16 @@ function render(){
 
 app.addEventListener('click', e => {
   const f = e.target.closest('[data-filter]');
-  if (f){ FILTER = f.dataset.filter; render(); }
+  // Een ander filter: de nieuwe vakjes hebben al gedraaid.
+  if (f){ FILTER = f.dataset.filter; NIEUW = new Set(); VORIGE_STAND = null; render(); }
 });
 
 if (window.APP && APP.albums){
+  vergelijk(album(param('id')) || albums()[0]);
   render();
-  window.addEventListener('hashchange', () => { FILTER = 'alles'; render(); app.scrollTop = 0; });
+  window.addEventListener('hashchange', () => {
+    FILTER = 'alles'; vergelijk(album(param('id')) || albums()[0]); render(); app.scrollTop = 0;
+  });
 } else {
   app.innerHTML = zonderData('album.html');
 }

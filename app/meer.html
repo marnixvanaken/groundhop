@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
@@ -206,6 +207,12 @@ function render(alleClubs){
         <span class="lijst-sub">Zoek een club, kies de duels die je zag</span></span>
       <span class="chev" aria-hidden="true">›</span>
     </a>
+    <a class="lijst-rij" href="nieuwtjes.html">
+      <span class="icoon" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M8 1.8l1.8 3.7 4 .5-2.9 2.7.8 4L8 10.8l-3.7 1.9.8-4L2.2 6l4-.5z"/></svg></span>
+      <span class="lijst-main"><span class="lijst-naam">Nieuwtjes</span>
+        <span class="lijst-sub">Wat elk duel je opleverde, en je volgende mijlpalen</span></span>
+      <span class="chev" aria-hidden="true">›</span>
+    </a>
     <a class="lijst-rij" href="collecties.html">
       <span class="icoon" aria-hidden="true"><svg viewBox="0 0 16 16"><path d="M3 3h4v4H3zM9 3h4v4H9zM3 9h4v4H3zM9 9h4v4H9z"/></svg></span>
       <span class="lijst-main"><span class="lijst-naam">Collecties</span>
@@ -257,7 +264,11 @@ function render(alleClubs){
   });
 }
 
-if (window.APP){ render(false); toonLive(); }
+if (window.APP){
+  render(false); toonLive();
+  trekOmTeVerversen();
+  if (VERVERST) toonMelding('Bijgewerkt');
+}
 else app.innerHTML = zonderData('meer.html');
 </script>
 </body>

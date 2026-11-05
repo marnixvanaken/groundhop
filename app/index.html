@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
@@ -26,16 +27,50 @@
 .sinds{font-size:12px; color:var(--content-2);}
 .tally + .tally{border-top:0.5px solid var(--separator);}
 
-/* Het laatste duel groot: dit is wat je het vaakst terug wilt zien. */
-.laatste{display:block; padding:14px 16px 16px; color:inherit; text-decoration:none;}
-.laatste-crests{display:flex; align-items:center; gap:10px; margin:8px 0 10px;}
-.laatste-crests .result{font-family:var(--display); font-variant-numeric:tabular-nums;
-  font-size:34px; font-weight:700; letter-spacing:-0.02em; margin-left:auto;}
-.laatste .teams{font-size:17px; font-weight:600; line-height:1.25;}
-.laatste .duel-meta{margin-top:3px;}
-.context{padding:10px 16px 14px; border-top:0.5px solid var(--separator);
-  font-size:13px; color:var(--content-2);}
-.context b{color:var(--accent); font-family:var(--display); font-variant-numeric:tabular-nums;}
+/* Het laatste duel groot: dit is wat je het vaakst terug wilt zien. Met de
+   goals op een tijdlijn, waar en voor hoeveel mensen, en wat het jou
+   opleverde. */
+.wanneer{text-transform:none!important; letter-spacing:0!important;}
+.laatste{display:block; padding:12px 16px 4px; color:inherit; text-decoration:none;}
+.laatste-crests{display:flex; align-items:center; gap:10px;}
+.laatste-crests .result{margin-left:auto; text-align:right; font-family:var(--display);
+  font-variant-numeric:tabular-nums; font-size:34px; font-weight:700; letter-spacing:-0.02em; line-height:1;}
+.laatste-crests .result small{display:block; font-family:var(--ui); font-size:12px; font-weight:500;
+  letter-spacing:0; color:var(--content-2); margin-top:3px;}
+.laatste-uitslag{display:inline-block;}
+.laatste .teams{font-size:17px; font-weight:600; line-height:1.25; margin-top:10px;}
+.laatste .duel-meta{margin-top:2px;}
+
+/* De goals op een tijdlijn van 90 minuten: thuis boven de lijn, uit eronder.
+   Bij een nieuw duel speelt de wedstrijd zich één keer in twee seconden af. */
+.tijd{position:relative; height:66px; margin:8px 16px 2px;}
+.tijd .lijn,.tijd .loop{position:absolute; left:0; right:0; top:31px; height:2px; border-radius:1px;}
+.tijd .lijn{background:var(--separator);}
+.tijd .loop{background:var(--content-2); opacity:0; transform-origin:left;}
+.tijd .rustlijn{position:absolute; top:25px; width:1px; height:14px; background:var(--content-2); opacity:.4;}
+.gp{position:absolute; transform:translateX(-50%); display:flex; flex-direction:column; align-items:center;
+  font-size:11px; line-height:1.15; white-space:nowrap;}
+.gp b{font-weight:600; font-size:11px;}
+.gp.links b{transform:translateX(40%);}
+.gp.rechts b{transform:translateX(-40%);}
+.gp .stip{width:10px; height:10px; border-radius:50%; background:var(--content); box-shadow:0 0 0 2px var(--card);}
+.gp.onder .stip{background:var(--card); box-shadow:inset 0 0 0 2px var(--content-2), 0 0 0 2px var(--card);}
+.gp.boven{top:0;} .gp.boven .stip{margin-top:5px;}
+.gp.onder{top:26px;} .gp.onder .stip{margin-bottom:5px;}
+.tijd.speelt .loop{animation:loop 2s linear both;}
+.tijd.speelt .gp{animation:goal-op .45s var(--veer) both; animation-delay:var(--t);}
+@keyframes loop{0%{opacity:.5; transform:scaleX(0);} 92%{opacity:.5; transform:scaleX(1);} 100%{opacity:0; transform:scaleX(1);}}
+@keyframes goal-op{0%{opacity:0; transform:translateX(-50%) scale(.3);} 60%{opacity:1; transform:translateX(-50%) scale(1.2);} 100%{opacity:1; transform:translateX(-50%);}}
+
+.drietal{display:grid; grid-auto-flow:column; grid-auto-columns:minmax(0,1fr);
+  border-top:0.5px solid var(--separator); margin-top:8px;}
+.drietal > div{padding:10px 12px; border-right:0.5px solid var(--separator); min-width:0;}
+.drietal > div:last-child{border-right:0;}
+.drietal .l{display:block; font-size:11px; color:var(--content-2);}
+.drietal .w{display:block; font-size:13px; font-weight:600; line-height:1.25; margin-top:1px; overflow-wrap:break-word;}
+.drietal .s{display:block; font-size:11px; color:var(--accent); font-weight:600; margin-top:1px;}
+.nieuw-kop{padding:14px 16px 2px; border-top:0.5px solid var(--separator); font-size:12px; font-weight:600;
+  letter-spacing:0.06em; text-transform:uppercase; color:var(--content-2);}
 
 .record{display:flex; align-items:center; gap:12px; padding:10px 16px; min-height:52px;
   color:inherit; text-decoration:none;}
@@ -135,6 +170,7 @@ main.binnen > *{animation:opkomen .55s cubic-bezier(.2,.8,.2,1) both;
 <script src="app-data.js"></script>
 <script src="speler-data.js"></script>
 <script src="groundhop.js"></script>
+<script src="nieuwtjes.js"></script>
 <script>
 const app = document.getElementById('app');
 tabbalk('home');
@@ -160,22 +196,216 @@ function verzameling(){
   </section>`;
 }
 
+/* De nieuwtjes worden één keer uitgerekend, en alleen als iets ze vraagt. */
+let _nieuws;
+const nieuws = () => _nieuws ||= Nieuwtjes.bereken(APP, SPELERS);
+
+function wanneer(iso){
+  const dagen = Math.round((new Date(new Date().toDateString()) - new Date(iso + 'T00:00:00')) / 864e5);
+  return dagen === 0 ? 'vandaag' : dagen === 1 ? 'gisteren' : dagen === 2 ? 'eergisteren'
+       : dagen > 2 && dagen < 7 ? `${dagen} dagen geleden` : '';
+}
+
+/* De achternaam, met tussenvoegsel: 'Luuk de Jong' wordt 'de Jong'. */
+function achternaam(naam){
+  const w = String(naam || '?').split(' ');
+  let i = w.length - 1;
+  while (i > 0 && /^[a-z]/.test(w[i - 1])) i--;
+  return w.slice(i).join(' ');
+}
+
+/* De goals op een lijn van 0 tot 90 minuten (120 na verlenging). Een naam
+   past alleen als de vorige goal aan die kant ver genoeg weg is; anders staat
+   alleen de minuut erbij, of niets. */
+function goalLijn(m){
+  const goals = m.goals.filter(g => g.min != null);
+  if (!goals.length) return '';
+  const h = club(m.hid);
+  const eind = Math.max(...goals.map(g => g.min)) > 95 ? 120 : 90;
+  const vorige = {boven: -99, onder: -99};
+  let thuis = 0, uit = 0;
+  const punten = goals.map(g => {
+    const kant = g.team === h.name ? 'boven' : 'onder';
+    if (kant === 'boven') thuis++; else uit++;
+    const x = Math.min(100, (Math.min(g.min, eind) + Math.min(g.add || 0, 5) * 0.2) / eind * 100);
+    const min = `${g.min}${g.add ? '+' + g.add : ''}'`;
+    const gat = x - vorige[kant];
+    const label = gat >= 24 ? `${esc(achternaam(g.p))} ${min}` : gat >= 9 ? min : '';
+    if (label) vorige[kant] = x;
+    const plek = x < 10 ? ' links' : x > 90 ? ' rechts' : '';
+    const stip = '<span class="stip"></span>', tekst = label ? `<b>${label}</b>` : '';
+    return `<div class="gp ${kant}${plek}" style="left:${x.toFixed(1)}%;--t:${(x / 50).toFixed(2)}s"
+      data-stand="${thuis}–${uit}">${kant === 'boven' ? tekst + stip : stip + tekst}</div>`;
+  }).join('');
+  const rust = `<div class="rustlijn" style="left:${(45 / eind * 100).toFixed(1)}%"></div>`
+    + (eind === 120 ? '<div class="rustlijn" style="left:75%"></div>' : '');
+  const lezen = goals.map(g => `${g.p} ${g.min}e minuut`).join(', ');
+  return `<div class="tijd" role="img" aria-label="Goals: ${esc(lezen)}">
+    <div class="lijn"></div><div class="loop"></div>${rust}${punten}</div>`;
+}
+
 function laatste(){
   const m = APP.matches[0], h = club(m.hid), a = club(m.aid);
   const v = m.venue ? stadion(m.venue) : null;
   const bezoek = m.venue ? APP.matches.filter(x => x.venue === m.venue).length : 0;
+  const ronde = m.rn && !/^\d+$/.test(m.rn) ? ` · ${esc(m.rn)}` : '';
+  const drie = [
+    v ? `<div><span class="l">Stadion</span><span class="w">${esc(v.name)}</span>
+         <span class="s">${bezoek === 1 ? 'nieuwe ground' : bezoek + 'e bezoek'}</span></div>` : '',
+    m.att ? `<div><span class="l">Publiek</span><span class="w num">${getal(m.att)}</span></div>` : '',
+    m.nat ? `<div><span class="l">Op het veld</span><span class="w">${m.nat} landen</span></div>` : '',
+  ].filter(Boolean);
+  const {zinnen} = nieuws().van(m.id);
   return `
-  <section class="card">
-    <div class="card-head"><h2>Laatste duel</h2></div>
+  <section class="card" id="laatste">
+    <div class="card-head"><h2>Laatste duel</h2><h2 class="wanneer">${wanneer(m.date)}</h2></div>
     <a class="laatste" href="${wedstrijdHref(m.id)}">
       <div class="laatste-crests">${logo(h.crest, h.name)}${logo(a.crest, a.name)}
-        <span class="result">${m.hs}–${m.as}</span></div>
+        <span class="result"><span class="laatste-uitslag">${m.hs ?? '–'}–${m.as ?? '–'}</span>${
+          m.ht ? `<small>rust ${m.ht[0]}–${m.ht[1]}</small>` : ''}</span></div>
       <div class="teams">${esc(h.name)} – ${esc(a.name)}</div>
-      <div class="duel-meta">${datum(m.date, true)} · ${esc(comp(m.t))}</div>
+      <div class="duel-meta">${datum(m.date, true)} · ${esc(comp(m.t))}${ronde}</div>
     </a>
-    <div class="context">Je <b>${APP.totals.matches}e</b> duel${v
-      ? ` en je <b>${bezoek}e</b> bezoek aan ${esc(v.name)}` : ''}.</div>
+    ${goalLijn(m)}
+    ${drie.length ? `<div class="drietal">${drie.join('')}</div>` : ''}
+    ${zinnen.length ? `<div class="nieuw-kop">Nieuw voor jou</div>
+      ${zinnen.slice(0, 3).map(x => Nieuwtjes.rij(x)).join('')}` : ''}
+    <a class="meer-knop" href="${wedstrijdHref(m.id)}">Alles over dit duel</a>
   </section>`;
+}
+
+/* Speelt de goals van het laatste duel één keer af: de lijn loopt van 0 naar
+   90 minuten, elke goal springt op zijn minuut, en de stand loopt mee. */
+function speelTijdlijn(){
+  const m = APP.matches[0];
+  let gespeeld = null;
+  try { gespeeld = localStorage.getItem('gh-tijdlijn'); localStorage.setItem('gh-tijdlijn', String(m.id)); } catch {}
+  const lijn = document.querySelector('#laatste .tijd');
+  if (!lijn || RUSTIG || gespeeld === String(m.id)) return;
+  const stand = document.querySelector('#laatste .laatste-uitslag');
+  const eind = stand.textContent;
+  stand.textContent = '0–0';
+  lijn.classList.add('speelt');
+  lijn.querySelectorAll('.gp').forEach(gp => setTimeout(() => {
+    stand.textContent = gp.dataset.stand;
+  }, parseFloat(gp.style.getPropertyValue('--t')) * 1000 + 150));
+  setTimeout(() => { stand.textContent = eind; }, 2300);
+}
+
+/* ── Pop-up bij een nieuw duel ──────────────────────────────────────────
+   Elk apparaat onthoudt welke duels het al liet zien. Staat er een duel in
+   de data dat dit apparaat nog niet kende, dan schuift deze pop-up omhoog.
+   Op een nieuw apparaat komt er geen pop-up voor alles wat er al is.
+   index.html#nieuw toont hem voor je laatste duel, #nieuw=3 voor de laatste
+   drie. */
+const BEKEND = 'gh-bekend';
+function nieuweDuels(){
+  const gevraagd = param('nieuw');
+  if (gevraagd !== null) return APP.matches.slice(0, Math.max(1, Math.min(20, Number(gevraagd) || 1)));
+  let bekend, ids;
+  try { bekend = localStorage.getItem(BEKEND); ids = new Set(JSON.parse(bekend) || []); } catch { return []; }
+  if (bekend === null){ onthoudDuels(); return []; }
+  return APP.matches.filter(m => !ids.has(m.id));
+}
+function onthoudDuels(){
+  try { localStorage.setItem(BEKEND, JSON.stringify(APP.matches.map(m => m.id))); } catch {}
+}
+
+function popUp(duels){
+  const R = nieuws();
+  const ids = duels.map(m => m.id);
+  const een = duels.length === 1, m = duels[0];
+  const {zinnen, feitjes} = een ? R.van(m.id) : {zinnen: R.samen(ids), feitjes: []};
+  const V = R.verschil(ids);
+  const cellen = [['duels', 'duels'], ...(V.grounds.bij ? [['grounds', 'grounds']] : []),
+    ...(V.clubs.bij ? [['clubs', 'clubs']] : []), ['goals', 'goals gezien'], ['spelers', 'spelers']].slice(0, 3);
+  const duelNaam = id => { const x = wedstrijd(id); return `${esc(club(x.hid).name)} – ${esc(club(x.aid).name)}`; };
+  const rijen = zinnen.slice(0, 5).map((x, i) =>
+    Nieuwtjes.rij(x, {metDuel: een ? null : duelNaam(x.duel)}).replace('class="nw"', `class="nw" style="--i:${i}"`));
+  const h = club(m.hid), a = club(m.aid);
+  const kop = een ? `
+      <a class="bord" href="${wedstrijdHref(m.id)}">
+        <span class="bord-kant">${logo(h.crest, h.name)}${esc(h.name)}</span>
+        <span class="bord-uitslag">${m.hs ?? '–'}–${m.as ?? '–'}${m.ht ? `<span class="bord-rust">rust ${m.ht[0]}–${m.ht[1]}</span>` : ''}</span>
+        <span class="bord-kant">${logo(a.crest, a.name)}${esc(a.name)}</span>
+      </a>
+      <div class="bord-meta">${datum(m.date, true)} · ${esc(comp(m.t))}</div>`
+    : `<section class="card">${duels.slice(0, 4).map(duelLink).join('')}${duels.length > 4
+        ? `<div class="note">En nog ${duels.length - 4} ${duels.length - 4 === 1 ? 'duel' : 'duels'}.</div>` : ''}</section>`;
+  const scrim = document.createElement('div');
+  scrim.className = 'blad-scrim';
+  const blad = document.createElement('section');
+  blad.className = 'blad';
+  blad.setAttribute('role', 'dialog');
+  blad.setAttribute('aria-modal', 'true');
+  blad.setAttribute('aria-labelledby', 'blad-titel');
+  blad.tabIndex = -1;
+  blad.innerHTML = `
+    <div class="blad-greep" aria-hidden="true"></div>
+    <div class="blad-rol">
+      <div class="blad-kop"><span class="blad-label" id="blad-titel">${een ? 'Nieuw duel toegevoegd'
+        : `${duels.length} nieuwe duels`}</span>
+        <button type="button" class="blad-sluit" aria-label="Sluiten">×</button></div>
+      ${kop}
+      <section class="card"><div class="tally">${cellen.map(([k, l]) => `
+        <div><b>${rol(V[k].nu - V[k].bij, V[k].nu)}</b><span>${l}${V[k].bij
+          ? ` <i class="plus">+${getal(V[k].bij)}</i>` : ''}</span></div>`).join('')}</div></section>
+      ${rijen.length || feitjes.length ? `<section class="card">
+        ${rijen.length ? `<div class="card-head"><h2>Wat is er nieuw</h2>${zinnen.length > 5
+          ? `<h2>5 van ${zinnen.length}</h2>` : ''}</div><div style="height:4px"></div>${rijen.join('')}` : ''}
+        ${Nieuwtjes.feitjes(feitjes.slice(0, 5))}
+      </section>` : ''}
+    </div>
+    <div class="blad-knop">${een
+      ? `<a class="knop-vol" href="${wedstrijdHref(m.id)}">Bekijk het duel</a>`
+      : `<a class="knop-vol" href="nieuwtjes.html">Alle nieuwtjes</a>`}</div>`;
+  const eerder = document.activeElement;
+  document.body.append(scrim, blad);
+  blad.focus({preventScroll: true});
+
+  let dicht = false;
+  const sluit = () => {
+    if (dicht) return;
+    dicht = true;
+    onthoudDuels();
+    if (location.hash) history.replaceState(null, '', location.pathname);
+    blad.style.transform = '';
+    blad.classList.add('weg'); scrim.classList.add('weg');
+    document.removeEventListener('keydown', toets);
+    setTimeout(() => { blad.remove(); scrim.remove(); eerder?.focus?.({preventScroll: true}); speelTijdlijn(); },
+      RUSTIG ? 0 : 260);
+  };
+  const toets = e => {
+    if (e.key === 'Escape') sluit();
+    if (e.key === 'Tab'){   // de focus blijft in de pop-up
+      const knoppen = [...blad.querySelectorAll('a[href], button')];
+      const i = knoppen.indexOf(document.activeElement);
+      if (e.shiftKey && i <= 0){ e.preventDefault(); knoppen.at(-1).focus(); }
+      else if (!e.shiftKey && i === knoppen.length - 1){ e.preventDefault(); knoppen[0].focus(); }
+    }
+  };
+  document.addEventListener('keydown', toets);
+  scrim.addEventListener('click', sluit);
+  blad.querySelector('.blad-sluit').addEventListener('click', sluit);
+  // Een link in de pop-up: het duel is gezien.
+  blad.addEventListener('click', e => { if (e.target.closest('a[href]')) onthoudDuels(); });
+  // Omlaag vegen sluit hem, als de inhoud bovenaan staat.
+  const rolvak = blad.querySelector('.blad-rol');
+  let y0 = null, dy = 0;
+  blad.addEventListener('touchstart', e => {
+    y0 = rolvak.scrollTop <= 0 ? e.touches[0].clientY : null; dy = 0;
+  }, {passive: true});
+  blad.addEventListener('touchmove', e => {
+    if (y0 == null) return;
+    dy = Math.max(0, e.touches[0].clientY - y0);
+    if (dy > 0){ blad.style.animation = 'none'; blad.style.transform = `translate(-50%, ${dy}px)`; }
+  }, {passive: true});
+  blad.addEventListener('touchend', () => {
+    if (y0 == null) return;
+    y0 = null;
+    if (dy > 90) sluit();
+    else { blad.style.transition = 'transform .3s var(--veer)'; blad.style.transform = 'translate(-50%, 0)'; }
+  });
 }
 
 function reeks(){
@@ -291,6 +521,7 @@ function recent(){
 
 function render(){
   app.innerHTML = verzameling() + laatste() + collecties() + reeks() + vaakst('clubs') + records() + recent();
+  trekOmTeVerversen();
   app.addEventListener('click', e => {
     const b = e.target.closest('[data-top]');
     if (b) document.getElementById('vaakst').outerHTML = vaakst(b.dataset.top);
@@ -322,7 +553,7 @@ function hoeLang(ms){
 
 const samenvatting = () => `${getal(APP.totals.matches)} duels · ${getal(APP.totals.venues)} grounds`;
 
-let introLoopt = false;
+let introLoopt = false, naIntro = null;
 function intro(tekst){
   if (rustig || introLoopt) return;
   introLoopt = true;
@@ -352,7 +583,7 @@ function intro(tekst){
     if (el.classList.contains('weg')) return;
     el.classList.add('weg');
     binnenkomst();
-    setTimeout(() => { el.remove(); introLoopt = false; }, 450);
+    setTimeout(() => { el.remove(); introLoopt = false; naIntro?.(); naIntro = null; }, 450);
   };
   el.addEventListener('click', klaar);
   setTimeout(klaar, 2750);
@@ -379,6 +610,15 @@ function welkom(vorig){
 if (window.APP && window.SPELERS){
   render();
   welkom(VORIG_GEBRUIK);
+  // Na de intro (als die speelt) de pop-up voor nieuwe duels, of anders de
+  // tijdlijn van het laatste duel. Na verversen zonder nieuws: een melding.
+  const nieuw = nieuweDuels();
+  const daarna = () => {
+    if (nieuw.length) popUp(nieuw);
+    else { speelTijdlijn(); if (VERVERST) toonMelding('Alles is bij'); }
+  };
+  if (introLoopt) naIntro = daarna; else setTimeout(daarna, RUSTIG ? 0 : 350);
+  window.addEventListener('hashchange', () => { if (param('nieuw') !== null) popUp(nieuweDuels()); });
   // Een app op het beginscherm blijft soms dagen in het geheugen staan en
   // laadt dan niet opnieuw; terugkomen telt dan ook.
   document.addEventListener('visibilitychange', () => { if (!document.hidden) welkom(laatstGebruikt()); });
