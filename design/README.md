@@ -160,7 +160,7 @@ python3 server.py                  # daarna localhost:4000/app/
 
 | Tab | Scherm | Wat |
 |---|---|---|
-| Home | `index.html` | Je verzameling in tellers, het laatste duel, duels per seizoen, vaakst gezien, records. Na een uur weg, of bij je eerste bezoek op een apparaat, eerst een korte intro (tik op het logo om hem nog eens te zien) |
+| Home | `index.html` | Je verzameling in tellers, het laatste duel (goals op een tijdlijn, stadion, publiek, landen op het veld, en wat het je opleverde), duels per seizoen, vaakst gezien, records. Na een uur weg, of bij je eerste bezoek op een apparaat, eerst een korte intro (tik op het logo om hem nog eens te zien). Staat er een duel in de data dat dit apparaat nog niet kende, dan daarna de pop-up *Nieuw duel toegevoegd*; `#nieuw` toont hem voor je laatste duel, `#nieuw=3` voor de laatste drie |
 | Duels | `duels.html` | Alle duels per seizoen, bijzondere duels en toplijsten (Stats: goals, kaarten, spelers, publiek), zoeken op club, stadion of competitie |
 | | `wedstrijddetail.html#id=…` | Uitslag, jouw tellers, goals, opstelling, vorige en volgende |
 | Grounds | `grounds.html` | Kaart en lijst per land |
@@ -171,6 +171,7 @@ python3 server.py                  # daarna localhost:4000/app/
 | | `club.html#id=…` | Hoe vaak, winst/gelijk/verlies als jij er was, spelers, topscorers, grounds, tegenstanders |
 | | `competitie.html#t=…` | Jouw duels in een competitie: seizoenen, clubs, topscorers, grounds, records, scheidsrechters |
 | | `toevoegen.html` | Club zoeken, seizoen kiezen, duels aanvinken; `#club=…` opent meteen het speelschema |
+| | `nieuwtjes.html` | Het logboek: elk nieuwtje per duel, het nieuwste boven, met een filter per soort; bovenaan de volgende mijlpalen |
 
 Gedeeld in `groundhop.css` en `groundhop.js`: tokens, de tabbalk, de terugknop
 (die het vorige scherm noemt), de duelrij, de seizoensreeks en de ranglijst.
@@ -185,6 +186,66 @@ speler en een stadion. Het clubscherm houdt de tab actief waar je vandaan kwam.
 
 Winst, gelijk en verlies staan in de gewone tekstkleur: een uitslag is geen
 geschiedenis van jou, dus geen groen.
+
+## Nieuwtjes
+
+Wat een duel jou opleverde, in gewone zinnen: *Goal nr. 700 die je zag*,
+*Voor het eerst een speler uit Gabon: Yannis M'Bemba*, *PSV verloor voor het
+eerst in 9 duels met jou erbij*. `app/nieuwtjes.js` rekent ze uit, in de
+browser, uit `app-data.js` en `speler-data.js`; er komt geen veld in de
+export bij.
+
+- **Altijd opnieuw, op datum.** Een nieuwtje is het verschil tussen vóór en na
+  een duel. Voeg je een duel uit 2019 toe, dan krijgt dat duel de nieuwtjes van
+  toen en kan een mijlpaal naar een ander duel schuiven. Er wordt niets
+  bewaard, dus het klopt altijd met de data.
+- **42 soorten, drie gewichten.** *Groot* is zeldzaam en gaat altijd voor
+  (mijlpalen, records, nieuwe ground of land, nieuwe nummer 1 van je
+  topscorers), *Gewoon* krijgt een zin als er plek is, *Klein* is een feitje
+  onderaan (publiek, nieuwe spelers, landen op het veld). Binnen een gewicht
+  gaat het zeldzaamste voor, gemeten aan je eigen duels. Scheidsrechters
+  doen bewust niet mee.
+- **Drempels** voor mijlpalen: duels 1, 10, 25, 50 en daarna elke 25; goals
+  elke 100; één speler 25, 50, 75, 100, 150; goals van één speler 10, 25, 50,
+  75, 100; één ground 10, 25, 50, 75, 100, 125, 150; één club 10, 25, 50, 100,
+  125, 150, 200. Ze staan bovenaan `nieuwtjes.js`.
+- **Afstand** wordt hemelsbreed gemeten vanaf het dorpshart van Grubbenvorst.
+- **Een nieuw land** telt alleen wie echt speelde; de bank telt niet. Daardoor
+  kan de meter bij een land net lager staan dan het album, dat de bank wel telt.
+- **Een collectiestap** staat in de zin van de nieuwe club, ground of het
+  nieuwe land, met de meter erbij. Het laatste vakje is een eigen nieuwtje.
+
+Waar ze staan: in de pop-up (hooguit vijf zinnen en vijf feitjes), op Home bij
+het laatste duel (drie), op elke wedstrijd onder het scorebord (alles), en in
+het logboek (Meer › Nieuwtjes). Elk apparaat onthoudt welke duels het al liet
+zien (`gh-bekend` in localStorage); op een nieuw apparaat komt er geen pop-up
+voor alles wat er al was.
+
+```bash
+node --test test/nieuwtjes.test.mjs     # bouw eerst de data voor de laatste toets
+```
+
+## Beweging
+
+De regels: dieper de app in schuift van rechts naar binnen, terug schuift naar
+rechts weg, een andere tab vervaagt op zijn plek. Een overgang duurt 300 tot
+350 ms; alleen een moment voor jou (een nieuw duel) mag rond een seconde duren.
+Binnenkomen gebruikt de veer van de intro (`--veer`), weggaan versnelt. Met
+*Verminder beweging* aan staat elk eindbeeld er meteen en wordt een overgang
+een korte vervaging.
+
+| Wat | Waar | Hoe |
+|---|---|---|
+| Schermovergangen, logo's en uitslag vliegen van de rij naar het scorebord | overal | `app/overgang.js` in de `<head>` zet de richting; `@view-transition` in `groundhop.css`. Safari vanaf iOS 18.2 en Chrome; elders opent het scherm direct |
+| Het groene vlak schuift naar de nieuwe tab, het icoon hopt | tabbalk | `.tab-lens` met een eigen view-transition-name |
+| Het witte vlak schuift naar je keuze | elke keuzeschakelaar en chiprij | `groundhop.js`, na het opnieuw tekenen |
+| Balken, ranglijsten en meters groeien als ze in beeld komen | overal | CSS, gepauzeerd tot een IntersectionObserver ze ziet |
+| Tellers rollen naar hun nieuwe stand | pop-up, album | `rol(van, naar)` in `groundhop.js` |
+| Het blad veert omhoog, zinnen komen een voor een, de bal hopt | pop-up | CSS in `groundhop.css` |
+| De goals spelen in twee seconden af, de stand loopt mee | Home › Laatste duel | één keer per nieuw duel |
+| Trek omlaag om te verversen, met de bal uit de intro | de vijf tabschermen | alleen met aanraken; daarna een melding of de pop-up |
+| De kaart vult zich in de volgorde van je eerste bezoeken | Grounds | alleen na een nieuwe ground |
+| Een nieuw vakje draait om, met een glans | Album | alleen vakjes die sinds je vorige bezoek nieuw zijn |
 
 ## Wedstrijd toevoegen
 
@@ -240,8 +301,11 @@ python3 app/build_app_data.py     # schrijft app/app-data.js en app/speler-data.
   wachtwoord nodig op de live site. Alternatief: het ophalen helemaal in
   GitHub Actions, maar het is onzeker of Transfermarkt die servers toelaat.
 - **Zelf invullen** van een wedstrijd die onder geen club valt.
-- **Mijlpalen** (Meer → Mijlpalen). Een moment met een datum en een wedstrijd,
-  geen album om vol te krijgen. Voorstel:
+- **Mijlpalen**: gebouwd als Meer › Nieuwtjes (zie Nieuwtjes hierboven), met
+  afstanden vanaf Grubbenvorst. Nog niet gebouwd uit het oorspronkelijke
+  voorstel: eerste ground buiten Europa, double, hattrick-weekend, record
+  nieuwe grounds in een seizoen, elk seizoen een nieuwe ground. Het voorstel
+  was:
   - *Tellers met drempels*: duels (1/50/100/150/200/250/500), grounds
     (1/10/25/50/75/100), landen (5/10/15/20), goals gezien (100/250/500/750/1000),
     100 bezoeken aan één ground.
@@ -252,7 +316,8 @@ python3 app/build_app_data.py     # schrijft app/app-data.js en app/speler-data.
     0–0, 7+ goals, rode kaart, strafschoppenserie.
   - Scherm: bovenaan 'Volgende' (2–3 met een balk: '200e duel · nog 13'), daaronder
     een tijdlijn; op Home één regel; een melding na toevoegen.
-  - Open vraag: afstanden vanaf het Philips Stadion of vanaf thuis?
+  - Open vraag: afstanden vanaf het Philips Stadion of vanaf thuis? Besloten:
+    vanaf Grubbenvorst.
 
 ## Figma-opzet
 

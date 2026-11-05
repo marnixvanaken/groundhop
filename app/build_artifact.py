@@ -27,7 +27,8 @@ FONTS = '''<link rel="preconnect" href="https://fonts.googleapis.com">
 
 
 SCHERMEN = ["duels.html", "grounds.html", "spelers.html", "meer.html",
-            "wedstrijddetail.html", "stadiondetail.html", "speler.html", "club.html", "competitie.html", "collecties.html", "album.html", "toevoegen.html"]
+            "wedstrijddetail.html", "stadiondetail.html", "speler.html", "club.html", "competitie.html", "collecties.html", "album.html", "toevoegen.html",
+            "nieuwtjes.html"]
 
 
 def themas(css):
@@ -105,7 +106,7 @@ def main():
             f"<style>\n{gedeeld}\n\n{eigen}\n</style>\n</head>\n<body>\n{body}\n</body>\n</html>\n",
             encoding="utf-8")
 
-    for naam in ["groundhop.js", "app-data.js", "speler-data.js"]:
+    for naam in ["groundhop.js", "nieuwtjes.js", "overgang.js", "app-data.js", "speler-data.js"]:
         shutil.copyfile(DEMO / naam, doel / naam)
 
     # Alle beeldmappen mee, niet alleen de clublogo's: zonder de portretten

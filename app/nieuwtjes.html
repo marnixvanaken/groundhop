@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#edeff2" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0e1013" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="GroundHop">
+<title>Nieuwtjes — GroundHop</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
+<link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
+<style>
+/* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
+
+   Het logboek: alles wat de pop-up ooit zei, per duel, het nieuwste boven.
+   Daarboven de mijlpalen die het dichtst bij zijn. Zo raak je een pop-up die
+   je wegtikte niet kwijt. */
+.volgend{display:block; padding:10px 16px 12px; color:inherit; text-decoration:none;}
+.volgend + .volgend{border-top:0.5px solid var(--separator);}
+.volgend-kop{display:flex; justify-content:space-between; align-items:baseline; gap:12px; margin-bottom:7px;}
+.volgend-kop span:first-child{font-size:15px; font-weight:500; min-width:0;}
+.volgend-kop span:last-child{font-size:13px; color:var(--content-2); white-space:nowrap;}
+.volgend-kop b{font-family:var(--display); color:var(--content); font-weight:700;}
+.dag{display:flex; align-items:center; gap:8px; padding:6px 4px 0; color:var(--content-2);
+  font-size:12px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; text-decoration:none;}
+.dag .duel-crests{display:flex; gap:1px; flex:none;}
+.dag span:last-child{min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.uitleg{font-size:13px; color:var(--content-2); padding:0 4px; line-height:1.45;}
+.uitleg a{color:var(--accent);}
+.leeg{padding:16px; font-size:15px; color:var(--content-2);}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar"></div>
+
+<main id="app"></main>
+
+<nav class="tabbar" aria-label="Hoofdnavigatie"></nav>
+
+<script src="app-data.js"></script>
+<script src="speler-data.js"></script>
+<script src="groundhop.js"></script>
+<script src="nieuwtjes.js"></script>
+<script>
+const app = document.getElementById('app');
+tabbalk('meer', true);
+document.getElementById('bar').innerHTML = terugknop('Meer', 'meer.html') + '<h1>Nieuwtjes</h1>';
+
+const FILTERS = [['alles', 'Alles'], ['mijlpalen', 'Mijlpalen'], ['spelers', 'Spelers'],
+                 ['grounds', 'Grounds'], ['landen', 'Landen'], ['clubs', 'Clubs'], ['wedstrijden', 'Wedstrijden']];
+const STAP = 25;
+let FILTER = 'alles', TONEN = STAP;
+let R, LOG;
+
+function volgende(){
+  const lijst = R.volgende(4);
+  return `
+  <section class="card">
+    <div class="card-head"><h2>Volgende mijlpalen</h2></div>
+    <div style="height:4px"></div>
+    ${lijst.map(x => `
+      <a class="volgend" href="${x.href}">
+        <div class="volgend-kop"><span>${x.tekst}</span><span>nog <b>${getal(x.nog)}</b></span></div>
+        <div class="meter" role="img" aria-label="nog ${x.nog}"><i style="width:${Math.round(x.voortgang * 100)}%"></i></div>
+      </a>`).join('')}
+  </section>`;
+}
+
+function groep({m, zinnen}){
+  const h = club(m.hid), a = club(m.aid);
+  return `
+  <a class="dag" href="${wedstrijdHref(m.id)}">
+    <span class="duel-crests">${logo(h.crest, h.name, true)}${logo(a.crest, a.name, true)}</span>
+    <span>${datum(m.date)} · ${esc(h.name)} ${m.hs ?? ''}–${m.as ?? ''} ${esc(a.name)}</span>
+  </a>
+  <section class="card">${zinnen.map(x => Nieuwtjes.rij(x)).join('')}</section>`;
+}
+
+function render(){
+  const passend = LOG.map(x => ({m: x.m, zinnen: FILTER === 'alles' ? x.zinnen
+    : x.zinnen.filter(z => z.cats.includes(FILTER))})).filter(x => x.zinnen.length);
+  const totaal = passend.reduce((n, x) => n + x.zinnen.length, 0);
+  const rij = document.querySelector('.chips');
+  const vorige = rij ? rij.scrollLeft : 0;
+  app.innerHTML = `
+    <div class="chips klein" role="group" aria-label="Soort">
+      ${FILTERS.map(([k, l]) => `<button type="button" data-f="${k}" aria-pressed="${k === FILTER}">${l}</button>`).join('')}
+    </div>
+    ${FILTER === 'alles' || FILTER === 'mijlpalen' ? volgende() : ''}
+    <p class="uitleg">${getal(totaal)} ${totaal === 1 ? 'nieuwtje' : 'nieuwtjes'} uit ${getal(passend.length)}
+      ${passend.length === 1 ? 'duel' : 'duels'}, het nieuwste boven.
+      <a href="index.html#nieuw">Toon de pop-up van je laatste duel</a>.</p>
+    ${passend.length ? passend.slice(0, TONEN).map(groep).join('') : '<section class="card"><div class="leeg">Nog niets in deze soort.</div></section>'}
+    ${passend.length > TONEN ? `<section class="card"><button type="button" class="meer-knop" id="meer"
+      style="border-top:0">Toon ${Math.min(STAP, passend.length - TONEN)} duels meer</button></section>` : ''}`;
+  schuifrij(document.querySelector('.chips'), vorige);
+}
+
+app.addEventListener('click', e => {
+  const f = e.target.closest('[data-f]');
+  if (f && f.dataset.f !== FILTER){ FILTER = f.dataset.f; TONEN = STAP; render(); }
+  if (e.target.closest('#meer')){ TONEN += STAP; render(); }
+});
+
+if (window.APP && window.SPELERS && APP.matches.length){
+  R = Nieuwtjes.bereken(APP, SPELERS);
+  LOG = R.logboek();
+  render();
+} else app.innerHTML = zonderData('nieuwtjes.html');
+</script>
+</body>
+</html>

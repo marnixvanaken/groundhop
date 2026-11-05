@@ -175,7 +175,10 @@ function tabbalk(actief, vanHerkomst){
     if (vanHerkomst) actief = sessionStorage.getItem('gh-tab') || actief;
     else sessionStorage.setItem('gh-tab', actief);
   } catch {}
-  document.querySelector('.tabbar').innerHTML = TABS.map(([k, href, label, svg]) =>
+  const i = TABS.findIndex(([k]) => k === actief);
+  document.querySelector('.tabbar').innerHTML =
+    (i >= 0 ? `<span class="tab-lens" style="--i:${i}" aria-hidden="true"></span>` : '')
+    + TABS.map(([k, href, label, svg]) =>
     `<a href="${href}"${k === actief ? ' aria-current="page"' : ''}>
        <svg viewBox="0 0 24 24" aria-hidden="true">${svg}</svg>${label}</a>`).join('');
 }
@@ -188,7 +191,7 @@ const TITELS = {
   'spelers.html': 'Spelers', 'meer.html': 'Meer', 'wedstrijddetail.html': 'Wedstrijd',
   'stadiondetail.html': 'Stadion', 'speler.html': 'Speler', 'toevoegen.html': 'Toevoegen',
   'club.html': 'Club', 'competitie.html': 'Competitie',
-  'collecties.html': 'Collecties', 'album.html': 'Album',
+  'collecties.html': 'Collecties', 'album.html': 'Album', 'nieuwtjes.html': 'Nieuwtjes',
 };
 
 function vorigeScherm(){
@@ -241,11 +244,11 @@ function seizoensreeks(datums){
     <div class="chart">
       <div class="bars" role="img"
            aria-label="Duels per seizoen: ${rijen.map(b => `${b.name} ${b.value}`).join(', ')}">
-        ${rijen.map(b => `
-          <div title="${b.name}: ${b.value} duels">
+        ${rijen.map((b, i) => `
+          <div title="${b.name}: ${b.value} duels" style="--i:${i}">
             <div class="bar-top num">${b.value === max ? b.value : ''}</div>
             <div class="bar-fill${b.value ? '' : ' leeg'}"
-                 style="height:${b.value ? Math.max(4, b.value / max * 100) : 2}%"></div>
+                 style="height:${b.value ? Math.max(4, b.value / max * 100) : 2}%;--i:${i}"></div>
           </div>`).join('')}
       </div>
       <div class="bar-axis">${rijen.map((b, i) => `<span>${toonLabel(i) ? b.name : ''}</span>`).join('')}</div>
@@ -354,3 +357,155 @@ function gebruiktNu(){
 const VORIG_GEBRUIK = laatstGebruikt();
 gebruiktNu();
 document.addEventListener('visibilitychange', () => { if (document.hidden) gebruiktNu(); });
+
+
+/* ── Beweging ────────────────────────────────────────────────────────────
+   Wat in groundhop.css niet alleen kan: een teller die van het ene getal
+   naar het andere rolt, het vlak van een keuzeschakelaar dat meeschuift,
+   balken die pas groeien als ze in beeld komen, en verversen door Home
+   omlaag te trekken. Met 'Verminder beweging' aan doet dit allemaal niets. */
+const RUSTIG = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* Een getal dat van van naar naar rolt. Elk cijfer dat verandert wordt een
+   strookje van het oude naar het nieuwe cijfer, altijd omhoog, zoals een
+   teller in een stadion; cijfers die gelijk blijven staan stil. */
+function rol(van, naar){
+  const a = getal(van), b = getal(naar);
+  const lengte = Math.max(a.length, b.length);
+  const oud = a.padStart(lengte, ' '), nieuw = b.padStart(lengte, ' ');
+  return `<span class="rol" aria-label="${b}">${[...nieuw].map((c, i) => {
+    const o = oud[i];
+    if (o === c) return `<span aria-hidden="true">${c}</span>`;
+    let stappen = [o];
+    if (/\d/.test(o) && /\d/.test(c)){
+      for (let d = +o; d !== +c; ) { d = (d + 1) % 10; stappen.push(String(d)); }
+    } else stappen.push(c);
+    return `<span class="cijfer" aria-hidden="true"><i style="--n:${stappen.length - 1}">${
+      stappen.map(x => `<span>${x === ' ' ? '&nbsp;' : x}</span>`).join('')}</i></span>`;
+  }).join('')}</span>`;
+}
+
+/* Een korte melding bovenaan, die vanzelf weer gaat. */
+const VINKJE = '<svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10.5l4 4 8-9"/></svg>';
+function toonMelding(html, ms = 2600){
+  let t = document.querySelector('.gh-toast');
+  if (!t){
+    t = document.createElement('div');
+    t.className = 'gh-toast'; t.setAttribute('role', 'status');
+    document.body.append(t);
+  }
+  t.innerHTML = VINKJE + html;
+  requestAnimationFrame(() => t.classList.add('zien'));
+  clearTimeout(toonMelding.t);
+  toonMelding.t = setTimeout(() => t.classList.remove('zien'), ms);
+}
+
+/* Balken, ranglijsten en meters groeien pas als ze in beeld komen. De klasse
+   'kijkt' op <html> zet ze op pauze tot dan; zonder dit script staat die er
+   niet en groeien ze meteen. */
+if (!RUSTIG && 'IntersectionObserver' in window){
+  document.documentElement.classList.add('kijkt');
+  const kijker = new IntersectionObserver(items => items.forEach(x => {
+    if (x.isIntersecting){ x.target.classList.add('in-beeld'); kijker.unobserve(x.target); }
+  }), {rootMargin: '0px 0px -8% 0px'});
+  const zoek = wortel => wortel.querySelectorAll?.('.chart, .rank, .meter').forEach(el => {
+    if (!el.classList.contains('in-beeld')) kijker.observe(el);
+  });
+  new MutationObserver(lijst => lijst.forEach(m => m.addedNodes.forEach(n => {
+    if (n.nodeType !== 1) return;
+    if (n.matches('.chart, .rank, .meter')) kijker.observe(n);
+    zoek(n);
+  }))).observe(document.documentElement, {childList: true, subtree: true});
+  document.addEventListener('DOMContentLoaded', () => zoek(document));
+  zoek(document);
+}
+
+/* Een keuzeschakelaar wordt bij elke keuze opnieuw getekend. Onthoud waar het
+   witte vlak stond, en laat een los vlak van daar naar de nieuwe keuze
+   schuiven zodra het scherm opnieuw getekend is. */
+const groepSleutel = g => (g.getAttribute('aria-label') || '') + '|'
+  + [...g.querySelectorAll('button')].map(b => b.textContent.trim()).join('|');
+document.addEventListener('click', e => {
+  if (RUSTIG) return;
+  const knop = e.target.closest('.seg button, .chips button');
+  if (!knop) return;
+  const groep = knop.parentElement, oud = groep.querySelector('[aria-pressed="true"]');
+  if (!oud || oud === knop) return;
+  const g = groep.getBoundingClientRect(), o = oud.getBoundingClientRect();
+  const van = {sleutel: groepSleutel(groep), links: o.left - g.left + groep.scrollLeft, breed: o.width};
+  requestAnimationFrame(() => {
+    const nieuw = [...document.querySelectorAll('.seg, .chips')].find(x => groepSleutel(x) === van.sleutel);
+    const keuze = nieuw && nieuw.querySelector('[aria-pressed="true"]');
+    if (!keuze) return;
+    const g2 = nieuw.getBoundingClientRect(), k = keuze.getBoundingClientRect();
+    const links = k.left - g2.left + nieuw.scrollLeft;
+    const pil = document.createElement('i');
+    pil.className = 'seg-pil';
+    pil.style.cssText = `left:${links}px; width:${k.width}px;`;
+    nieuw.classList.add('pil-loopt');
+    nieuw.prepend(pil);
+    const anim = pil.animate([
+      {transform: `translateX(${van.links - links}px)`, width: `${van.breed}px`},
+      {transform: 'none', width: `${k.width}px`},
+    ], {duration: 280, easing: 'cubic-bezier(.2,.8,.2,1)'});
+    const klaar = () => { pil.remove(); nieuw.classList.remove('pil-loopt'); };
+    anim.onfinish = klaar; anim.oncancel = klaar;
+  });
+}, true);
+
+/* ── Verversen ───────────────────────────────────────────────────────────
+   Op het beginscherm heeft de app geen browser om te verversen. Trek een
+   scherm omlaag: de bal uit de intro komt mee, hopt terwijl de pagina
+   opnieuw laadt, en daarna zegt een melding (of op Home de pop-up) wat er
+   nieuw is. */
+const BAL_SVG = `<svg class="gh-bal" viewBox="0 0 20 20" aria-hidden="true"><circle cx="10" cy="10" r="9"/>
+  <path d="M10 6.2 13.61 8.83 12.23 13.07H7.77L6.39 8.83z"/>
+  <path d="M10 6.2V1M13.61 8.83l4.95-1.61M12.23 13.07l3.06 4.21M7.77 13.07l-3.06 4.21M6.39 8.83l-4.95-1.61"/></svg>`;
+let VERVERST = false;
+try {
+  const t = Number(sessionStorage.getItem('gh-ververst'));
+  VERVERST = t > 0 && Date.now() - t < 20000;
+  sessionStorage.removeItem('gh-ververst');
+} catch {}
+
+function trekOmTeVerversen(){
+  const main = document.querySelector('main');
+  if (!main || !('ontouchstart' in window)) return;
+  const bal = document.createElement('div');
+  bal.className = 'ververs';
+  bal.innerHTML = BAL_SVG;
+  document.body.append(bal);
+  const DREMPEL = 72, MAX = 110;
+  let start = null, afstand = 0, bezig = false;
+  const zet = y => {
+    main.style.transform = y ? `translateY(${y}px)` : '';
+    bal.style.opacity = Math.min(1, y / DREMPEL);
+    bal.style.transform = `scale(${0.5 + Math.min(1, y / DREMPEL) / 2}) rotate(${y * 4}deg)`;
+  };
+  main.addEventListener('touchstart', e => {
+    start = !bezig && main.scrollTop <= 0 && e.touches.length === 1 ? e.touches[0].clientY : null;
+    afstand = 0;
+    main.classList.remove('veert');
+  }, {passive: true});
+  main.addEventListener('touchmove', e => {
+    if (start == null) return;
+    const dy = e.touches[0].clientY - start;
+    if (dy <= 0){ zet(0); afstand = 0; return; }
+    e.preventDefault();
+    afstand = Math.min(MAX, dy * 0.5);
+    zet(afstand);
+  }, {passive: false});
+  main.addEventListener('touchend', () => {
+    if (start == null) return;
+    start = null;
+    main.classList.add('veert');
+    if (afstand >= DREMPEL){
+      bezig = true;
+      zet(DREMPEL * 0.8);
+      bal.style.transform = '';
+      bal.classList.add('hopt');
+      try { sessionStorage.setItem('gh-ververst', String(Date.now())); } catch {}
+      setTimeout(() => location.reload(), 650);
+    } else zet(0);
+  });
+}

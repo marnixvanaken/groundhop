@@ -59,8 +59,20 @@
       "destination": "/app/album.html"
     },
     {
+      "source": "/nieuwtjes.html",
+      "destination": "/app/nieuwtjes.html"
+    },
+    {
       "source": "/groundhop.js",
       "destination": "/app/groundhop.js"
+    },
+    {
+      "source": "/nieuwtjes.js",
+      "destination": "/app/nieuwtjes.js"
+    },
+    {
+      "source": "/overgang.js",
+      "destination": "/app/overgang.js"
     },
     {
       "source": "/groundhop.css",

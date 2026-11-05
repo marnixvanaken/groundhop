@@ -13,6 +13,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;600;700;800&display=swap">
 <link rel="stylesheet" href="groundhop.css">
+<script src="overgang.js"></script>
 <style>
 /* Alleen wat dit scherm zelf nodig heeft; de rest staat in groundhop.css.
 
@@ -576,9 +577,9 @@ async function volgOphalen(){
   const s = await api('/api/sync-status');
   if (s?.running){ setTimeout(volgOphalen, 3000); return; }
   if (s?.error) melding(`Ophalen stopte: ${s.error}`, true);
-  else if (s?.live?.ok) melding('Klaar, en live gezet. De site is over een minuut bijgewerkt.', true);
+  else if (s?.live?.ok) melding('Klaar, en live gezet. Op Home zie je wat er nieuw is; de site volgt over een minuut.', true);
   else if (s?.live?.gekoppeld) melding(`Klaar, maar live zetten lukte niet: ${s.live.fout}`, true);
-  else melding('Klaar: je verzameling is bijgewerkt. Koppel GitHub in Meer om het ook live te zetten.', true);
+  else melding('Klaar: op Home zie je wat er nieuw is. Koppel GitHub in Meer om het ook live te zetten.', true);
 }
 
 async function start(){
