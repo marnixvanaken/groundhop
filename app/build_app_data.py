@@ -83,6 +83,31 @@ def crest(team_id):
     return LOGO_URL.get(team_id)
 
 
+# Competitienamen die anders horen dan Transfermarkt ze levert. Op code, zodat
+# het ook geldt voor duels die al in de cache van de sync staan: de oude sync
+# knipte een naam uit de paginatitel af op het koppelteken ("Play-Offs" werd
+# "Offs", "EK-kwalificatie U21" werd "kwalificatie U21"). De rest is hoe je ze
+# zou noemen: Transfermarkt zegt "Premier League Opening Round" voor Malta, en
+# de Tweede Divisie heette dat seizoen naar een sponsor (Jack's League).
+NAAM_OP_CODE = {
+    "PON2": "Play-offs promotie/degradatie",
+    "U21Q": "EK-kwalificatie onder 21",
+    "EURO": "EK",
+    "MT1N": "Maltese Premier League",
+    "NTD": "Tweede Divisie",
+}
+
+
+# Logo's met donkere inkt (donkerblauw, zwart) die op een donkere kaart
+# wegvallen. In de donkere stand keert de app die om: donker wordt licht, een
+# kleur blijft (het oranje van de Europa League, het groen van de Conference
+# League). Met het oog gekozen, op de donkere kaartkleur: een meting van de
+# helderheid zette de Youth League bij de lichte en Malta bij de donkere.
+# Een competitie die hier niet staat, houdt in beide standen haar eigen logo.
+DONKER_LOGO = {"CL", "CLQ", "EL", "ELQ", "UCOL", "19YL", "UNFI", "U21Q",
+               "NL1", "NTD", "NLSC", "FS"}
+
+
 def comp_logo(comp_id):
     """Het competitielogo.
 
@@ -291,7 +316,7 @@ def main():
     namen = collections.defaultdict(collections.Counter)
     for m in matches:
         namen[sleutel(m)][m["tournament"]] += 1
-    naam_van = {k: c.most_common(1)[0][0] for k, c in namen.items()}
+    naam_van = {k: NAAM_OP_CODE.get(k) or c.most_common(1)[0][0] for k, c in namen.items()}
 
     comps = {}
     for m in matches:
@@ -300,6 +325,8 @@ def main():
         c["count"] += 1
     for c in comps.values():
         c["logo"] = comp_logo(c["id"])
+        if c["logo"] and BRON["naam"] != "sofascore" and c["id"] in DONKER_LOGO:
+            c["donker"] = True
     samengevoegd = {k: sorted(c) for k, c in namen.items() if len(c) > 1}
 
     def rondenaam(m):

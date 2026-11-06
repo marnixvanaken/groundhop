@@ -73,12 +73,16 @@ const logo    = (src, naam, mini) =>
 const portret = (src, naam) =>
   beeld(src, 'avatar', 'avatar-fallback', initialen(naam, 2));
 
-const compLogo = src => src
-  ? `<img class="comp-logo" src="${src}" alt="" loading="lazy" onerror="this.remove()">`
+/* donker: een logo met donkere inkt, dat de donkere stand omkeert (groundhop.css). */
+const compLogo = (src, donker) => src
+  ? `<img class="comp-logo${donker ? ' donker' : ''}" src="${src}" alt="" loading="lazy" onerror="this.remove()">`
   : '';
 /* Hetzelfde op naam, voor lijsten die alleen de naam van de competitie kennen
    (een duel, de ranglijst op een club of stadion). */
-const compLogoVan = naam => compLogo((window.APP?.comps || []).find(c => c.name === naam)?.logo);
+function compLogoVan(naam){
+  const c = (window.APP?.comps || []).find(x => x.name === naam);
+  return compLogo(c?.logo, c?.donker);
+}
 
 /* Eén duel als rij in een lijst, voor elk scherm hetzelfde. Alleen het
    element en wat er rechts staat mogen verschillen: een link met een pijl,

@@ -449,12 +449,16 @@ def parse_match(html: str, match_id: int, lineup_html: str | None = None) -> tup
         # competitie nergens als link op de pagina, maar wel hier:
         #   "PSV - SSC Napoli, 21 okt. 2025 - UEFA Champions League
         #    - Wedstrijdverslag | Transfermarkt"
+        #
+        # Splitsen op " - " met spaties eromheen, niet op elk koppelteken: een
+        # naam als "EK-kwalificatie U21" of "Play-Offs" heeft er zelf een, en
+        # dan bleef er "kwalificatie U21" en "Offs" over.
         titel_el = s.find("title")
         if titel_el:
-            m = re.search(r"-\s*([^-|]{3,60}?)\s*-\s*[^-|]+\|\s*Transfermarkt\s*$",
-                          titel_el.get_text(strip=True))
-            if m:
-                tournament = m.group(1).strip()
+            delen = re.split(r"\s+-\s+", titel_el.get_text(strip=True))
+            if len(delen) >= 3 and re.search(r"\|\s*Transfermarkt\s*$", delen[-1]) \
+                    and 3 <= len(delen[-2].strip()) <= 60:
+                tournament = delen[-2].strip()
 
     # Speeldagnummer bij competitiewedstrijden; knock-outduels hebben er geen,
     # die dragen een fasenaam. Dat is geen ontbrekend veld maar een ander soort
@@ -1342,7 +1346,7 @@ def haal_id(waarde: str, patroon: str) -> int:
 
 # ─── Zelftest ────────────────────────────────────────────────────────────────
 
-def _proefpagina(endstand, halbzeit, tore_standen, met_serie):
+def _proefpagina(endstand, halbzeit, tore_standen, met_serie, competitie="KNVB Beker"):
     """Bouwt een wedstrijdpagina na, met de opmaak zoals gemeten op TM."""
     tore = "".join(
         f'<li class="sb-aktion-heim"><div class="sb-aktion">'
@@ -1356,7 +1360,7 @@ def _proefpagina(endstand, halbzeit, tore_standen, met_serie):
     serie = ('<div id="sb-elfmeterscheissen"><ul><li>penalty</li></ul></div>'
              if met_serie else "")
     return (
-        '<html><head><title>Ajax - PSV, 30 apr. 2023 - KNVB Beker'
+        f'<html><head><title>Ajax - PSV, 30 apr. 2023 - {competitie}'
         ' - Wedstrijdverslag | Transfermarkt</title></head><body>'
         '<div class="sb-spieldaten"><p class="sb-datum hide-for-small"> Finale | '
         '<a href="/aktuell/waspassiertheute/aktuell/new/datum/2023-04-30">zo, 30-04-23 </a>'
@@ -1415,6 +1419,11 @@ def zelftest() -> int:
     _, diag = parse_match(_proefpagina("3:4", "n.s.", ["1:0", "2:0"], True), 4)
     check("ongerijmde serie wordt gemeld, niet gecorrigeerd",
           {rij[0]: rij[1] for rij in diag.rows}.get("score"), "GEMIST")
+
+    print("\n── competitie uit de paginatitel ──")
+    for naam in ("KNVB Beker", "Play-Offs Eredivisie", "EK-kwalificatie U21"):
+        r, _ = parse_match(_proefpagina("1:0", "(0:0)", ["1:0"], False, naam), 7)
+        check(f"titel met {naam!r}", r["tournament"], naam)
 
     print("\n── ruststand ──")
     r, diag = parse_match(_proefpagina("3:4", "n.s.", ["1:0", "1:1"], True), 5)

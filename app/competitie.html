@@ -22,7 +22,6 @@
    de goals die je zag vallen. */
 .kop{padding:20px 16px 6px; text-align:center;}
 .kop .comp-logo{width:64px; height:64px; margin:0 auto 10px; display:block;}
-@media (prefers-color-scheme: dark){ .kop .comp-logo{padding:8px; border-radius:16px;} }
 .kop .embleem{width:64px; height:64px; margin:0 auto 10px; border-radius:16px;
   display:flex; align-items:center; justify-content:center;
   background:var(--card-sunken); color:var(--content-2);
@@ -102,7 +101,7 @@ function render(){
   app.innerHTML = `
   <section class="card">
     <div class="kop">
-      ${c.logo ? compLogo(c.logo) : `<div class="embleem" aria-hidden="true">${BEKER}</div>`}
+      ${c.logo ? compLogo(c.logo, c.donker) : `<div class="embleem" aria-hidden="true">${BEKER}</div>`}
       <h2>${esc(naam)}</h2>
       <p>${seizoenen} ${seizoenen === 1 ? 'seizoen' : 'seizoenen'} · nr. ${rang} van je ${APP.comps.length} competities</p>
     </div>
