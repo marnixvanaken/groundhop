@@ -165,11 +165,13 @@ main > *{width:100%; max-width:428px; flex:none;}
   margin-right:0.3em;
   box-shadow:0 0 0 0.5px var(--separator);}
 .comp-logo{width:20px; height:20px; object-fit:contain; flex-shrink:0;}
-/* Veel competitielogo's zijn donkerblauw of zwart (de UEFA-toernooien, de
-   Tweede Divisie) en vallen weg op een donkere kaart. In de donkere stand
-   staan ze daarom op een licht tegeltje, zoals een app-icoon. */
+/* Sommige competitielogo's zijn donkerblauw of zwart (de UEFA-toernooien, de
+   Eredivisie) en vallen weg op een donkere kaart. In de donkere stand keert de
+   app die om, op een doorzichtige achtergrond zoals in licht: omkeren maakt
+   donker licht, en de draai van de kleurtoon zet een kleur terug op zijn plek
+   (het oranje van de Europa League blijft oranje). Welke: build_app_data.py. */
 @media (prefers-color-scheme: dark){
-  .comp-logo{background:#f2f4f6; border-radius:5px; padding:2px;}
+  .comp-logo.donker{filter:invert(1) hue-rotate(180deg);}
 }
 
 /* ── Een duel in een lijst ───────────────────────────────────────────────
