@@ -166,7 +166,8 @@ function render(){
 
   <section class="card">
     <div class="card-head"><h2>Competities</h2></div>
-    ${ranglijst(b.comps.slice(0, 4).map(([n, k]) => ({name: esc(comp(n)), count: k, href: compHref(n)})))}
+    ${ranglijst(b.comps.slice(0, 4).map(([n, k]) => ({name: esc(comp(n)), count: k, href: compHref(n),
+                                                     beeld: compLogoVan(n)})))}
   </section>
 
   <section class="card">

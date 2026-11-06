@@ -83,6 +83,23 @@ def crest(team_id):
     return LOGO_URL.get(team_id)
 
 
+def comp_logo(comp_id):
+    """Het competitielogo.
+
+    Sofascore: het bestand in img/tournament/, op Sofascore-id. Transfermarkt:
+    hun beeldserver op de competitiecode die elk duel al draagt (NL1, CL, NLP,
+    19YL, …). De vierkante maat van 150 pixels, zodat het logo als icoon in een
+    lijst en groot boven het competitiescherm allebei scherp is. Onbekende code:
+    een 404, en dan ruimt het scherm het plaatje op (compLogo in groundhop.js).
+    """
+    if BRON["naam"] == "sofascore":
+        return kopieer("tournaments", comp_id, "tournament")
+    code = str(comp_id or "")
+    if re.fullmatch(r"[A-Za-z0-9]+", code):
+        return f"https://img.a.transfermarkt.technology/logo/homepageWappen150x150/{code.lower()}.png"
+    return None
+
+
 def foto(speler):
     """Het portret; zelfde redenering als bij crest().
 
@@ -282,7 +299,7 @@ def main():
         c = comps.setdefault(naam, {"name": naam, "id": m.get("tournament_id"), "count": 0})
         c["count"] += 1
     for c in comps.values():
-        c["logo"] = kopieer("tournaments", c["id"], "tournament")
+        c["logo"] = comp_logo(c["id"])
     samengevoegd = {k: sorted(c) for k, c in namen.items() if len(c) > 1}
 
     def rondenaam(m):
