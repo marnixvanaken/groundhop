@@ -187,6 +187,16 @@ speler en een stadion. Het clubscherm houdt de tab actief waar je vandaan kwam.
 Winst, gelijk en verlies staan in de gewone tekstkleur: een uitslag is geen
 geschiedenis van jou, dus geen groen.
 
+Elk scherm past op een telefoon van 320 pixels breed en schuift alleen omlaag;
+alleen een chiprij schuift opzij. Elk kind van `main` is 100% breed, dus een
+eigen zijmarge maakt de pagina te breed (zo schoof Nieuwtjes). De toets loopt
+elk scherm op vier breedtes langs en tikt elke schakelaar en elk chipje aan:
+
+```bash
+node test/breedte.test.mjs              # een greep; --alles voor elk duel, stadion en club
+node test/breedte.test.mjs --zelftest   # vindt hij een fout die er expres in staat?
+```
+
 ## Nieuwtjes
 
 Wat een duel jou opleverde, in gewone zinnen: *Goal nr. 700 die je zag*,
