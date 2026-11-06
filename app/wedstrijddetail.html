@@ -196,7 +196,7 @@ function render(){
   let html = `
   <section class="card">
     <div class="score-meta">
-      <a class="comp-regel" href="${compHref(m.t)}"><span class="comp">${esc(naamComp)}${m.round ? ` · Ronde ${m.round}` : ''}</span></a>
+      <a class="comp-regel" href="${compHref(m.t)}">${compLogoVan(m.t)}<span class="comp">${esc(naamComp)}${m.round ? ` · Ronde ${m.round}` : ''}</span></a>
       <div class="date">${datum(m.date, true)}</div>
     </div>
     <div class="score">

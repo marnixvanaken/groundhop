@@ -76,6 +76,9 @@ const portret = (src, naam) =>
 const compLogo = src => src
   ? `<img class="comp-logo" src="${src}" alt="" loading="lazy" onerror="this.remove()">`
   : '';
+/* Hetzelfde op naam, voor lijsten die alleen de naam van de competitie kennen
+   (een duel, de ranglijst op een club of stadion). */
+const compLogoVan = naam => compLogo((window.APP?.comps || []).find(c => c.name === naam)?.logo);
 
 /* Eén duel als rij in een lijst, voor elk scherm hetzelfde. Alleen het
    element en wat er rechts staat mogen verschillen: een link met een pijl,
