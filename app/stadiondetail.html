@@ -90,7 +90,7 @@ function bereken(v){
 // die ene avond. Zelfde vorm, andere betekenis.
 function tellers(v, b){
   const cellen = b.ms.length === 1
-    ? [['1×', 'bezoek'], [getal(b.goals), 'goals gezien'], [getal(b.publiekMax), 'toeschouwers']]
+    ? [['1×', 'bezoek'], [getal(b.goals), 'goals gezien'], [getal(b.publiekMax), 'toe&shy;schouwers']]
     : [[getal(b.ms.length) + '×', 'bezoeken'], [getal(b.goals), 'goals gezien'], [b.perDuel, 'per duel']];
   return `<div class="tally">${cellen.map(([w, l]) => `
     <div><b class="num">${w}</b><span>${l}</span></div>`).join('')}</div>`;
@@ -156,7 +156,7 @@ function render(){
     <div class="drie">
       <div><div class="row-label">Clubs</div><div class="row-value">${b.clubs.length}</div></div>
       <div><div class="row-label">Spelers</div><div class="row-value">${getal(b.spelers)}</div></div>
-      <div><div class="row-label">Scheidsrechters</div><div class="row-value">${b.refs}</div></div>
+      <div><div class="row-label">Scheids&shy;rechters</div><div class="row-value">${b.refs}</div></div>
     </div>
     ${ranglijst(b.clubs.slice(0, 4).map(([id, n]) => {
       const c = club(Number(id));
